@@ -1,6 +1,6 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
-
+#include <sys/time.h>
 Webserv::Webserv()
 {
 	// hard coded for now. can be passed as parameters at initialization
@@ -40,8 +40,12 @@ Webserv::Webserv()
 void 	Webserv::launch()
 {
 	struct sockaddr_in	addr;
-	socklen_t			addr_len;
-	
+	socklen_t		addr_len = sizeof(this->_address); // A init
+	struct timeval		t;
+
+	t.tv_sec = 0;
+	t.tv_usec = 100;
+
 	// collection of file descriptors
 	fd_set				current_sockets, ready_sockets;
 	 
@@ -58,7 +62,7 @@ void 	Webserv::launch()
 	{
 		// cause FD_SET() is destructive 
 		ready_sockets = current_sockets;
-		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
+		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, &t) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
 		{
 			perror("select error");
 			exit(EXIT_FAILURE);
@@ -73,12 +77,13 @@ void 	Webserv::launch()
 				if (i == this->_sock)
 				{
 					// accept and add new connection to current_set
-					this->_confd = accept(this->_sock, (struct sockaddr *)NULL, NULL);
+					this->_confd = accept(this->_sock, (struct sockaddr *)&(this->_address), &addr_len); // <<-- A REGLER 
 					FD_SET(this->_confd, &current_sockets);
 				}
 				// else handle request
 				else
 				{
+					print_request_client();
 					std::string	server_message = "HTTP/1.1 200 OK\r\n\
 Content-Length: 55\r\n\
 Content-Type: text/html\r\n\
@@ -87,11 +92,14 @@ Accept-Ranges: bytes\r\n\
 ETag: “04f97692cbd1:377”\r\n\
 Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
 \r\n\
-1234567890123456789012345678901234567890123456789012345"; 
+1234567890123456789012345678901234567890123456789012345\r\n"; 
 
-					std::cout << "-------------------------------- " << this->_confd << " ----------------------------------" << std::endl;
-					send(this->_confd, server_message.c_str(), server_message.length(), 0);
+					std::cout << "-------------------------------- " << i << " ----------------------------------" << std::endl;
+					send(i, server_message.c_str(), server_message.length(), 0); // A CHECK IF ERROR
 
+					sleep(5);
+
+					print_request_client();
 					// ajouter par la un if (connection lost on this fd)
 					// close fd
 					// and clear fd dans tous les cas
