@@ -1,6 +1,8 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <csignal>
+
 Webserv::Webserv()
 {
 	// hard coded for now. can be passed as parameters at initialization
@@ -37,11 +39,18 @@ Webserv::Webserv()
 	std::cout << "connected and listening" << std::endl;
 }
 
+void	ft_putstr_fd(int fd, const char *str)
+{
+	while (*str)
+		write(fd, str++, 1);
+}
+
 void 	Webserv::launch()
 {
 	struct sockaddr_in	addr;
-	socklen_t		addr_len = sizeof(this->_address); // A init
+	socklen_t		addr_len;
 	struct timeval		t;
+	int 				send_ret;
 
 	t.tv_sec = 0;
 	t.tv_usec = 100;
@@ -49,10 +58,7 @@ void 	Webserv::launch()
 	// collection of file descriptors
 	fd_set				current_sockets, ready_sockets;
 	 
-	//init fd set
 	FD_ZERO(&current_sockets);
-	
-	// add this->_sock (binded socket) to current_sockets fd set
 	FD_SET(this->_sock, &current_sockets);
 	 
 	std::cout << "waiting for connection on port " << PORT << std::endl; 
@@ -62,7 +68,7 @@ void 	Webserv::launch()
 	{
 		// cause FD_SET() is destructive 
 		ready_sockets = current_sockets;
-		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, &t) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
+		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
 		{
 			perror("select error");
 			exit(EXIT_FAILURE);
@@ -73,38 +79,37 @@ void 	Webserv::launch()
 			// if on fd in select is trigger
 			if (FD_ISSET(i, &ready_sockets))
 			{
+				std::cout << "---> " << i << std::endl;
 				// if reacting fd is this->_sock = new connection
 				if (i == this->_sock)
 				{
 					// accept and add new connection to current_set
-					this->_confd = accept(this->_sock, (struct sockaddr *)&(this->_address), &addr_len); // <<-- A REGLER 
+					this->_confd = accept(this->_sock, (struct sockaddr *)&addr, &addr_len);
 					FD_SET(this->_confd, &current_sockets);
 				}
-				// else handle request
 				else
 				{
-					print_request_client();
+
 					std::string	server_message = "HTTP/1.1 200 OK\r\n\
-Content-Length: 55\r\n\
 Content-Type: text/html\r\n\
-Last-Modified: Wed, 12 Aug 1998 15:03:50 GMT\r\n\
-Accept-Ranges: bytes\r\n\
-ETag: “04f97692cbd1:377”\r\n\
-Date: Thu, 19 Jun 2008 19:29:07 GMT\r\n\
+Content-Length: 55\r\n\
+Keep-Alive: timeout=5, max=1000\r\n\
+Connection: Keep-Alive\r\n\
 \r\n\
-1234567890123456789012345678901234567890123456789012345\r\n"; 
+1234567890123456789012345678901234567890123456789012345"; 
 
-					std::cout << "-------------------------------- " << i << " ----------------------------------" << std::endl;
-					send(i, server_message.c_str(), server_message.length(), 0); // A CHECK IF ERROR
-
-					sleep(5);
-
-					print_request_client();
-					// ajouter par la un if (connection lost on this fd)
-					// close fd
-					// and clear fd dans tous les cas
-					FD_CLR(i, &current_sockets);
-					
+					std::signal(SIGPIPE, SIG_IGN);
+					if (( send_ret = send(i, server_message.c_str(), server_message.length(), 0)) < 0) // A CHECK IF ERROR
+					{
+						if (errno == EPIPE && i != this->_sock)
+						{
+							std::cout << i << " <--------------" << std::endl;
+							FD_CLR(i, &current_sockets);
+							close(i);
+						}
+					}
+//					FD_CLR(i, &current_sockets);
+//					close(i);
 				}
 			}
 		}
@@ -130,16 +135,3 @@ void	Webserv::print_request_client()
 	}
 	free(this->_recvline);
 }
-
-
-
-
-
-
-
-
-
-/*
-std::snprintf((char *)_buff, sizeof(_buff), "HTTP/1.0 200 OK\r\n\r\nHELLO WORLD!"); 
-		write(_confd, (char *)_buff, strlen((char *)_buff));
-*/
