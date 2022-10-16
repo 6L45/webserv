@@ -1,6 +1,5 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
-
 #include "common.hpp"
 
 class Webserv
@@ -27,10 +26,8 @@ class Webserv
 		char				*_recvline;
   
 		// private methods
-		void	print_request_client();
+		void	__print_request_client();
 };
-
-#include "../webserv.cpp"
 
 #endif
 

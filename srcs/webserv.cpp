@@ -2,6 +2,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <csignal>
+#include "webserv.hpp"
 
 Webserv::Webserv()
 {
@@ -48,12 +49,12 @@ void	ft_putstr_fd(int fd, const char *str)
 void 	Webserv::launch()
 {
 	struct sockaddr_in	addr;
-	socklen_t		addr_len;
+	socklen_t			addr_len;
 	struct timeval		t;
 	int 				send_ret;
 
 	t.tv_sec = 0;
-	t.tv_usec = 100;
+	t.tv_usec = 1000;
 
 	// collection of file descriptors
 	fd_set				current_sockets, ready_sockets;
@@ -61,14 +62,14 @@ void 	Webserv::launch()
 	FD_ZERO(&current_sockets);
 	FD_SET(this->_sock, &current_sockets);
 	 
-	std::cout << "waiting for connection on port " << PORT << std::endl; 
+	std::cout << "++waiting for connection on port++" << PORT << std::endl; 
 
 	// SERVER LOOP
 	while (1)
 	{
 		// cause FD_SET() is destructive 
 		ready_sockets = current_sockets;
-		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
+		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, &t) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
 		{
 			perror("select error");
 			exit(EXIT_FAILURE);
@@ -76,20 +77,25 @@ void 	Webserv::launch()
 		//FD_SETSIZE() max size possible
 		for (int i = 0; i < FD_SETSIZE; i++)
 		{
+			// if (i != this->_sock && FD_ISSET(i, &current_sockets))
+			// 	std::cout << "++connexion still open with this client : " << i << "++" << std::endl;
 			// if on fd in select is trigger
 			if (FD_ISSET(i, &ready_sockets))
 			{
-				std::cout << "---> " << i << std::endl;
 				// if reacting fd is this->_sock = new connection
 				if (i == this->_sock)
 				{
+					std::cout << "++connexion request on socket fd : " << i << "++" << std::endl;
 					// accept and add new connection to current_set
 					this->_confd = accept(this->_sock, (struct sockaddr *)&addr, &addr_len);
 					FD_SET(this->_confd, &current_sockets);
+					std::cout << "++Connexion accepted, client fd : " << this->_confd << "++" << std::endl;
 				}
 				else
 				{
-
+					std::cout << "++client request on socket fd : " << i << "++" << std::endl;
+					this->_confd = i;
+					__print_request_client(); // Si on ne lit pas select va trigger en boucle car le client fd est pret a être lu. En plus de ça la requete est envoyé ligne par ligne on dirait
 					std::string	server_message = "HTTP/1.1 200 OK\r\n\
 Content-Type: text/html\r\n\
 Content-Length: 55\r\n\
@@ -98,25 +104,25 @@ Connection: Keep-Alive\r\n\
 \r\n\
 1234567890123456789012345678901234567890123456789012345"; 
 
-					std::signal(SIGPIPE, SIG_IGN);
-					if (( send_ret = send(i, server_message.c_str(), server_message.length(), 0)) < 0) // A CHECK IF ERROR
+					std::signal(SIGPIPE, SIG_IGN); //ignorer le sigpipe car sinon crash
+					if (( send_ret = send(i, server_message.c_str(), server_message.length(), 0)) < 0)
 					{
 						if (errno == EPIPE && i != this->_sock)
 						{
-							std::cout << i << " <--------------" << std::endl;
+							std::cout << "++connexion with client is lost, closing fd : " << i << "++" << std::endl;
 							FD_CLR(i, &current_sockets);
 							close(i);
 						}
 					}
-//					FD_CLR(i, &current_sockets);
-//					close(i);
+					else
+						std::cout << "Message send to the client fd : " << i << "++" << std::endl;
 				}
 			}
 		}
 	}
 }
 
-void	Webserv::print_request_client()
+void	Webserv::__print_request_client()
 {
 	int	n;
 
