@@ -20,8 +20,8 @@ Webserv::Webserv()
 
 	// socket creation + make it non blocking
 	this->_sock = socket(this->_domain, this->_service, this->_protocol);
-	int	flags = fcntl(this->_sock, F_GETFL);
-	fcntl(this->_sock, F_SETFL, flags | O_NONBLOCK);
+//	int	flags = fcntl(this->_sock, F_GETFL);
+//	fcntl(this->_sock, F_SETFL, flags | O_NONBLOCK);
 
 	// bind socket to a port
 	if ( (bind(this->_sock, (struct sockaddr *)&(this->_address), 
@@ -87,7 +87,9 @@ void 	Webserv::launch()
 				{
 					std::cout << "++connexion request on socket fd : " << i << "++" << std::endl;
 					// accept and add new connection to current_set
-					this->_confd = accept(this->_sock, (struct sockaddr *)&addr, &addr_len);
+					this->_confd = accept(this->_sock, (struct sockaddr *)NULL, NULL);
+					if (this->_confd < 0)
+						perror("accept error");
 					FD_SET(this->_confd, &current_sockets);
 					std::cout << "++Connexion accepted, client fd : " << this->_confd << "++" << std::endl;
 				}
@@ -96,6 +98,7 @@ void 	Webserv::launch()
 					std::cout << "++client request on socket fd : " << i << "++" << std::endl;
 					this->_confd = i;
 					__print_request_client(); // Si on ne lit pas select va trigger en boucle car le client fd est pret a être lu. En plus de ça la requete est envoyé ligne par ligne on dirait
+
 					std::string	server_message = "HTTP/1.1 200 OK\r\n\
 Content-Type: text/html\r\n\
 Content-Length: 55\r\n\
@@ -115,8 +118,7 @@ Connection: Keep-Alive\r\n\
 						}
 					}
 					else
-						std::cout << "Message send to the client fd : " << i << "++" << std::endl;
-				}
+						std::cout << "Message send to the client fd : " << i << "++" << std::endl;				}
 			}
 		}
 	}
@@ -128,16 +130,19 @@ void	Webserv::__print_request_client()
 
 	this->_recvline = static_cast<char *>(malloc(MAXLINE));
 	memset(this->_recvline, 0, MAXLINE);
-	while ( (n = read(this->_confd, this->_recvline, MAXLINE - 1)) > 0 )
+	while ( (n = recv(this->_confd, this->_recvline, MAXLINE - 1, MSG_DONTWAIT)) > 0 )
 	{
 		std::cout << this->_recvline << std::endl << std::endl;
-		if (this->_recvline[n - 1] == '\n')
-			break;
+//		if (this->_recvline[n - 1] == '\n')
+//			break;
 	}
 	if (n < 0)
 	{
-		std::cout << "read error" << std::endl;
-		close(this->_confd);
+		if (errno != EAGAIN)
+		{
+			perror("read error");
+			close(this->_confd);
+		}
 	}
 	free(this->_recvline);
 }
