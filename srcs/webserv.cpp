@@ -2,14 +2,42 @@
 
 Webserv::Webserv()
 {
-	// A FAIRE initialiser les serveurs en fonction de conf
-	Server	empty_serv;
+	// Les servers seront à initialiser les serveurs en fonction du fichier conf
+//	Server	empty_serv;
 	Server	server1(PORT);
 	Server	server2(SERVER_PORT);
+
+	// stock provisoirement dans tmp;
+	std::vector<Server> tmp;
+	tmp.push_back(server1);
+	tmp.push_back(server2);
+
+	int i = 0;
+	int j = 0;
+	int	fd_max = 0;
+	// chercher le plus grand FD ouvert pour la taille de reserve	
+	for (std::vector<Server>::iterator it = tmp.begin(); it != tmp.end(); it++, i++)
+	{
+		if (tmp[i].get_socket() > fd_max)
+			fd_max = tmp[i].get_socket();
+	}
+	this->_servs.reserve(fd_max + 1);
+	
+	i = 0;
+	for (std::vector<Server>::iterator it = tmp.begin(); it != tmp.end(); it++, i++)
+	{
+		while (tmp[i].get_socket() != j)
+			j++;
+		this->_servs[j] = tmp[i];
+		this->_server_fd.push_back(tmp[i].get_socket());
+		j = 0;
+	}
 
 // IMPORTANT : bien s'assurer que tous les fd soient fermées avant d'arriver ici
 // ou créer autant d'empty serv qu'il y'a de fd ouvert
 // le fd socket des serveurs sert d'indice d'acces [] dans this->_servs pour acceder au serveur voulu
+ 
+/*
 	this->_servs.push_back(empty_serv);
 	this->_servs.push_back(empty_serv);
 	this->_servs.push_back(empty_serv);
@@ -18,6 +46,7 @@ Webserv::Webserv()
 
 	this->_server_fd.push_back(server1.get_socket());
 	this->_server_fd.push_back(server2.get_socket());
+*/
 }
 
 void 	Webserv::launch()
