@@ -13,7 +13,11 @@ class Server
 		void		request_handler(int &fd);
 		int			&get_socket(void);
 		void		print_request_client(int fd);
+#ifdef __linux__
+		void		send_response(int fd, int epoll_sckt);
+#else
 		void		send_response(int fd, fd_set &current_sockets);
+#endif
 
 	private :
 		struct	sockaddr_in		_address;

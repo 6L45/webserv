@@ -6,7 +6,9 @@
 # include <sys/select.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
-
+#ifdef __linux__
+	# include <sys/epoll.h>
+#endif
 # include <list>
 # include <map>
 # include <vector>

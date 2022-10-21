@@ -61,6 +61,32 @@ void	Server::print_request_client(int fd)
 	free(this->_recvline);
 }
 
+#ifdef __linux__
+void	Server::send_response(int fd, int epoll_sckt)
+{
+	std::string server_message = "HTTP/1.1 200 OK\r\n\
+Content-Type: text/html\r\n\
+Content-Length: 55\r\n\
+Keep-Alive: timeout=5, max=1000\r\n\
+Connection: Keep-Alive\r\n\
+\r\n";
+	server_message += std::to_string(this->_sock);
+
+	std::signal(SIGPIPE, SIG_IGN); // ignorer le sigpipe car sinon crash
+	if ((send(fd, server_message.c_str(), server_message.length(), 0)) < 0)
+	{
+		if (errno == EPIPE)
+		{
+			std::cout << "++connexion with client is lost, closing fd : " << fd << "++" << std::endl;
+			if (epoll_ctl(epoll_sckt, EPOLL_CTL_DEL, fd,  NULL) == -1)
+				perror("epoll_ctl: unable to delet the client socket listener");
+			close(fd);
+		}
+	}
+	else
+		std::cout << "Message send to the client fd : " << fd << "++" << std::endl;
+}
+#else
 void	Server::send_response(int fd, fd_set &current_sockets)
 {
 	std::string server_message = "HTTP/1.1 200 OK\r\n\
@@ -84,3 +110,4 @@ Connection: Keep-Alive\r\n\
 	else
 		std::cout << "Message send to the client fd : " << fd << "++" << std::endl;
 }
+#endif
