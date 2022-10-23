@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "webserv.class.hpp"
 
 Webserv::Webserv()
 {
@@ -58,7 +58,7 @@ void 	Webserv::launch()
 //	uint16_t			conn_port;
 	
 	FD_ZERO(&current_sockets);
-	for (typename std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
+	for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
 		FD_SET(this->_servs[*it].get_socket(), &current_sockets);
 	 
 	std::cout << "++waiting for connection ++" << std::endl; 

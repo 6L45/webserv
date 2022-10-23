@@ -1,6 +1,5 @@
-#ifndef WEBSERV_HPP
-# define WEBSERV_HPP
-
+#ifndef SERVER_CLASS_HPP
+# define SERVER_CLASS_HPP
 #include "common.hpp"
 
 class Server
@@ -28,25 +27,4 @@ class Server
 		char					*_recvline;
 };
 
-class Webserv
-{
-	public :
-		// constru - destru
-		Webserv();
-		~Webserv(){};
-		
-		// public methods
-		void 	launch();
-
-	private :
-		int						_confd;
-		std::vector<int>		_server_fd;
-		std::map<int, int>		_fds;
-		std::vector<Server>		_servs;
-
-		bool	__is_a_socket(int fd);
-
-};
-
 #endif
-

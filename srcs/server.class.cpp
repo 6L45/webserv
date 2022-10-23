@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "server.class.hpp"
 
 Server::Server(int port)
 {
