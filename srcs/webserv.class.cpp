@@ -56,6 +56,7 @@ void 	Webserv::launch()
 	fd_set				current_sockets, ready_sockets;
 
 //	uint16_t			conn_port;
+	client_len = sizeof(client);
 	
 	FD_ZERO(&current_sockets);
 	for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
@@ -78,8 +79,7 @@ void 	Webserv::launch()
 				if (this->__is_a_socket(i))
 				{
 					std::cout << "++connexion request on socket fd : " << i << "++" << std::endl;
-					
-					this->_confd = accept(i, (SA *)NULL, NULL);
+					this->_confd = accept(i, (SA *)&client, &client_len);
 					if (this->_confd < 0)
 					{
 						// ICI renvoyer la bonne erreur http en cas de problème connexion
@@ -90,6 +90,8 @@ créer un error handler ici sur le retour d'accept" << std::endl;
 					FD_SET(this->_confd, &current_sockets);
 
 					std::cout << "++Connexion accepted, client fd : " << this->_confd << " ++" << std::endl;
+					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
+					std::cout << "sin_addr : " << ntohs(client.sin_addr.s_addr) << std::endl;
 				}
 				else
 				{
@@ -97,7 +99,9 @@ créer un error handler ici sur le retour d'accept" << std::endl;
 					
 					// peut être update par une seule fonction du genre "request handler"
 					this->_servs[this->_fds[i]].print_request_client(i);
-					this->_servs[this->_fds[i]].send_response(i, current_sockets);
+					FD_CLR(i, &current_sockets);
+					close(i);
+					//this->_servs[this->_fds[i]].send_response(i, current_sockets);
 				}
 			}
 		}

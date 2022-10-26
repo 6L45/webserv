@@ -63,7 +63,7 @@ fclean: clean
 re: fclean ${NAME_EXECUTABLE}
 
 run: ${NAME_EXECUTABLE}
-	./${NAME_EXECUTABLE}
+	./${NAME_EXECUTABLE} config/ws.conf
 
 debug: 
 	

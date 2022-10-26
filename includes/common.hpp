@@ -24,7 +24,7 @@
 # include <fcntl.h>
 # include <unistd.h>
 
-# define SERVER_PORT 18000
+# define SERVER_PORT 18001
 # define SA struct sockaddr
 # define MAXLINE 4096
 # define PORT 18009
