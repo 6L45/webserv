@@ -21,7 +21,7 @@ class Server
 		int						_service;
 		int						_protocol;
 		int						_port;
-		u_long					_interface;
+		in_addr_t				_interface;
 
 		char					_buff[MAXLINE + 1];
 		char					*_recvline;

@@ -16,8 +16,8 @@ int main(int ac, char **av)
 	int	sock;
 	struct sockaddr_in sa;
 
-	if (ac != 2)
-		fatal_error("usage: webserv <int:port>", 1);
+	if (ac != 3)
+		fatal_error("usage: webserv <int:port> <char *:host>", 1);
 	std::string	s_port(av[1]);
 	port = std::stoi(s_port);
 
@@ -26,6 +26,7 @@ int main(int ac, char **av)
 		fatal_error("unable to create the socket", 3);
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(port);
+	sa.sin_addr.s_addr = inet_addr(av[2]);
 	connect(sock, (struct sockaddr *)&sa, (socklen_t)sizeof(sa));
 	std::string msg("Hello ITS mE");
 	send(sock, msg.c_str(), msg.length(), 0);

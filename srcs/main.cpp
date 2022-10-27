@@ -39,9 +39,9 @@ int main(int ac, char **av, char **env)
 	
 	Conf	config(config_file);
 
-	//Webserv test;
+	Webserv test;
 
-	//test.launch();
+	test.launch();
 	//listen_ft();
 	return 0;
 }

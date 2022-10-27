@@ -6,16 +6,19 @@ Server::Server(int port)
 	this->_service =	SOCK_STREAM;
 	this->_protocol =	0;
 	this->_port =		port;
-	this->_interface =	INADDR_ANY;
+	this->_interface =	inet_addr("0.0.0.0"); // same as INADDR_ANY
+	sockaddr_in	test;
+	socklen_t	test_len = sizeof(test);
 
 	this->_address.sin_family =			this->_domain; //AF_INET
 	this->_address.sin_port =			htons(this->_port);
-	this->_address.sin_addr.s_addr =	htonl(this->_interface); // INADRR_ANY
+	this->_address.sin_addr.s_addr =	htonl(this->_interface); // same as htonl(INADRR_ANY)
 
 	// socket creation 
 	this->_sock = socket(this->_domain, this->_service, this->_protocol);
 	std::cout << "==> " << this->_sock << std::endl;
-
+	getsockname(this->_sock, (sockaddr *)&test, &test_len);
+	std::cout << inet_ntoa(test.sin_addr) << std::endl;
 	// bind socket to a port
 	if ( (bind(this->_sock, (struct sockaddr *)&(this->_address), 
 					sizeof(this->_address))) < 0 )
@@ -68,7 +71,8 @@ Content-Type: text/html\r\n\
 Content-Length: 55\r\n\
 Keep-Alive: timeout=5, max=1000\r\n\
 Connection: Keep-Alive\r\n\
-\r\n";
+\r\n\
+123456789098797239847";
 	server_message += std::to_string(this->_sock);
 
 	std::signal(SIGPIPE, SIG_IGN); // ignorer le sigpipe car sinon crash

@@ -61,7 +61,7 @@ void 	Webserv::launch()
 	FD_ZERO(&current_sockets);
 	for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
 		FD_SET(this->_servs[*it].get_socket(), &current_sockets);
-	 
+	FD_SET(0, &current_sockets);
 	std::cout << "++waiting for connection ++" << std::endl; 
 
 	while (1)
@@ -74,6 +74,14 @@ void 	Webserv::launch()
 		}
 		for (int i = 0; i < FD_SETSIZE; i++)
 		{
+			if (FD_ISSET(0, &ready_sockets))
+			{
+				std::string cmd;
+				std::getline(std::cin, cmd);
+				for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
+					close(this->_servs[*it].get_socket());
+					return ;
+			}
 			if (FD_ISSET(i, &ready_sockets))
 			{
 				if (this->__is_a_socket(i))
@@ -91,17 +99,19 @@ créer un error handler ici sur le retour d'accept" << std::endl;
 
 					std::cout << "++Connexion accepted, client fd : " << this->_confd << " ++" << std::endl;
 					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
-					std::cout << "sin_addr : " << ntohs(client.sin_addr.s_addr) << std::endl;
+					std::cout << "sin_addr : " << inet_ntoa(client.sin_addr) << std::endl;
 				}
 				else
 				{
 					std::cout << "++client request on socket fd : " << i << " ++" << std::endl;
-					
+					getsockname(i, (SA *)&client, &client_len);
+					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
+					std::cout << "sin_addr : " << inet_ntoa(client.sin_addr) << std::endl;
 					// peut être update par une seule fonction du genre "request handler"
 					this->_servs[this->_fds[i]].print_request_client(i);
 					FD_CLR(i, &current_sockets);
+					this->_servs[this->_fds[i]].send_response(i, current_sockets);
 					close(i);
-					//this->_servs[this->_fds[i]].send_response(i, current_sockets);
 				}
 			}
 		}
