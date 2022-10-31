@@ -13,7 +13,6 @@ Webserv::Webserv()
 	tmp.push_back(server2);
 
 	int i = 0;
-	int j = 0;
 	int	fd_max = 0;
 	// chercher le plus grand FD ouvert pour la taille de reserve	
 	for (std::vector<Server>::iterator it = tmp.begin(); it != tmp.end(); it++, i++)
@@ -24,6 +23,7 @@ Webserv::Webserv()
 	this->_servs.reserve(fd_max + 1);
 	
 	i = 0;
+	int j = 0;
 	for (std::vector<Server>::iterator it = tmp.begin(); it != tmp.end(); it++, i++)
 	{
 		while (tmp[i].get_socket() != j)
@@ -32,21 +32,6 @@ Webserv::Webserv()
 		this->_server_fd.push_back(tmp[i].get_socket());
 		j = 0;
 	}
-
-// IMPORTANT : bien s'assurer que tous les fd soient fermées avant d'arriver ici
-// ou créer autant d'empty serv qu'il y'a de fd ouvert
-// le fd socket des serveurs sert d'indice d'acces [] dans this->_servs pour acceder au serveur voulu
- 
-/*
-	this->_servs.push_back(empty_serv);
-	this->_servs.push_back(empty_serv);
-	this->_servs.push_back(empty_serv);
-	this->_servs.push_back(server1);
-	this->_servs.push_back(server2);
-
-	this->_server_fd.push_back(server1.get_socket());
-	this->_server_fd.push_back(server2.get_socket());
-*/
 }
 
 void 	Webserv::launch()
@@ -54,6 +39,10 @@ void 	Webserv::launch()
 	struct sockaddr_in	client;
 	socklen_t			client_len;
 	fd_set				current_sockets, ready_sockets;
+	struct timeval		tempo;
+
+	tempo.tv_sec = 0;
+	tempo.tv_usec = 1;
 
 //	uint16_t			conn_port;
 	client_len = sizeof(client);
@@ -61,58 +50,45 @@ void 	Webserv::launch()
 	FD_ZERO(&current_sockets);
 	for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
 		FD_SET(this->_servs[*it].get_socket(), &current_sockets);
-	FD_SET(0, &current_sockets);
+	FD_SET(STDIN_FILENO, &current_sockets); 
 	std::cout << "++waiting for connection ++" << std::endl; 
 
 	while (1)
 	{
 		ready_sockets = current_sockets;
-		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0) // 1st param = size // 2nd = fd to check for reading // 3rd = fd to check for writing // 4th = error // 5th time
+		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, &tempo) < 0)
 		{
 			perror("select error");
 			exit(EXIT_FAILURE);
 		}
 		for (int i = 0; i < FD_SETSIZE; i++)
 		{
-			if (FD_ISSET(0, &ready_sockets))
-			{
-				std::string cmd;
-				std::getline(std::cin, cmd);
-				for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
-					close(this->_servs[*it].get_socket());
-					return ;
-			}
 			if (FD_ISSET(i, &ready_sockets))
 			{
 				if (this->__is_a_socket(i))
 				{
-					std::cout << "++connexion request on socket fd : " << i << "++" << std::endl;
+					std::cout << "++connexion request on socket fd : " << i << " ++" << std::endl;
 					this->_confd = accept(i, (SA *)&client, &client_len);
 					if (this->_confd < 0)
-					{
-						// ICI renvoyer la bonne erreur http en cas de problème connexion
-						std::cout << "connection error : serveur full or whatever\
-créer un error handler ici sur le retour d'accept" << std::endl;
-					}
+						std::cout << "accept connection error" << std::endl;
+
 					this->_fds.insert(std::pair<int, int>(this->_confd, i));
 					FD_SET(this->_confd, &current_sockets);
 
 					std::cout << "++Connexion accepted, client fd : " << this->_confd << " ++" << std::endl;
-					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
-					std::cout << "sin_addr : " << inet_ntoa(client.sin_addr) << std::endl;
+//					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
+//					std::cout << "sin_addr : " << ntohs(client.sin_addr.s_addr) << std::endl;
 				}
+				else if (i == STDIN_FILENO)
+					this->__console(current_sockets);
 				else
 				{
 					std::cout << "++client request on socket fd : " << i << " ++" << std::endl;
-					getsockname(i, (SA *)&client, &client_len);
-					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
-					std::cout << "sin_addr : " << inet_ntoa(client.sin_addr) << std::endl;
+					
 					// peut être update par une seule fonction du genre "request handler"
 					this->_servs[this->_fds[i]].print_request_client(i);
-					FD_CLR(i, &current_sockets);
 					this->_servs[this->_fds[i]].send_response(i, current_sockets);
-					close(i);
-				}
+				}	
 			}
 		}
 	}
@@ -124,7 +100,23 @@ bool	Webserv::__is_a_socket(int fd)
 			!= this->_server_fd.end());
 }
 
+void	Webserv::__console(fd_set &current_sockets)
+{
+	int		n;
+	char	*recvline;
 
+	recvline = static_cast<char *>(malloc(MAXLINE + 1));
+	if ( ( n = read(STDIN_FILENO, recvline, MAXLINE - 1)) < 0)
+	{
+		perror("read console");
+		exit(EXIT_FAILURE);
+	}
+	recvline[n] = 0;
+	std::string	cmd(recvline);
+	free(recvline);
+
+	std::cout << cmd << std::endl;
+}
 
 
 

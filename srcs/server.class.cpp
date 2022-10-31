@@ -6,19 +6,15 @@ Server::Server(int port)
 	this->_service =	SOCK_STREAM;
 	this->_protocol =	0;
 	this->_port =		port;
-	this->_interface =	inet_addr("0.0.0.0"); // same as INADDR_ANY
-	sockaddr_in	test;
-	socklen_t	test_len = sizeof(test);
+	this->_interface =	INADDR_ANY;
 
 	this->_address.sin_family =			this->_domain; //AF_INET
 	this->_address.sin_port =			htons(this->_port);
-	this->_address.sin_addr.s_addr =	htonl(this->_interface); // same as htonl(INADRR_ANY)
+	this->_address.sin_addr.s_addr =	htonl(this->_interface); // INADRR_ANY
 
 	// socket creation 
 	this->_sock = socket(this->_domain, this->_service, this->_protocol);
-	std::cout << "==> " << this->_sock << std::endl;
-	getsockname(this->_sock, (sockaddr *)&test, &test_len);
-	std::cout << inet_ntoa(test.sin_addr) << std::endl;
+
 	// bind socket to a port
 	if ( (bind(this->_sock, (struct sockaddr *)&(this->_address), 
 					sizeof(this->_address))) < 0 )
@@ -34,7 +30,7 @@ Server::Server(int port)
 		exit(EXIT_FAILURE);
 	}
 
-	std::cout << "connected and listening" << std::endl;
+	std::cout << "connected and listening : " << this->_sock << std::endl;
 }
 
 int	&Server::get_socket()
@@ -49,10 +45,9 @@ void	Server::print_request_client(int fd)
 	this->_recvline = static_cast<char *>(malloc(MAXLINE));
 	memset(this->_recvline, 0, MAXLINE);
 	std::cout << std::endl;
-	while ( (n = recv(fd, this->_recvline, MAXLINE - 1, MSG_DONTWAIT)) > 0 )
-	{
-		std::cout << this->_recvline << std::endl << std::endl;
-	}
+
+	while ( (n = recv(fd, this->_recvline, MAXLINE - 1, MSG_DONTWAIT)) > 0 );
+
 	if (n < 0)
 	{
 		if (errno != EAGAIN)
@@ -61,21 +56,23 @@ void	Server::print_request_client(int fd)
 			close(fd);
 		}
 	}
+
+	std::string	request(this->_recvline);
 	free(this->_recvline);
+
+	Http_handler request_handler(request);
 }
 
 void	Server::send_response(int fd, fd_set &current_sockets)
 {
 	std::string server_message = "HTTP/1.1 200 OK\r\n\
 Content-Type: text/html\r\n\
-Content-Length: 55\r\n\
+Content-Length: 10\r\n\
 Keep-Alive: timeout=5, max=1000\r\n\
-Connection: Keep-Alive\r\n\
 \r\n\
-123456789098797239847";
-	server_message += std::to_string(this->_sock);
+1234567890";
 
-	std::signal(SIGPIPE, SIG_IGN); // ignorer le sigpipe car sinon crash
+	std::signal(SIGPIPE, SIG_IGN);
 	if ((send(fd, server_message.c_str(), server_message.length(), 0)) < 0)
 	{
 		if (errno == EPIPE)

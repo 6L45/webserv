@@ -1,6 +1,8 @@
 #ifndef SERVER_CLASS_HPP
 # define SERVER_CLASS_HPP
+
 #include "common.hpp"
+#include "http_handler.hpp"
 
 class Server
 {
@@ -21,7 +23,7 @@ class Server
 		int						_service;
 		int						_protocol;
 		int						_port;
-		in_addr_t				_interface;
+		u_long					_interface;
 
 		char					_buff[MAXLINE + 1];
 		char					*_recvline;

@@ -18,7 +18,7 @@ COMPILER_FLAGS = #-Wall -Wextra -Werror -std=c++98 #-g -fsanitize=address
 INCLUDE_FLAGS = -I${HEADER_DIRECTORY}
 DEBUG_FLAGS = -DWS_DEBUG
 #	Compiler
-CXX = c++
+CXX = clang++
 
 #	Terminal output coloring
 _END=\x1b[0m

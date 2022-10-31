@@ -15,12 +15,12 @@ class Webserv
 
 	private :
 		int						_confd;
-		std::vector<int>		_server_fd; // double stocage d'info j'ai l'impression to delete
-		std::map<int, int>		_fds; //position dans _servs du server au port(clé)
+		std::vector<int>		_server_fd;
+		std::map<int, int>		_fds;
 		std::vector<Server>		_servs;
 
 		bool	__is_a_socket(int fd);
-
+		void	__console(fd_set &current_sockets);
 };
 
 #endif
