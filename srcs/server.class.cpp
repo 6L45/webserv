@@ -67,10 +67,10 @@ void	Server::send_response(int fd, fd_set &current_sockets)
 {
 	std::string server_message = "HTTP/1.1 200 OK\r\n\
 Content-Type: text/html\r\n\
-Content-Length: 10\r\n\
+Content-Length: 15\r\n\
 Keep-Alive: timeout=5, max=1000\r\n\
 \r\n\
-1234567890";
+1234567890\r\n\r\n";
 
 	std::signal(SIGPIPE, SIG_IGN);
 	if ((send(fd, server_message.c_str(), server_message.length(), 0)) < 0)

@@ -38,15 +38,16 @@ void 	Webserv::launch()
 {
 	struct sockaddr_in	client;
 	socklen_t			client_len;
-	fd_set				current_sockets, ready_sockets;
-	struct timeval		tempo;
+	fd_set				current_sockets, ready_sockets, wrinting_socket;
+/*	struct timeval		tempo;
 
 	tempo.tv_sec = 0;
 	tempo.tv_usec = 1;
-
+*/
 //	uint16_t			conn_port;
 	client_len = sizeof(client);
 	
+	FD_ZERO(&wrinting_socket);
 	FD_ZERO(&current_sockets);
 	for (std::vector<int>::iterator it = this->_server_fd.begin(); it != this->_server_fd.end(); it++)
 		FD_SET(this->_servs[*it].get_socket(), &current_sockets);
@@ -56,7 +57,7 @@ void 	Webserv::launch()
 	while (1)
 	{
 		ready_sockets = current_sockets;
-		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, &tempo) < 0)
+		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0)
 		{
 			perror("select error");
 			exit(EXIT_FAILURE);
