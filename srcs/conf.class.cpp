@@ -3,13 +3,28 @@
 #include <string>
 
 Conf::Conf()
-{
-	//nothing here, unauthorised constructor
-}
+{ } //nothing here, unauthorised constructor
 
-Conf::Conf(std::ifstream &fs)
+
+Conf::Conf(std::string path_to_file)
 	:	_max_connexion(1024),
 		_line_read(0)
+{
+	std::ifstream fs;
+
+	if (! __valide_conf_file_name(path_to_file))
+		throw std::invalid_argument("Unvalid extention of configuration file");
+	fs.open(path_to_file);
+	fs.exceptions(std::ifstream::failbit); //may throw
+	__parse_config_file(fs);
+	fs.close();
+	//__print_everything();
+}
+
+/*
+	It's pretty clear what this function is up for
+*/
+void	Conf::__parse_config_file(std::ifstream& fs)
 {
 	std::string line;
 
@@ -27,9 +42,8 @@ Conf::Conf(std::ifstream &fs)
 		else if (!line.compare(0, 6, "server"))
 			__parse_server(fs, line.erase(0,6));
 		else
-			__error_notif(_line_read, "unknown parameter");
+			__error_file_notif(_line_read, "unknown parameter");
 	}
-	__print_everything();
 }
 
 Conf::~Conf()
@@ -46,7 +60,7 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 		__get_line(fs, line);
 	__erase_tab_space(line);
 	if (line.empty() || line.front() != '{')
-		return (__error_notif(_line_read, "missing '{'"));
+		return (__error_file_notif(_line_read, "missing '{'"));
 	while (!fs.eof())
 	{
 		__get_line(fs, line);
@@ -75,13 +89,13 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 		else if (!line.compare(0, 1, "}"))
 			break ;
 		else
-			__error_notif(_line_read, "unknown parameter");
+			__error_file_notif(_line_read, "unknown parameter");
 	}
 	if (fs.eof() && line.compare(0, 1, "}"))
-		return (__error_notif(_line_read, "missing '}' for server"));
+		return (__error_file_notif(_line_read, "missing '}' for server"));
 	line.erase(0,1);
 	if (!line.empty())
-		__error_notif(_line_read, "line ignored after '}'");
+		__error_file_notif(_line_read, "line ignored after '}'");
 	_sc.push_back(new_serv);
 }
 
@@ -93,7 +107,7 @@ void	Conf::__add_to(T& to, std::string& s)
 	// Checking if there is an argument
 	__erase_tab_space(s);
 	if (s.empty())
-		return (__error_notif(_line_read, "parameter without arguments"));
+		return (__error_file_notif(_line_read, "parameter without arguments"));
 	//Extract the info, may throw
 	try
 	{
@@ -101,20 +115,20 @@ void	Conf::__add_to(T& to, std::string& s)
 	}
 	catch (std::invalid_argument e)
 	{
-		return (__error_notif(_line_read, e.what()));
+		return (__error_file_notif(_line_read, e.what()));
 	}
 	catch (std::out_of_range e)
 	{
-		return (__error_notif(_line_read, e.what()));
+		return (__error_file_notif(_line_read, e.what()));
 	}
 	catch (std::exception e)
 	{
-		return (__error_notif(_line_read, e.what()));
+		return (__error_file_notif(_line_read, e.what()));
 	}
 	// Checking if the good number of argument is given
 	__erase_tab_space(s);
 	if (!s.empty())
-		return (__error_notif(_line_read, "too much arguments"));
+		return (__error_file_notif(_line_read, "too much arguments"));
 	to = temp;
 }
 
@@ -144,7 +158,7 @@ void	Conf::__get_info(std::string &c, std::string& raw)
 /*
 	Print in stderr the error message and the line of the config file where the error occures
 */
-void	Conf::__error_notif(const int line, const std::string& error) const
+void	Conf::__error_file_notif(const int line, const std::string& error) const
 {
 	std::cerr << "line " << line << ": " << error << std::endl;
 }
@@ -208,4 +222,15 @@ void	Conf::__print_everything() const
 	}
 
 	std::cout << "End of Conifguration file parsing" << std::endl;
+}
+
+/*	
+		Check if the extention of configuration file is valid
+		File form : *.conf (defined with MACRO  CONF_EXTENTION_S_NAME in case of changing)
+		note : better to put this in config structure
+*/	
+bool	Conf::__valide_conf_file_name(const std::string& file_name) const
+{
+	return (!(file_name.rfind(CONF_EXTENTION_S_NAME) == std::string::npos
+		|| file_name.compare(file_name.rfind(CONF_EXTENTION_S_NAME), std::string::npos, CONF_EXTENTION_S_NAME)));
 }

@@ -53,7 +53,7 @@ void	Server::print_request_client(int fd)
 		if (errno != EAGAIN)
 		{
 			perror("read error");
-			close(fd);
+			close(fd); //need to delete in fds in webserv the fd in map? to avoid select error..
 		}
 	}
 

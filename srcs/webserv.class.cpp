@@ -1,6 +1,7 @@
 #include "webserv.class.hpp"
 
 Webserv::Webserv()
+	:	_state(1)
 {
 	// Les servers seront à initialiser les serveurs en fonction du fichier conf
 //	Server	empty_serv;
@@ -54,9 +55,15 @@ void 	Webserv::launch()
 	FD_SET(STDIN_FILENO, &current_sockets); 
 	std::cout << "++waiting for connection ++" << std::endl; 
 
-	while (1)
+	while (WS_ISRUNNING)
 	{
-		ready_sockets = current_sockets;
+		if (WS_ISINPAUSE)
+		{
+			FD_ZERO(&ready_sockets);
+			FD_SET(STDIN_FILENO, &ready_sockets);
+		}
+		else
+			ready_sockets = current_sockets;
 		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0)
 		{
 			perror("select error");
@@ -103,20 +110,30 @@ bool	Webserv::__is_a_socket(int fd)
 
 void	Webserv::__console(fd_set &current_sockets)
 {
-	int		n;
-	char	*recvline;
+	// int		n;
+	// char	*recvline;
 
-	recvline = static_cast<char *>(malloc(MAXLINE + 1));
-	if ( ( n = read(STDIN_FILENO, recvline, MAXLINE - 1)) < 0)
-	{
-		perror("read console");
-		exit(EXIT_FAILURE);
-	}
-	recvline[n] = 0;
-	std::string	cmd(recvline);
-	free(recvline);
+	// recvline = static_cast<char *>(malloc(MAXLINE + 1));
+	// if ( ( n = read(STDIN_FILENO, recvline, MAXLINE - 1)) < 0)
+	// {
+	// 	perror("read console");
+	// 	exit(EXIT_FAILURE);
+	// }
+	// recvline[n] = 0;
+	// std::string	cmd(recvline);
+	// free(recvline);
 
-	std::cout << cmd << std::endl;
+	// std::cout << cmd << std::endl;
+	std::string cmd;
+	std::string cmd_to_compare;
+
+	std::getline(std::cin, cmd);
+	if (!cmd.compare(0, (cmd_to_compare = CMD_END_WEBSERV).size(), CMD_END_WEBSERV))
+		WS_SETEND;
+	else if (!cmd.compare(0, (cmd_to_compare = CMD_PAUSE).size(), CMD_PAUSE))
+		WS_SETPAUSE;
+	else if (!cmd.compare(0, (cmd_to_compare = CMD_RUN).size(), CMD_RUN))
+		WS_SETUNPAUSE;
 }
 
 

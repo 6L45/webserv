@@ -41,7 +41,10 @@ class Conf
 {
 public:
 	Conf(std::ifstream &fs);
+	Conf(std::string path_to_file);
 	~Conf();
+
+
 private:
 	std::vector<__server_conf>	_sc;
 	int							_max_connexion;
@@ -49,18 +52,21 @@ private:
 	int							_line_read;
 	
 	Conf();
+
+	void						__parse_config_file(std::ifstream& fs);
 	void						__parse_server(std::ifstream &fs, std::string& line);
 	template<class T>
 	void						__add_to(T& to, std::string& s);
 	void 						__get_info(int &c, std::string& raw);
 	void						__get_info(std::string& c, std::string& raw);
-	void						__error_notif(const int line, const std::string& error) const;
+	void						__error_file_notif(const int line, const std::string& error) const;
 	std::string::iterator		__erase_tab_space(std::string& s) const;
 	std::string&				__erase_comment(std::string& s) const;
 	std::string&				__erase_from_char(std::string& s, char c) const;
 
 	void						__print_everything() const;
 	void						__get_line(std::ifstream &fs, std::string& line);
+	bool						__valide_conf_file_name(const std::string& name) const;
 };
 
 #endif

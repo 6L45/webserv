@@ -7,6 +7,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <fcntl.h>
+# include <unistd.h>
 
 # include <map>
 # include <unordered_map>
@@ -22,7 +23,8 @@
 //# include <unistd.h>
 //# include <fcntl.h>
 
-# define SERVER_PORT 18000
+# define SERVER_PORT 18001
 # define SA struct sockaddr
 # define MAXLINE 4096
-# define PORT 18009
+# define PORT 18002
+# define CONF_EXTENTION_S_NAME ".conf"
