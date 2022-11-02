@@ -65,13 +65,40 @@ void	Server::print_request_client(int fd)
 
 void	Server::send_response(int fd, fd_set &current_sockets)
 {
-	std::string server_message = "HTTP/1.1 200 OK\r\n\
-Content-Type: text/html\r\n\
-Content-Length: 15\r\n\
-Keep-Alive: timeout=5, max=1000\r\n\
-\r\n\
-1234567890\r\n\r\n";
 
+	std::string server_message = "HTTP/1.1 404 Not Found\r\n\
+Server: nginx/0.8.54\r\n\
+Date: Mon, 02 Jan 2012 02:33:17 GMT\r\n\
+Content-Type: text/html\r\n\
+Content-Length: 169\r\n\
+Connection: keep-alive\r\n\
+\r\n\
+<html>\r\n\
+<head><title>404 Not Found</title></head>\r\n\
+<body bgcolor=\"white\">\r\n\
+<center><h1>404 Not Found</h1></center>\r\n\
+<hr><center>nginx/0.8.54</center>\r\n\
+</body>\r\n\
+</html>\r\n\
+\r\n";
+
+/*
+	std::string server_message = "HTTP/1.1 200 OK\r\n\
+Server: nginx/0.8.54\r\n\
+Date: Mon, 02 Jan 2012 02:33:17 GMT\r\n\
+Content-Type: text/html\r\n\
+Content-Length: 161\r\n\
+Connection: keep-alive\r\n\
+\r\n\
+<html>\r\n\
+<head><title>200 0K</title></head>\r\n\
+<body bgcolor=\"white\">\r\n\
+<center><h1>200 OK Found</h1></center>\r\n\
+<hr><center>nginx/0.8.54</center>\r\n\
+</body>\r\n\
+</html>\r\n\
+\r\n";
+*/
 	std::signal(SIGPIPE, SIG_IGN);
 	if ((send(fd, server_message.c_str(), server_message.length(), 0)) < 0)
 	{
