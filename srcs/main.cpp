@@ -16,7 +16,7 @@ int main(int ac, char **av, char **env)
 		Check if there is a good number of argument
 		Usage : webserv <path_to_config_file>
 */	
-	if (ac == 1)
+/*	if (ac == 1)
 		fatal_error("Not enough argument, usage: webserv <path_to_config_file>", 1);
 	if (ac != 2)
 		fatal_error("Too many arguments, usage: webserv <path_to_config_file>", 1);
@@ -29,7 +29,7 @@ int main(int ac, char **av, char **env)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	Webserv test;
+*/	Webserv test;
 
 	test.launch();
 //	listen_ft();

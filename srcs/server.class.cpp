@@ -2,7 +2,7 @@
 
 Server::Server(int port)
 {
-	this->_domain =		AF_INET;
+	this->_domain =		AF_INET | PF_INET;
 	this->_service =	SOCK_STREAM;
 	this->_protocol =	0;
 	this->_port =		port;
@@ -72,6 +72,7 @@ Date: Mon, 02 Jan 2012 02:33:17 GMT\r\n\
 Content-Type: text/html\r\n\
 Content-Length: 169\r\n\
 Connection: keep-alive\r\n\
+Keep-Alive: timeout=5, max=1000\r\n\
 \r\n\
 <html>\r\n\
 <head><title>404 Not Found</title></head>\r\n\
@@ -89,6 +90,7 @@ Date: Mon, 02 Jan 2012 02:33:17 GMT\r\n\
 Content-Type: text/html\r\n\
 Content-Length: 161\r\n\
 Connection: keep-alive\r\n\
+Keep-Alive: timeout=5, max=1000\r\n\
 \r\n\
 <html>\r\n\
 <head><title>200 0K</title></head>\r\n\
