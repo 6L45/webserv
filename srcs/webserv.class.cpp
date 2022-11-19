@@ -39,7 +39,7 @@ void 	Webserv::launch()
 {
 	struct sockaddr_in	client;
 	socklen_t			client_len;
-	fd_set				current_sockets, ready_sockets, wrinting_socket;
+	fd_set				ready_sockets, wrinting_socket;
 /*	struct timeval		tempo;
 
 	tempo.tv_sec = 0;
@@ -94,12 +94,36 @@ void 	Webserv::launch()
 					std::cout << "++client request on socket fd : " << i << " ++" << std::endl;
 					
 					// peut être update par une seule fonction du genre "request handler"
-					this->_servs[this->_fds[i]].print_request_client(i);
+					print_request_client(i);
 					this->_servs[this->_fds[i]].send_response(i, current_sockets);
 				}	
 			}
 		}
 	}
+}
+
+void	Webserv::print_request_client(int fd)
+{
+	int	n;
+
+	std::vector<char> buff(MAXLINE); // C++ version
+
+	std::cout << std::endl;
+	while ( (n = recv(fd, buff.data(), buff.size(), MSG_DONTWAIT)) > 0 );
+
+	if (n < 0)
+	{
+		if (errno != EAGAIN)
+		{
+			perror("webserv read error");
+			close(fd); //need to delete in fds in webserv the fd in map? to avoid select error..
+			this->_fds.erase(fd);
+			FD_CLR(fd, &current_sockets);
+		}
+	}
+
+	std::string	request(buff.data());
+	Http_handler request_handler(request);
 }
 
 bool	Webserv::__is_a_socket(int fd)

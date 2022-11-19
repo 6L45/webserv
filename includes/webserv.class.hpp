@@ -44,9 +44,12 @@ class Webserv
 		std::map<int, int>		_fds;
 		std::vector<Server>		_servs;
 		char					_state;
+		fd_set					current_sockets;
 
 		bool	__is_a_socket(int fd);
 		void	__console(fd_set &current_sockets);
+
+		void	print_request_client(int fd); // webserv recupere la requete du client pour la donner au serveur qui garde en interne la manip a faire avec http selon ses valeurs
 };
 
 #endif
