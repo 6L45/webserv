@@ -18,7 +18,7 @@ Conf::Conf(std::string path_to_file)
 	fs.exceptions(std::ifstream::failbit); //may throw
 	__parse_config_file(fs);
 	fs.close();
-	//__print_everything();
+	__print_everything();
 }
 
 /*
@@ -55,6 +55,7 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 {
 	__server_conf new_serv;
 
+	new_serv.methods = 0;
 	__erase_tab_space(line);
 	if (line.empty() && !fs.eof())
 		__get_line(fs, line);
@@ -86,6 +87,8 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 			//check the argument if == activate
 			_SC_DIRACTIVATE(new_serv);
 		}
+		else if (!line.compare(0, 4, "html"))
+			__parse_html(fs, line.erase(0,4), new_serv);
 		else if (!line.compare(0, 1, "}"))
 			break ;
 		else
@@ -97,6 +100,46 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 	if (!line.empty())
 		__error_file_notif(_line_read, "line ignored after '}'");
 	_sc.push_back(new_serv);
+}
+
+void	Conf::__parse_html(std::ifstream &fs, std::string& line, __server_conf& srv)
+{
+	__erase_tab_space(line);
+	if (line.empty() && !fs.eof())
+		__get_line(fs, line);
+	__erase_tab_space(line);
+	if (line.empty() || line.front() != '{')
+		return (__error_file_notif(_line_read, "missing '{'"));
+	while (!fs.eof())
+	{
+		__get_line(fs, line);
+		__erase_comment(line);
+		__erase_tab_space(line);
+		if (line.empty())
+			continue;
+		else if (!line.compare(0, 8, "methods:"))
+		{
+			line.erase(0, line.find(':') + 1);
+			__erase_tab_space(line);
+			while (!line.empty())
+			{
+				if (!line.compare(0, 3, "GET"))
+					srv.methods = (srv.methods | (1 << 0));
+				else if (!line.compare(0, 4, "POST"))
+					srv.methods = (srv.methods | (1 << 1));
+				else if (!line.compare(0, 6, "DELETE"))
+					srv.methods = (srv.methods | (1 << 2));
+				else
+					__error_file_notif(_line_read, "unknown method");
+				__erase_word(line);
+				__erase_tab_space(line);
+			}
+		}
+		else if (!line.compare(0, 1, "}"))
+			break ;
+		else
+			__error_file_notif(_line_read, "unknown parameter");
+	}
 }
 
 template<class T>
@@ -192,6 +235,19 @@ std::string::iterator	Conf::__erase_tab_space(std::string& s) const
 	return (s.erase(s.begin(), it)); //what happens if erase(begin(),begin())
 }
 
+/*
+	Erasing the first word of the line
+*/
+std::string&	Conf::__erase_word(std::string& s) const
+{
+	int f_space = s.find(' ');
+	int f_tab = s.find('\t');
+	int	f_erase = f_space < f_tab ? f_space : f_tab;
+	
+	s.erase(0,f_erase);
+	return (s);
+}
+
 /* Same as getline but incrementing current line index */
 void	Conf::__get_line(std::ifstream &fs, std::string& line)
 {
@@ -219,6 +275,16 @@ void	Conf::__print_everything() const
 			std::cout << "	Body limit size - " << it->body_limits << std::endl;
 		if (!SC_DIRISACTIVE((*it)))
 			std::cout << "	The Directory browsing is desactivated" << std::endl;
+		std::cout << "	available methods : ";
+		if (it->methods & (1 << 0))
+			std::cout << "GET ";
+		if (it->methods & (1 << 1))
+			std::cout << "POST ";
+		if (it->methods & (1 << 2))
+			std::cout << "DELETE ";
+		if (!it->methods)
+			std::cout << "none";
+		std::cout << std::endl;
 	}
 
 	std::cout << "End of Conifguration file parsing" << std::endl;

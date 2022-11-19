@@ -55,6 +55,7 @@ private:
 
 	void						__parse_config_file(std::ifstream& fs);
 	void						__parse_server(std::ifstream &fs, std::string& line);
+	void						__parse_html(std::ifstream &fs, std::string& line, __server_conf& x);
 	template<class T>
 	void						__add_to(T& to, std::string& s);
 	void 						__get_info(int &c, std::string& raw);
@@ -63,6 +64,7 @@ private:
 	std::string::iterator		__erase_tab_space(std::string& s) const;
 	std::string&				__erase_comment(std::string& s) const;
 	std::string&				__erase_from_char(std::string& s, char c) const;
+	std::string&				__erase_word(std::string& s) const;
 
 	void						__print_everything() const;
 	void						__get_line(std::ifstream &fs, std::string& line);

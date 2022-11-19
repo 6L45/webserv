@@ -110,20 +110,6 @@ bool	Webserv::__is_a_socket(int fd)
 
 void	Webserv::__console(fd_set &current_sockets)
 {
-	// int		n;
-	// char	*recvline;
-
-	// recvline = static_cast<char *>(malloc(MAXLINE + 1));
-	// if ( ( n = read(STDIN_FILENO, recvline, MAXLINE - 1)) < 0)
-	// {
-	// 	perror("read console");
-	// 	exit(EXIT_FAILURE);
-	// }
-	// recvline[n] = 0;
-	// std::string	cmd(recvline);
-	// free(recvline);
-
-	// std::cout << cmd << std::endl;
 	std::string cmd;
 	std::string cmd_to_compare;
 
