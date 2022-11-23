@@ -88,7 +88,7 @@ void _connexion_request()
 	if (g_sock == -1)
 		fatal_error("unable to create the socket", 3);
 	std::cout << "Socket created : " << g_sock << std::endl;
-	memset(&sa, 0, sizeof(sa));
+	memset(&sa, 0, sizeof(sa)); // here the adress is filled with 0, menaning connexion to localhost?
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(g_port);
 	if (connect(g_sock, (struct sockaddr *)&sa, (socklen_t)sizeof(sa)) == -1)

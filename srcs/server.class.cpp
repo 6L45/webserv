@@ -1,5 +1,11 @@
 #include "server.class.hpp"
 
+Server::Server(__server_conf sc)
+	:	_port(sc.port),
+		_host(sc.host),
+		_root(sc.root)
+{ }
+
 Server::Server(int port)
 {
 	this->_domain =		AF_INET | PF_INET;
@@ -14,7 +20,7 @@ Server::Server(int port)
 
 	// socket creation 
 	this->_sock = socket(this->_domain, this->_service, this->_protocol);
-
+	fcntl(_sock, F_SETFL, O_NONBLOCK);
 	// bind socket to a port
 	if ( (bind(this->_sock, (struct sockaddr *)&(this->_address), 
 					sizeof(this->_address))) < 0 )

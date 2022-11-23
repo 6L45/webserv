@@ -12,6 +12,7 @@
 # include <map>
 # include <unordered_map>
 # include <vector>
+# include <list>
 # include <fstream>
 # include <cstring>
 # include <iostream>
@@ -23,8 +24,8 @@
 //# include <unistd.h>
 //# include <fcntl.h>
 
-# define SERVER_PORT 18005
+# define SERVER_PORT 18002
 # define SA struct sockaddr
 # define MAXLINE 4096
-# define PORT 18002
+# define PORT 18005
 # define CONF_EXTENTION_S_NAME ".conf"

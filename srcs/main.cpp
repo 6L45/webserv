@@ -24,14 +24,14 @@ int main(int ac, char **av, char **env)
 	try
 	{
 		Conf	config(path_to_conf);
+		Webserv test(config);
+		test.launch();
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		fatal_error(e.what(), 1);
+		return 1;
 	}
-	Webserv test;
-
-	test.launch();
 //	listen_ft();
 	return 0;
 }

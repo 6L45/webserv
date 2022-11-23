@@ -69,6 +69,8 @@ private:
 	void						__print_everything() const;
 	void						__get_line(std::ifstream &fs, std::string& line);
 	bool						__valide_conf_file_name(const std::string& name) const;
+
+	friend class Webserv;
 };
 
 #endif

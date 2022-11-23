@@ -154,7 +154,7 @@ void	Conf::__add_to(T& to, std::string& s)
 	//Extract the info, may throw
 	try
 	{
-		__get_info(temp, s);
+		__get_info(temp, s); //petit probleme si int plus grand que le nombre de port max
 	}
 	catch (std::invalid_argument e)
 	{
@@ -183,7 +183,7 @@ void	Conf::__get_info(int &c, std::string& raw)
 {
 	size_t	size;
 
-	c = std::stoi(raw, &size); //may throw
+	c = std::stoi(raw, &size); //may throw (when int is bigger than INT_MAX)
 	raw.erase(0, size);
 }
 

@@ -1,5 +1,6 @@
 port 18002
 connect
+wait 1000
 send I'm client1 and this is MY message
 recv
 wait 3000
@@ -10,6 +11,6 @@ close
 port 18005
 connect
 send I'm here again, client 1
-wait 300
+wait 3000
 recv
 close

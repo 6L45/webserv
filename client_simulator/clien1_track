@@ -1,0 +1,78 @@
+Port Updates. New port for connexion : 18002
+Socket created : 4
+Connexion to the webserver is successefull
+Client need to rest 1000miliseconds
+Message send to server. Msg length 35
+Message received from server, for a total of 359bytes
+Message content ->
+************************************************************
+HTTP/1.1 404 Not Found
+Server: nginx/0.8.54
+Date: Mon, 02 Jan 2012 02:33:17 GMT
+Content-Type: text/html
+Content-Length: 169
+Connection: keep-alive
+Keep-Alive: timeout=5, max=1000
+
+<html>
+<head><title>404 Not Found</title></head>
+<body bgcolor="white">
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/0.8.54</center>
+</body>
+</html>
+
+
+****************END OF SERVER MESSAGE **********************
+Client need to rest 3000miliseconds
+Message send to server. Msg length 43
+Client need to rest 100miliseconds
+Message received from server, for a total of 359bytes
+Message content ->
+************************************************************
+HTTP/1.1 404 Not Found
+Server: nginx/0.8.54
+Date: Mon, 02 Jan 2012 02:33:17 GMT
+Content-Type: text/html
+Content-Length: 169
+Connection: keep-alive
+Keep-Alive: timeout=5, max=1000
+
+<html>
+<head><title>404 Not Found</title></head>
+<body bgcolor="white">
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/0.8.54</center>
+</body>
+</html>
+
+
+****************END OF SERVER MESSAGE **********************
+Connexion closed with the server
+Port Updates. New port for connexion : 18005
+Socket created : 4
+Connexion to the webserver is successefull
+Message send to server. Msg length 25
+Client need to rest 3000miliseconds
+Message received from server, for a total of 359bytes
+Message content ->
+************************************************************
+HTTP/1.1 404 Not Found
+Server: nginx/0.8.54
+Date: Mon, 02 Jan 2012 02:33:17 GMT
+Content-Type: text/html
+Content-Length: 169
+Connection: keep-alive
+Keep-Alive: timeout=5, max=1000
+
+<html>
+<head><title>404 Not Found</title></head>
+<body bgcolor="white">
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx/0.8.54</center>
+</body>
+</html>
+
+
+****************END OF SERVER MESSAGE **********************
+Connexion closed with the server
