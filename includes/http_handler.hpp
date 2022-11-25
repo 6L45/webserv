@@ -34,10 +34,10 @@ class Http_handler // : inherit from a execution class ?
 		std::string		body_construct(void);
 */
 	private :
-		std::string		_request;
-		std::string		_response;
+//		std::string		_request;
+//		std::string		_response;
 		dico			_req_dict;
-		dico			_res_dict;
+//		dico			_res_dict;
 		int				_ret;
 };
 

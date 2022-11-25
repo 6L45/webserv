@@ -68,7 +68,7 @@ class Webserv
 		void		__print_connexions_stats() const;
 		port_fd		__create_socket(int port);
 		int			__get_the_port(int fd);
-		std::string	__http_process(int fd, std::string &request);
+		void		__http_process(int fd, std::string &request);
 
 		void	request_handler(int fd); // webserv recupere la requete du client pour la donner au serveur qui garde en interne la manip a faire avec http selon ses valeurs
 };

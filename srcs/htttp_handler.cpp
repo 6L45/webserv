@@ -2,8 +2,6 @@
 
 Http_handler::Http_handler(std::string &request)
 {
-	this->_request = request;
-
 	std::stringstream	req(request.c_str());
 	std::string			line;
 

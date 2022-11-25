@@ -241,7 +241,7 @@ void	Webserv::request_handler(int fd)
 		}
 	}
 	std::string	request(buff.data());
-	std::string	response = __http_process(fd, request);
+	__http_process(fd, request);
 }
 
 bool	Webserv::__is_a_socket(int fd) const
@@ -282,7 +282,7 @@ void	Webserv::__print_connexions_stats() const
 	std::cout << std::endl;
 }
 
-std::string	Webserv::__http_process(int fd, std::string &request)
+void	Webserv::__http_process(int fd, std::string &request)
 {
 	Http_handler	request_handler(request);
 	std::string		host = request_handler.get_host_name();
@@ -291,12 +291,11 @@ std::string	Webserv::__http_process(int fd, std::string &request)
 	// while (...)
 	// server = ...	
 
+	std::cout << "Host target -> " << host << std::endl;
 	std::string		response = request_handler.exec_request(*_servers.begin());
 
 	_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
 	//sinon pour la suite ajouter une fonction qui check vers quel serveur se tourner selon le host de la requete.
-
-	return ("no response for now");
 }
 
 
