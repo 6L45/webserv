@@ -2,22 +2,32 @@
 
 # include "common.hpp"
 
+class Server;
+
 class Http_handler // : inherit from a execution class ? 
 {
-	typedef	std::multimap<std::string, std::string>	dico;
-
 	public :
-		Http_handler(std::string request); // receive htttp request
-		Http_handler(int retvalue) {}; // receive valeur de retour
+	
+		typedef	std::multimap<std::string, std::string>					dico;
+		typedef std::multimap<std::string, std::string>::iterator		MMAPIterator;
+		typedef std::multimap<std::string, std::string>::const_iterator	MMAPConstIterator;
+	
+		Http_handler(std::string &request); // receive htttp request
 		virtual ~Http_handler() {};
-/*
+
 		// GETTER
-		dico			get_req_dict(void) const;
+		std::string		get_host_name(void) const;
+		std::pair<MMAPConstIterator, MMAPConstIterator>
+						get_elems(const std::string key) const;
+
+		std::string		exec_request(Server &Serv);
+
+/*		dico			get_req_dict(void) const;
 		dico			get_res_dict(void) const;
 		int				get_return_val(void) const;
 
 		// EXECUTION HTTP REQUEST
-		void			exec(void); // <- to remove if inherit ? 
+		void			exec(void);
 
 		// HTTP RESPONSE 
 		std::string		header_construct(void);
@@ -30,3 +40,5 @@ class Http_handler // : inherit from a execution class ?
 		dico			_res_dict;
 		int				_ret;
 };
+
+#include "server.class.hpp"

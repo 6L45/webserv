@@ -16,7 +16,7 @@ class Server
 		void		request_handler(int &fd);
 		int			&get_socket(void);
 		void		print_request_client(int fd);
-		void		send_response(int fd, fd_set &current_sockets);
+		void		send_response(int fd, fd_set &current_sockets, std::string &response);
 
 	private :
 		int							_port;

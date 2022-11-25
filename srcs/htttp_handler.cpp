@@ -1,7 +1,9 @@
 #include "http_handler.hpp" 
 
-Http_handler::Http_handler(std::string request)
+Http_handler::Http_handler(std::string &request)
 {
+	this->_request = request;
+
 	std::stringstream	req(request.c_str());
 	std::string			line;
 
@@ -28,10 +30,24 @@ Http_handler::Http_handler(std::string request)
 			this->_req_dict.insert(std::make_pair(key, val));
 		}
 	}
-/*
-	for (dico::iterator it = this->_req_dict.begin(); it != this->_req_dict.end(); it++)
-	{
-		std::cout << '[' << (*it).first << "] -> " << (*it).second << std::endl;
-	}
-*/
+}
+
+std::string	Http_handler::exec_request(Server &serv)
+{
+	std::cout << std::endl << std::endl;
+	std::cout << "++ ici l'execution ++" << std::endl;
+	std::cout << std::endl;
+
+	return ("No response yet");
+}
+
+std::string	Http_handler::get_host_name() const
+	{ return (this->_req_dict.find("Host")->second); }
+
+
+std::pair<typename Http_handler::MMAPConstIterator,
+			typename Http_handler::MMAPConstIterator>
+	Http_handler::get_elems(const std::string key) const
+{
+	return (this->_req_dict.equal_range(key));
 }

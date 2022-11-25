@@ -3,21 +3,21 @@ Client need to rest 2000miliseconds
 Socket created : 4
 Connexion to the webserver is successefull
 Message send to server. Msg length 35
-Message received from server, for a total of 359bytes
+Message received from server, for a total of 344bytes
 Message content ->
 ************************************************************
-HTTP/1.1 404 Not Found
+HTTP/1.1 200 OK
 Server: nginx/0.8.54
 Date: Mon, 02 Jan 2012 02:33:17 GMT
 Content-Type: text/html
-Content-Length: 169
+Content-Length: 161
 Connection: keep-alive
 Keep-Alive: timeout=5, max=1000
 
 <html>
-<head><title>404 Not Found</title></head>
+<head><title>200 0K</title></head>
 <body bgcolor="white">
-<center><h1>404 Not Found</h1></center>
+<center><h1>200 OK Found</h1></center>
 <hr><center>nginx/0.8.54</center>
 </body>
 </html>
@@ -25,21 +25,21 @@ Keep-Alive: timeout=5, max=1000
 
 ****************END OF SERVER MESSAGE **********************
 Message send to server. Msg length 37
-Message received from server, for a total of 359bytes
+Message received from server, for a total of 344bytes
 Message content ->
 ************************************************************
-HTTP/1.1 404 Not Found
+HTTP/1.1 200 OK
 Server: nginx/0.8.54
 Date: Mon, 02 Jan 2012 02:33:17 GMT
 Content-Type: text/html
-Content-Length: 169
+Content-Length: 161
 Connection: keep-alive
 Keep-Alive: timeout=5, max=1000
 
 <html>
-<head><title>404 Not Found</title></head>
+<head><title>200 0K</title></head>
 <body bgcolor="white">
-<center><h1>404 Not Found</h1></center>
+<center><h1>200 OK Found</h1></center>
 <hr><center>nginx/0.8.54</center>
 </body>
 </html>
@@ -53,21 +53,21 @@ Socket created : 4
 Connexion to the webserver is successefull
 Message send to server. Msg length 27
 Client need to rest 3000miliseconds
-Message received from server, for a total of 359bytes
+Message received from server, for a total of 344bytes
 Message content ->
 ************************************************************
-HTTP/1.1 404 Not Found
+HTTP/1.1 200 OK
 Server: nginx/0.8.54
 Date: Mon, 02 Jan 2012 02:33:17 GMT
 Content-Type: text/html
-Content-Length: 169
+Content-Length: 161
 Connection: keep-alive
 Keep-Alive: timeout=5, max=1000
 
 <html>
-<head><title>404 Not Found</title></head>
+<head><title>200 0K</title></head>
 <body bgcolor="white">
-<center><h1>404 Not Found</h1></center>
+<center><h1>200 OK Found</h1></center>
 <hr><center>nginx/0.8.54</center>
 </body>
 </html>
