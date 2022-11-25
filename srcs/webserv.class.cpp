@@ -87,6 +87,7 @@ Webserv::port_fd	Webserv::__create_socket(int port)
 	{
 		std::cerr << "-- Fcntl error : unable to make the socket non blocking -> port " << port << " is not connected" << std::endl;
 		close (new_socket);
+		exit(EXIT_FAILURE);
 		return (-1);
 	}
 	// bind the socket to accept connexions
@@ -94,6 +95,7 @@ Webserv::port_fd	Webserv::__create_socket(int port)
 	{
 		std::cerr << "-- bind error : unable to bind the socket to the port -> port " << port << " is not connected" << std::endl;
 		close (new_socket);
+		exit(EXIT_FAILURE);
 		return (-1);
 	}
 	// listen to the port
@@ -101,6 +103,7 @@ Webserv::port_fd	Webserv::__create_socket(int port)
 	{
 		std::cerr << "-- listen error : unable to listen on the socket -> port " << port << " is not connected" << std::endl;
 		close (new_socket);
+		exit(EXIT_FAILURE);
 		return (-1);
 	}
 	return (new_socket);

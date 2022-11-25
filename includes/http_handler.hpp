@@ -6,6 +6,10 @@ class Server;
 
 class Http_handler // : inherit from a execution class ? 
 {
+	/*
+		TODO error class
+	*/
+
 	public :
 	
 		typedef	std::multimap<std::string, std::string>					dico;
@@ -35,10 +39,16 @@ class Http_handler // : inherit from a execution class ?
 */
 	private :
 //		std::string		_request;
-//		std::string		_response;
+		std::string		_response;
 		dico			_req_dict;
 //		dico			_res_dict;
 		int				_ret;
+
+		void			__GET_method(std::string &value);
+		void			__POST_method(std::string &value);
+		void			__DELETE_method(std::string &value);
+		std::string		__check_address(std::string &value);
+
 };
 
-#include "server.class.hpp"
+# include "server.class.hpp"

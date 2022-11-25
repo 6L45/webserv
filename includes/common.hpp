@@ -20,6 +20,7 @@
 # include <algorithm>
 # include <sstream>
 # include <utility>
+# include <stdexcept>
 
 # define SERVER_PORT 18002
 # define SA struct sockaddr
