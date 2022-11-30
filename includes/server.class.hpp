@@ -13,6 +13,7 @@ class Server
 		Server() { this->_sock = -1; }; //empty serv
 		~Server() {};
 
+		bool		belong_to(const std::string& host_port) const;
 		void		request_handler(int &fd);
 		int			&get_socket(void);
 		void		print_request_client(int fd);
@@ -35,6 +36,7 @@ class Server
 		char					*_recvline;
 
 	friend class Webserv;
+	friend class Http_handler;
 };
 
 #endif

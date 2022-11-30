@@ -4,37 +4,6 @@ Webserv::Webserv(Conf config)
 	:	_state(1),
 		_conf(config)
 {
-	// Les servers seront à initialiser les serveurs en fonction du fichier conf
-//	Server	empty_serv;
-	// Server	server1(PORT);
-	// Server	server2(SERVER_PORT);
-
-	// // stock provisoirement dans tmp;
-	// std::vector<Server> tmp;
-	// tmp.push_back(server1);
-	// tmp.push_back(server2);
-
-	// int i = 0;
-	// int	fd_max = 0;
-	// // chercher le plus grand FD ouvert pour la taille de reserve	
-	// for (std::vector<Server>::iterator it = tmp.begin(); it != tmp.end(); it++, i++)
-	// {
-	// 	if (tmp[i].get_socket() > fd_max)
-	// 		fd_max = tmp[i].get_socket();
-	// }
-	// this->_servs.reserve(fd_max + 1);
-	
-	// i = 0;
-	// int j = 0;
-	// for (std::vector<Server>::iterator it = tmp.begin(); it != tmp.end(); it++, i++)
-	// {
-	// 	while (tmp[i].get_socket() != j)
-	// 		j++;
-	// 	this->_servs[j] = tmp[i];
-	// 	this->_server_fd.push_back(tmp[i].get_socket());
-	// 	j = 0;
-	// }
-	//########################
 	port_fd					socket; // opened socket
 
 	FD_ZERO(&_current_sockets);
@@ -185,8 +154,6 @@ void 	Webserv::launch()
 				else
 				{
 					std::cout << "++ client request on port : " << __get_the_port(i) << " ++" << std::endl;
-					
-					// peut être update par une seule fonction du genre "request handler"
 					request_handler(i);
 				}	
 			}
@@ -288,17 +255,23 @@ void	Webserv::__print_connexions_stats() const
 void	Webserv::__http_process(int fd, std::string &request)
 {
 	Http_handler	request_handler(request);
-	std::string		host = request_handler.get_host_name();
+	std::string		host_port = request_handler.get_host_name();
+	std::string		response;
+	std::vector<Server>::const_iterator it;
 
-	// A partir de host chercher le bon server;
-	// while (...)
-	// server = ...	
-
-	std::cout << "Host target -> " << host << std::endl;
-	std::string		response = request_handler.exec_request(*_servers.begin());
-
-	_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
-	//sinon pour la suite ajouter une fonction qui check vers quel serveur se tourner selon le host de la requete.
+	for (it = _servers.begin(); it != _servers.end(); it++)
+	{
+		if ((*it).belong_to(host_port))
+			break ;
+	}
+	if (it == _servers.end())
+		std::cout << "Host doesnt exist -> " << host_port << std::endl;
+	else
+	{
+		std::cout << "Host:Port target -> " << host_port << std::endl;
+		response = request_handler.exec_request(*_servers.begin());
+		_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
+	}
 }
 
 

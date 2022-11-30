@@ -43,12 +43,6 @@ class Webserv
 	private :
 
 		Webserv();
-		// int						_confd;
-		// std::vector<int>		_server_fd; //les sockets des serveurs?
-		// std::map<int, int>		_fds;	// les connexions mappé sur le socket surveur
-		// std::vector<Server>		_servs; // les serveurs
-		// fd_set					current_sockets;
-
 
 		typedef	std::vector<Server>::const_iterator	server_pointer;
 		typedef int									port_fd;

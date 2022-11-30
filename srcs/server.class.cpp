@@ -39,6 +39,21 @@ Server::Server(int port)
 	std::cout << "connected and listening : " << this->_sock << std::endl;
 }
 
+bool		Server::belong_to(const std::string& host_port) const
+{
+	std::string s_host = host_port.substr(0, host_port.find(':'));
+	std::string s_port = host_port.substr(s_host.length() + 1);
+
+	if (s_port.compare(std::to_string(_port)))
+		return (false);
+	for (std::vector<std::string>::const_iterator c_it = _host.begin(); c_it != _host.end(); c_it++)
+	{
+		if (! (*c_it).compare(s_host))
+			return (true);
+	}
+	return (false);
+}
+
 int	&Server::get_socket()
 {
 	return (this->_sock);
