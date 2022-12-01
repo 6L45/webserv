@@ -211,6 +211,7 @@ void	Webserv::request_handler(int fd)
 		}
 	}
 	std::string	request(buff.data());
+	request.erase(std::remove(request.begin(), request.end(), '\r'), request.end());
 	__http_process(fd, request);
 }
 
@@ -259,19 +260,38 @@ void	Webserv::__http_process(int fd, std::string &request)
 	std::string		response;
 	std::vector<Server>::const_iterator it;
 
+	response = request_handler.exec_request(*_servers.begin());
+	_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
+
+	std::cout << "-> " << host_port <<  std::endl; 
+	std::string host = host_port.substr(host_port.find(':') + 1);
+	std::cout << host << std::endl;
+
+	std::string	Tata_Est("18002"); // << loging 42 = TEst
+
+	if (!Tata_Est.compare(host))
+		std::cout << "All Good :)" << std::endl;
+
+/*
+	host_port = host_port.substr(host_port.find(':') + 1);
 	for (it = _servers.begin(); it != _servers.end(); it++)
 	{
 		if ((*it).belong_to(host_port))
 			break ;
 	}
 	if (it == _servers.end())
+	{
 		std::cout << "Host doesnt exist -> " << host_port << std::endl;
+		//Http_handler.bad_server();
+		__close_connexion(fd);
+	}
 	else
 	{
 		std::cout << "Host:Port target -> " << host_port << std::endl;
 		response = request_handler.exec_request(*_servers.begin());
 		_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
 	}
+*/
 }
 
 

@@ -22,9 +22,9 @@ Http_handler::Http_handler(std::string &request)
 		{
 			std::string		val;
 			line = line.substr(index + 1);
-			index = line.find(';');
 			if (line[0] == ' ')
 				line = line.substr(1);
+			index = line.find(';');
 			val = line.substr(0, index);
 
 			this->_req_dict.insert(std::make_pair(key, val));
@@ -53,10 +53,11 @@ std::string	Http_handler::exec_request(Server &serv)
 		switch (e)
 		{
 			case 404
-				__build_response(404); break;
+				__build_err_response(404); break;
 			case XXX
-				__build_response(XXX); break;
+				__build_err_response(XXX); break;
 		}
+		return (this->_header);
 	}
 */
 	std::cout << std::endl << std::endl;
@@ -77,19 +78,32 @@ std::pair<typename Http_handler::MMAPConstIterator,
 	return (this->_req_dict.equal_range(key));
 }
 
+
 void	Http_handler::__GET_method(std::string &value)
 {
 	std::string address = this->__check_address(value);
+	std::string tmp = "./www";
+
+	std::fstream	file;
+
+	for (const auto &entry : std::filesystem::directory_iterator(tmp))
+		std::cout << entry << std::endl;
+	
+	file.close();
 }
 
 void	Http_handler::__POST_method(std::string &value)
 {
 
+	std::string address = this->__check_address(value);
+	// POST_exec(address);
 }
 
 void	Http_handler::__DELETE_method(std::string &value)
 {
 
+	std::string address = this->__check_address(value);
+	// DELETE_exec(address);
 }
 
 std::string	Http_handler::__check_address(std::string &value)
@@ -100,7 +114,7 @@ std::string	Http_handler::__check_address(std::string &value)
 	address = value.substr(0, index - 1);
 
 //	if (address invalid)
-//		throw 404;
+//		throw 404 Not Found
 
 	return (address);
 }

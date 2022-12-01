@@ -14,7 +14,7 @@ SOURCE_DIRECTORY = srcs
 SRCS = $(foreach dir, ${SOURCE_DIRECTORY}, ${wildcard $(dir)/*.cpp})
 OBJS = ${SRCS:.cpp=.o}
 #	Compiler Flags
-COMPILER_FLAGS = #-Wall -Wextra -Werror -std=c++98 #-g -fsanitize=address
+COMPILER_FLAGS = -g #-std=c++98# -Wall -Wextra -Werror #-g -fsanitize=address
 INCLUDE_FLAGS = -I${HEADER_DIRECTORY}
 DEBUG_FLAGS = -DWS_DEBUG
 #	Compiler
