@@ -263,12 +263,16 @@ void	Webserv::__http_process(int fd, std::string &request)
 	response = request_handler.exec_request(*_servers.begin());
 	_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
 
-	std::cout << "-> " << host_port <<  std::endl; 
-	std::string host = host_port.substr(host_port.find(':') + 1);
+	int	ret;
+	std::string host;
+	if ( (ret = host_port.find(':')) > 0 )
+		host = host_port.substr(ret + 1);
+	else
+		host = host_port;
+
 	std::cout << host << std::endl;
-
+	
 	std::string	Tata_Est("18002"); // << loging 42 = TEst
-
 	if (!Tata_Est.compare(host))
 		std::cout << "All Good :)" << std::endl;
 
