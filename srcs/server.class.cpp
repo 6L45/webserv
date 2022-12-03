@@ -86,6 +86,7 @@ void	Server::print_request_client(int fd)
 
 void	Server::send_response(int fd, fd_set &current_sockets, std::string &response)
 {
+
 /*
 	std::string server_message = "HTTP/1.1 404 Not Found\r\n\
 Server: nginx/0.8.54\r\n\
@@ -105,9 +106,7 @@ Keep-Alive: timeout=5, max=1000\r\n\
 \r\n";
 */
 
-	std::cout << "---------------- " << "response server : " << std::endl
-	<< response << std::endl << "----------------" << std::endl << std::endl;
-
+/*
 	std::string server_message = "HTTP/1.1 200 OK\r\n\
 Server: nginx/0.8.54\r\n\
 Date: Mon, 02 Jan 2012 02:33:17 GMT\r\n\
@@ -124,9 +123,13 @@ Keep-Alive: timeout=5, max=1000\r\n\
 </body>\r\n\
 </html>\r\n\
 \r\n";
+*/
+
+	std::cout << "---------------- " << "response server : " << std::endl
+	<< response << std::endl << "----------------" << std::endl << std::endl;
 
 	std::signal(SIGPIPE, SIG_IGN);
-	if ((send(fd, server_message.c_str(), server_message.length(), 0)) < 0)
+	if ((send(fd, response.c_str(), response.length(), 0)) < 0)
 	{
 		if (errno == EPIPE)
 		{

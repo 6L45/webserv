@@ -6,9 +6,15 @@ class Server;
 
 class Http_handler // : inherit from a execution class ? 
 {
-	/*
-		TODO error class
-	*/
+	private :
+		std::string	header_http1 = "HTTP/1.1 ";
+		std::string	header_content_len = "Content-Length: ";
+		std::string	header_content_loc = "Content-Location: ";
+		std::string	header_content_type = "Content-Type: ";
+		std::string	header_date = "Date: ";
+		std::string	header_last_modif = "Last-Modified: ";
+		std::string	header_server = "Server: FT_Webserv/1.0.0";
+		std::string	header_encoding = "Transfert-Encoding: identity";
 
 	public :
 	
@@ -38,18 +44,19 @@ class Http_handler // : inherit from a execution class ?
 		std::string		body_construct(void);
 */
 	private :
-//		std::string		_request;
+		std::string		_address;
 		std::string		_header;
 		std::string		_response;
 		dico			_req_dict;
 //		dico			_res_dict;
 		int				_ret;
 
-		void			__GET_method(std::string &value);
-		void			__POST_method(std::string &value);
-		void			__DELETE_method(std::string &value);
-		std::string		__check_address(std::string &value);
-
+		void			__GET_method(std::string &value, Server &serv);
+		void			__POST_method(std::string &value, Server &serv);
+		void			__DELETE_method(std::string &value, Server &serv);
+		void			__check_address(std::string &value, Server &serv);
+		void			__err_header(int ret);
+		std::string		__get_time(void);
 };
 
 # include "server.class.hpp"
