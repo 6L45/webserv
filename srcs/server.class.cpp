@@ -52,7 +52,8 @@ bool		Server::belong_to(const std::string& host_port) const
 	{
 		if (! (*c_it).compare(s_host))
 			return (true);
-	
+	}
+
 	return (false);
 }
 

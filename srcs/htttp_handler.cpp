@@ -57,7 +57,7 @@ std::string	Http_handler::exec_request(Server &serv)
 /*			case XXX
 				__build_err_response(XXX); break;
 */		}
-		return (this->_header);
+		return (this->_response);
 	}
 
 	std::cout << std::endl << std::endl;
@@ -147,6 +147,8 @@ void	Http_handler::__err_header(int ret)
 				+ this->header_date + this->header_server + "\r\n"
 				+ this->header_encoding + "\r\n"
 				+ "\r\n";
+	
+	this->_response = this->_header + "\r\n\r\n";
 }
 
 std::string	Http_handler::__get_time()
