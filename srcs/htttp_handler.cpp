@@ -118,19 +118,54 @@ void	Http_handler::__check_address(std::string &value, Server &serv)
 	int index = value.find("HTTP");
 	this->_address = value.substr(0, index - 1);
 
+	// adresse juste apres le GET
 	std::string	request_loc(this->_address);
+	
+	// Si l'adresse est home -> '/'  look dans config files les index
 	if  (!request_loc.compare("/"))
-		request_loc = "/index.html"; // <<<--- ICI PASSER DEFAULT request_loc (location) DU CONF
-	//	request_loc = serv._defaultFile // qqchose dans le genre
+	{
+		std::cout << "------------> "<< serv._index.size() << std::endl;
+		// parcours les index
+		for (std::vector<std::string>::iterator it = serv._index.begin();
+				it != serv._index.end(); it++)
+		{
+			std::cout << "---------------------> " << serv._root + *it << std::endl;
+			std::ifstream	file;
+			// teste ouverture des index
+			file.open(serv._root + *it, std::ios::in);
+			if (file.is_open())
+			{
+				// read / get file and close file
+				std::stringstream	buffer;
+				buffer << file.rdbuf();
+				file.close();
+				
+				// init body response avec \r\n\r\n de fin
+				this->_response = buffer.str() + "\r\n\r\n";
 
+				// OUT
+				return ;
+			}
+			// si file not open && next == end vector Aucun index valable
+			else if (it + 1 == serv._index.end())
+				throw 404; // <<---- BAD CONFIG FILE NOT 404 (trouver l'erreur précise)
+		}
+	}
+
+	// Else si l'adresse n'est pas home 
+	// evaluation de l'adresse
 	request_loc = serv._root + &request_loc[1];
 	std::ifstream file(request_loc);
-	file.open(request_loc), std::ios::in;
+	file.open(request_loc, std::ios::in);
+	
+	// si s'ouvre pas retour 404 Not found
 	if (!file.is_open())
 		throw 404;
 
+	// get body response idem L 138 - 144
 	std::stringstream	buffer;
 	buffer << file.rdbuf();
+	file.close();
 	this->_response = buffer.str() + "\r\n\r\n";
 }
 
