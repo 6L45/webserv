@@ -65,6 +65,7 @@ class Webserv
 		void		__http_process(int fd, std::string &request);
 
 		void	request_handler(int fd); // webserv recupere la requete du client pour la donner au serveur qui garde en interne la manip a faire avec http selon ses valeurs
+		void	send_response(int fd, const std::string& response);
 };
 
 #endif

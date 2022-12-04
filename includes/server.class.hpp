@@ -22,7 +22,9 @@ class Server
 	private :
 		int							_port;
 		std::vector<std::string>	_host;
+		std::vector<std::string>	_index;
 		std::string					_root;
+
 
 
 		struct	sockaddr_in		_address;

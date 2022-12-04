@@ -56,7 +56,6 @@ Webserv::port_fd	Webserv::__create_socket(int port)
 	{
 		std::cerr << "-- Fcntl error : unable to make the socket non blocking -> port " << port << " is not connected" << std::endl;
 		close (new_socket);
-		exit(EXIT_FAILURE);
 		return (-1);
 	}
 	// bind the socket to accept connexions
@@ -64,7 +63,6 @@ Webserv::port_fd	Webserv::__create_socket(int port)
 	{
 		std::cerr << "-- bind error : unable to bind the socket to the port -> port " << port << " is not connected" << std::endl;
 		close (new_socket);
-		exit(EXIT_FAILURE);
 		return (-1);
 	}
 	// listen to the port
@@ -72,7 +70,6 @@ Webserv::port_fd	Webserv::__create_socket(int port)
 	{
 		std::cerr << "-- listen error : unable to listen on the socket -> port " << port << " is not connected" << std::endl;
 		close (new_socket);
-		exit(EXIT_FAILURE);
 		return (-1);
 	}
 	return (new_socket);
@@ -161,9 +158,8 @@ void 	Webserv::launch()
 	}
 }
 
-void	Webserv::__close_connexion(int fd)
+void	Webserv::__close_connexion(const int fd)
 {
-	std::cout << "++ Connexion is closed on the client side ++" << std::endl;
 	close(fd);
 	for (std::list<Client>::const_iterator c_it = _clients.begin(); c_it != _clients.end(); c_it++)
 	{
@@ -201,7 +197,10 @@ void	Webserv::request_handler(int fd)
 	//while ( > 0);
 	n = recv(fd, buff.data(), buff.size(), 0);
 	if (n == 0)
+	{
+		std::cout << "++ Connexion is closed on the client side ++" << std::endl;
 		return (__close_connexion(fd));
+	}
 	else if (n < 0)
 	{
 		if (errno != EAGAIN)
@@ -258,26 +257,23 @@ void	Webserv::__http_process(int fd, std::string &request)
 	Http_handler	request_handler(request);
 	std::string		host_port = request_handler.get_host_name();
 	std::string		response;
-	std::vector<Server>::const_iterator it;
+	std::vector<Server>::iterator it;
 
-	response = request_handler.exec_request(*_servers.begin());
-	_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
+	// response = request_handler.exec_request(*_servers.begin());
+	// send_response(fd, response);
+	// int	ret;
+	// std::string host;
+	// if ( (ret = host_port.find(':')) > 0 )
+	// 	host = host_port.substr(ret + 1);
+	// else
+	// 	host = host_port;
 
-	int	ret;
-	std::string host;
-	if ( (ret = host_port.find(':')) > 0 )
-		host = host_port.substr(ret + 1);
-	else
-		host = host_port;
-
-	std::cout << host << std::endl;
+	// std::cout << host << std::endl;
 	
-	std::string	Tata_Est("18002"); // << loging 42 = TEst
-	if (!Tata_Est.compare(host))
-		std::cout << "All Good :)" << std::endl;
+	// std::string	Tata_Est("18002"); // << loging 42 = TEst
+	// if (!Tata_Est.compare(host))
+	// 	std::cout << "All Good :)" << std::endl;
 
-/*
-	host_port = host_port.substr(host_port.find(':') + 1);
 	for (it = _servers.begin(); it != _servers.end(); it++)
 	{
 		if ((*it).belong_to(host_port))
@@ -292,10 +288,31 @@ void	Webserv::__http_process(int fd, std::string &request)
 	else
 	{
 		std::cout << "Host:Port target -> " << host_port << std::endl;
-		response = request_handler.exec_request(*_servers.begin());
-		_servers.begin()->send_response(fd, _current_sockets, response); //peu importe quel serveur repond la reponse est la même.
+		response = request_handler.exec_request(*it);
+		send_response(fd, response);
 	}
+}
+
+/*
+	Sending the response to the client on fd
+	//note, fd change to Client class
 */
+void	Webserv::send_response(int fd, const std::string& response)
+{
+	std::cout << "---------------- " << "response server : " << std::endl
+	<< response << std::endl << "----------------" << std::endl << std::endl;
+
+	std::signal(SIGPIPE, SIG_IGN);
+	if ((send(fd, response.c_str(), response.length(), 0)) < 0)
+	{
+		if (errno == EPIPE)
+		{
+			std::cout << "++connexion with client is lost++" << std::endl;
+			__close_connexion(fd);
+		}
+	}
+	else
+		std::cout << "Message send to the client on port : " << __get_the_port(fd) << "++" << std::endl;
 }
 
 
