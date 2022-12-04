@@ -15,11 +15,8 @@ typedef struct s_err_100
 	}
 
 	std::string	operator[](int n)
-	{
-		if (n >= 100)
-			return (errs[n]);
-		return (errs[100 + n]);
-	}
+		{ return (errs[n]); }
+
 } t_err100;
 
 typedef struct s_ret_200
@@ -42,11 +39,8 @@ typedef struct s_ret_200
 	}
 
 	std::string	operator[](int n)
-	{
-		if (n >= 200)
-			return (ret[n]);
-		return (ret[200 + n]);
-	}
+		{ return (ret[n]); }
+
 } t_ret200;
 
 typedef struct s_err_300
@@ -67,11 +61,8 @@ typedef struct s_err_300
 	}
 
 	std::string	operator[](int n)
-	{
-		if (n >= 300)
-			return (errs[n]);
-		return (errs[300 + n]);
-	}
+		{ return (errs[n]); }
+
 } t_err300;
 
 typedef struct s_err_400
@@ -114,11 +105,8 @@ typedef struct s_err_400
 	}
 
 	std::string	operator[](int n)
-	{
-		if (n >= 400)
-			return (errs[n]);
-		return (errs[400 + n]);
-	}
+		{ return (errs[n]); }
+
 } t_err400;
 
 typedef struct s_err_500
@@ -142,9 +130,6 @@ typedef struct s_err_500
 	}
 
 	std::string	operator[](int n)
-	{
-		if (n >= 500)
-			return (errs[n]);
-		return (errs[500 + n]);
-	}
+		{ return (errs[n]); }
+
 } t_err500;
