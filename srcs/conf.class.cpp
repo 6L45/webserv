@@ -85,18 +85,6 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 				__erase_tab_space(line);
 			}
 		}
-		else if (!line.compare(0, 6, "index:"))
-		{
-			line.erase(0, line.find(':') + 1);
-			__erase_tab_space(line);
-			while (!line.empty())
-			{
-				std::string temp;
-				__get_info(temp, line);
-				new_serv.index.push_back(temp);
-				__erase_tab_space(line);
-			}
-		}
 		else if (!line.compare(0, 5, "root:"))
 			__add_to<std::string>(new_serv.root, line.erase(0, line.find(':') + 1));
 		else if (!line.compare(0, 19, "unactive-max-delay:"))
@@ -156,6 +144,18 @@ void	Conf::__parse_html(std::ifstream &fs, std::string& line, __server_conf& srv
 				else
 					__error_file_notif(_line_read, "unknown method");
 				__erase_word(line);
+				__erase_tab_space(line);
+			}
+		}
+		else if (!line.compare(0, 6, "index:"))
+		{
+			line.erase(0, line.find(':') + 1);
+			__erase_tab_space(line);
+			while (!line.empty())
+			{
+				std::string temp;
+				__get_info(temp, line);
+				srv.index.push_back(temp);
 				__erase_tab_space(line);
 			}
 		}
@@ -296,6 +296,10 @@ void	Conf::__print_everything() const
 		std::cout << "	Port - " << it->port << std::endl;
 		std::cout << "	Host - ";
 		for (std::vector<std::string>::const_iterator c_it = it->host.begin(); c_it != it->host.end(); c_it++)
+			std::cout << *c_it << " ";
+		std::cout << std::endl;
+		std::cout << "	Index - ";
+		for (std::vector<std::string>::const_iterator c_it = it->index.begin(); c_it != it->index.end(); c_it++)
 			std::cout << *c_it << " ";
 		std::cout << std::endl;
  		std::cout << "	Root - " << it->root << std::endl;
