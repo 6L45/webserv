@@ -288,6 +288,7 @@ void	Webserv::__http_process(int fd, std::string &request)
 	else
 	{
 		std::cout << "Host:Port target -> " << host_port << std::endl;
+		std::cout << "Server name : " << it->_name << std::endl;
 		response = request_handler.exec_request(*it);
 		send_response(fd, response);
 	}

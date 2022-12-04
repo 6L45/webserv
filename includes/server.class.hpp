@@ -24,6 +24,7 @@ class Server
 		std::vector<std::string>	_host;
 		std::vector<std::string>	_index;
 		std::string					_root;
+		std::string					_name;
 
 
 

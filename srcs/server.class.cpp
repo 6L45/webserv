@@ -4,7 +4,8 @@ Server::Server(__server_conf sc)
 	:	_port(sc.port),
 		_host(sc.host),
 		_index(sc.index),
-		_root(sc.root)
+		_root(sc.root),
+		_name(sc.server_name)
 { }
 
 Server::Server(int port)
@@ -44,19 +45,14 @@ bool		Server::belong_to(const std::string& host_port) const
 {
 	std::string s_host(host_port, 0, host_port.find(':'));
 	std::string s_port(host_port, host_port.find(':') + 1); //no except safe
-	
-	std::cout << "host is >" << s_host << "<" << std::endl;
-	std::cout << "port is >" << s_port << "<" << std::endl;
 
 	if (s_port.compare(std::to_string(_port)))
 		return (false);
-	std::cout << "port is the same" << std::endl;
 	for (std::vector<std::string>::const_iterator c_it = _host.begin(); c_it != _host.end(); c_it++)
 	{
 		if (! (*c_it).compare(s_host))
 			return (true);
-	}
-	std::cout << "no matching host name" << std::endl; 
+	
 	return (false);
 }
 
