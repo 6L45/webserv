@@ -125,30 +125,38 @@ void	Http_handler::__check_address(std::string &value, Server &serv)
 	if  (!request_loc.compare("/"))
 	{
 		std::cout << "------------> "<< serv._index.size() << std::endl;
-		// parcours les index
-		for (std::vector<std::string>::iterator it = serv._index.begin();
-				it != serv._index.end(); it++)
-		{
-			std::cout << "---------------------> " << serv._root + *it << std::endl;
-			std::ifstream	file;
-			// teste ouverture des index
-			file.open(serv._root + *it, std::ios::in);
-			if (file.is_open())
-			{
-				// read / get file and close file
-				std::stringstream	buffer;
-				buffer << file.rdbuf();
-				file.close();
-				
-				// init body response avec \r\n\r\n de fin
-				this->_response = buffer.str() + "\r\n\r\n";
 
-				// OUT
-				return ;
+		//tmp
+		if (serv._index.size() == 0)
+			request_loc = "/index.html";
+
+		else
+		{
+			// parcours les index
+			for (std::vector<std::string>::iterator it = serv._index.begin();
+					it != serv._index.end(); it++)
+			{
+				std::cout << "---------------------> " << serv._root + *it << std::endl;
+				std::ifstream	file;
+				// teste ouverture des index
+				file.open(serv._root + *it, std::ios::in);
+				if (file.is_open())
+				{
+					// read / get file and close file
+					std::stringstream	buffer;
+					buffer << file.rdbuf();
+					file.close();
+					
+					// init body response avec \r\n\r\n de fin
+					this->_response = buffer.str() + "\r\n\r\n";
+
+					// OUT
+					return ;
+				}
+				// si file not open && next == end vector Aucun index valable
+				else if (it + 1 == serv._index.end())
+					throw 404; // <<---- BAD CONFIG FILE NOT 404 (trouver l'erreur précise)
 			}
-			// si file not open && next == end vector Aucun index valable
-			else if (it + 1 == serv._index.end())
-				throw 404; // <<---- BAD CONFIG FILE NOT 404 (trouver l'erreur précise)
 		}
 	}
 
