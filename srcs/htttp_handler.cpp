@@ -124,8 +124,6 @@ void	Http_handler::__check_address(std::string &value, Server &serv)
 	// Si l'adresse est home -> '/'  look dans config files les index
 	if  (!request_loc.compare("/"))
 	{
-		std::cout << "------------> "<< serv._index.size() << std::endl;
-
 		//tmp
 		if (serv._index.size() == 0)
 			request_loc = "/index.html";
