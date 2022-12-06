@@ -252,6 +252,6 @@ std::string         Http_handler::filesLst(std::string const &dirEntry, std::str
 {
     std::stringstream   ss;
 
-    ss << "\t\t<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
+    ss << "<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
     return ss.str();
 }
