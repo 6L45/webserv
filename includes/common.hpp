@@ -4,10 +4,13 @@
 # include <sys/time.h>
 # include <sys/socket.h>
 # include <sys/select.h>
+# include <sys/types.h>
+# include <sys/stat.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <fcntl.h>
 # include <unistd.h>
+# include <dirent.h>
 
 # include <map>
 # include <unordered_map>
@@ -33,12 +36,3 @@
 # define MAXLINE 4096
 # define PORT 18005
 # define CONF_EXTENTION_S_NAME ".conf"
-
-// code error request
-const t_err100	g_err100;
-const t_err300	g_err300;
-const t_err400	g_err400;
-const t_err500	g_err500;
-
-// code success request
-const t_ret200	g_ret200;

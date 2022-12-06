@@ -2,23 +2,6 @@
 
 # include "common.hpp"
 
-typedef struct s_err_100
-{
-	std::map<int, std::string>	errs;
-
-	s_err_100 ()
-	{
-		errs.insert(std::make_pair(100, "Continue")),
-		errs.insert(std::make_pair(101, "Switching Protocol"));
-		errs.insert(std::make_pair(102, "Processing"));
-		errs.insert(std::make_pair(103, "Early Hints"));
-	}
-
-	std::string	operator[](int n)
-		{ return (errs[n]); }
-
-} t_err100;
-
 typedef struct s_ret_200
 {
 	std::map<int, std::string>	ret;
@@ -41,14 +24,21 @@ typedef struct s_ret_200
 	std::string	operator[](int n)
 		{ return (ret[n]); }
 
-} t_ret200;
+} t_ret;
 
-typedef struct s_err_300
+typedef struct s_errs
 {
 	std::map<int, std::string>	errs;
 
-	s_err_300 ()
+	s_errs ()
 	{
+		// 100
+		errs.insert(std::make_pair(100, "Continue")),
+		errs.insert(std::make_pair(101, "Switching Protocol"));
+		errs.insert(std::make_pair(102, "Processing"));
+		errs.insert(std::make_pair(103, "Early Hints"));
+
+		// 300
 		errs.insert(std::make_pair(300, "Multiple Choices")),
 		errs.insert(std::make_pair(301, "Moved Permanently"));
 		errs.insert(std::make_pair(302, "Found"));
@@ -58,19 +48,8 @@ typedef struct s_err_300
 		errs.insert(std::make_pair(307, "Temporary Redirect"));
 		errs.insert(std::make_pair(308, "Permanent Redirect"));
 		errs.insert(std::make_pair(310, "Too Many Redirects"));
-	}
-
-	std::string	operator[](int n)
-		{ return (errs[n]); }
-
-} t_err300;
-
-typedef struct s_err_400
-{
-	std::map<int, std::string>	errs;
-
-	s_err_400()
-	{
+	
+		// 400
 		errs.insert(std::make_pair(400, "Bad Request")),
 		errs.insert(std::make_pair(401, "Unauthorized"));
 		errs.insert(std::make_pair(402, "Payment Required"));
@@ -102,19 +81,8 @@ typedef struct s_err_400
 		errs.insert(std::make_pair(450, "Blocked by Windows Parental Controls"));
 		errs.insert(std::make_pair(451, "Unavailable For Legal Reasons"));
 		errs.insert(std::make_pair(456, "Unrecoverable Error"));
-	}
 
-	std::string	operator[](int n)
-		{ return (errs[n]); }
-
-} t_err400;
-
-typedef struct s_err_500
-{
-	std::map<int, std::string>	errs;
-
-	s_err_500()
-	{
+		// 500
 		errs.insert(std::make_pair(500, "Internal Server Error")),
 		errs.insert(std::make_pair(501, "Not Implemented"));
 		errs.insert(std::make_pair(502, "Bad Gateway"));
@@ -129,7 +97,7 @@ typedef struct s_err_500
 		errs.insert(std::make_pair(511, "Network authentication requiered"));
 	}
 
-	std::string	operator[](int n)
+	std::string	&operator[](int n)
 		{ return (errs[n]); }
 
-} t_err500;
+} t_errs;

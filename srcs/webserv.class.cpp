@@ -269,10 +269,6 @@ void	Webserv::__http_process(int fd, std::string &request)
 	// 	host = host_port;
 
 	// std::cout << host << std::endl;
-	
-	// std::string	Tata_Est("18002"); // << loging 42 = TEst
-	// if (!Tata_Est.compare(host))
-	// 	std::cout << "All Good :)" << std::endl;
 
 	for (it = _servers.begin(); it != _servers.end(); it++)
 	{

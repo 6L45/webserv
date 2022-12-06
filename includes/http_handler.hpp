@@ -31,6 +31,8 @@ class Http_handler // : inherit from a execution class ?
 						get_elems(const std::string key) const;
 
 		std::string		exec_request(Server &Serv);
+		void			directory_browser(const char *path, std::string const &host);
+		std::string		filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host);
 
 /*		dico			get_req_dict(void) const;
 		dico			get_res_dict(void) const;
