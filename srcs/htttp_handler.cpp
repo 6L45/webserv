@@ -122,7 +122,6 @@ void	Http_handler::__check_address(std::string &value, Server &serv)
 		int i = this->_address.length() - 1; 
 		while (i > 0 && this->_address[i] == '/')
 		{
-			std::cout << "tf ?" << std::endl;
 			this->_address.erase(i);
 			i--;
 		}
@@ -141,13 +140,12 @@ void	Http_handler::__check_address(std::string &value, Server &serv)
 		for (std::vector<std::string>::iterator it = serv._index.begin();
 				it != serv._index.end(); it++)
 		{
-			std::cout << "---------------------> " << serv._root + *it << std::endl;
 			std::ifstream	file;
 			// teste ouverture des index
 			file.open(serv._root + *it, std::ios::in);
 			if (file.is_open())
 			{
-								// read / get file and close file
+				// read / get file and close file
 				std::stringstream	buffer;
 				buffer << file.rdbuf();
 				file.close();
