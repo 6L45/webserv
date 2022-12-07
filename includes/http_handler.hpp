@@ -56,9 +56,12 @@ class Http_handler // : inherit from a execution class ?
 		void			__GET_method(std::string &value, Server &serv);
 		void			__POST_method(std::string &value, Server &serv);
 		void			__DELETE_method(std::string &value, Server &serv);
-		void			__check_address(std::string &value, Server &serv);
+		void			__GET_response(std::string &value, Server &serv);
+		int				__POST_response(std::string &value);
+		void			__DELETE_response(std::string &value, Server &serv);
 		void			__err_header(int ret);
 		std::string		__get_time(void);
+		void			__init_response(std::string &value);
 };
 
 # include "server.class.hpp"
