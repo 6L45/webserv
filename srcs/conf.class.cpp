@@ -56,6 +56,7 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 	__server_conf new_serv;
 
 	new_serv.methods = 0;
+	new_serv.options = 0;
 	__erase_tab_space(line);
 	if (line.empty() && !fs.eof())
 		__get_line(fs, line);
@@ -266,8 +267,10 @@ std::string&	Conf::__erase_word(std::string& s) const
 {
 	int f_space = s.find(' ');
 	int f_tab = s.find('\t');
-	int	f_erase = f_space < f_tab ? f_space : f_tab;
-	
+
+	int f_erase = f_space == -1 ? f_tab : f_space;
+	f_erase = f_tab == -1 ? f_erase : std::min(f_erase, f_tab); // all four condiitions are treated
+
 	s.erase(0,f_erase);
 	return (s);
 }

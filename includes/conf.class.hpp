@@ -6,7 +6,7 @@
 	Macro to access the bit of options 
 		SC_DIRISACTIVE return true if directory browser is allowed, false otherwise
 		SC_BODYISLIMITED return true if body required a max size, false otherwise
-		SC_HTMLGETISSET, SC_HTMLPORTISSET , SC_HTMLDELETEISSET return true if the method is authorisez, false otherwise
+		SC_GETISSET, SC_PORTISSET , SC_DELETEISSET return true if the method is authorisez, false otherwise
 */
 #define SC_DIRISACTIVE(_sc) (_sc.options & (1 << 0))
 #define SC_BODYISLIMITED(_sc) (_sc.options & (1 << 1))
