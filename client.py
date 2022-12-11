@@ -2,11 +2,38 @@ import socket
 import sys
 
 HEADER = 64
-PORT = 18000
+PORT = 18002
 FORMAT = "utf-8"
 SERVER = "127.0.1.1"
 
-def send(msg):
+post_req = '''POST /test/kind/hihi.json HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+Content-Length: 85
+Host: localhost:18002
+
+{
+"Id": 00000,
+"Customer": "John Smith",
+"Quantity": 1,
+"Price": 10.00
+}
+
+'''
+
+del_req = '''DELETE /test/kind/hoho HTTP/1.1
+Host: localhost:18002
+
+'''
+
+def send(req):
+
+    if (req == "post"):
+        msg = post_req
+    elif (req == "del"):
+        msg = del_req
+    else:
+        return
     message = msg.encode(FORMAT)
 #    msg_length = len(message)
 #    send_length = str(msg_length).encode(FORMAT)
@@ -30,7 +57,7 @@ if __name__ == "__main__":
 
     print(f"[PORT] = {port}\n")
 
-    client = socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     addr = (SERVER, port)
     client.connect(addr)
 
@@ -38,6 +65,7 @@ if __name__ == "__main__":
     while True:
         msg = input()
         if msg == "exit":
+            client.close()
             break
 
         send(msg)

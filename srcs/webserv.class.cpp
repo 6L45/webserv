@@ -170,6 +170,7 @@ void	Webserv::__close_connexion(const int fd)
 		}
 	}
 	FD_CLR(fd, &_current_sockets);
+	std::cout << "++ connexion closed on fd : " << fd << " ++" << std::endl;
 }
 
 int		Webserv::__get_the_port(int fd)
@@ -297,7 +298,7 @@ void	Webserv::__http_process(int fd, std::string &request)
 void	Webserv::send_response(int fd, const std::string& response)
 {
 	std::cout << "---------------- " << "response server : " << std::endl
-	<< response << std::endl << "----------------" << std::endl << std::endl;
+	<< response << "----------------" << std::endl << std::endl;
 
 	std::signal(SIGPIPE, SIG_IGN);
 	if ((send(fd, response.c_str(), response.length(), 0)) < 0)

@@ -28,6 +28,7 @@
 # include <filesystem>
 # include <ctime>
 # include <utility>
+# include <cstdio>
 
 # include "http_ret_code.hpp"
 
