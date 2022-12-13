@@ -1,10 +1,8 @@
 #include "http_handler.hpp" 
 
-// code error request
-t_errs	g_errs;
-// code success request
-t_ret	g_ret;
-memelords	g_lol;
+t_errs		g_errs;
+t_ret		g_ret;
+memelord	g_gif;
 
 // CONSTRUCT
 Http_handler::Http_handler(std::string &request)
@@ -213,7 +211,7 @@ void	Http_handler::__body_gen(int ret)
 	this->_response += "	<body bgcolor=\"white\">\r\n";
 	this->_response += "		<center><h1>" + std::to_string(ret) + " " + g_errs[ret] + "</h1></center>\r\n";
 	this->_response += "		<center><hr>" + this->header_server + "</hr></center>\r\n";
-	this->_response += g_lol[1];
+	this->_response +=			g_gif[1];
 	this->_response += "		<center><p>Click <a href=\"/\">here</a> to return home.</p></center>\r\n";
 	this->_response += "	</body>\r\n";
 	this->_response += "</html>\r\n";
