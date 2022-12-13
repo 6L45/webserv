@@ -29,6 +29,7 @@
 # include <ctime>
 # include <utility>
 # include <cstdio>
+# include <cstdlib>  // for rand(), srand(), and RAND_MAX
 
 # include "http_ret_code.hpp"
 
