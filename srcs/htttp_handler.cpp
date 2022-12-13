@@ -150,12 +150,12 @@ std::string	Http_handler::bad_request(void)
 // response generator
 void	Http_handler::__200_response(int ret)
 {
+	this->header_http1 += "HTTP/1.1 " +  std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
 
 	if (!this->_response.empty())
 	{
-		this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 		this->header_content_len += std::to_string(this->_response.length() - 2) + "\r\n";
 		this->header_content_type += "text\r\n";
 		
@@ -171,8 +171,6 @@ void	Http_handler::__200_response(int ret)
 	}
 	else
 	{
-		this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
-		
 		this->_header += this->header_http1
 					+ this->header_content_loc
 					+ this->header_date
@@ -185,14 +183,38 @@ void	Http_handler::__200_response(int ret)
 
 void	Http_handler::__err_header(const int ret)
 {
-	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
+	this->__body_gen(ret);
+
+	this->header_http1 += "HTTP/1.1 " + std::to_string(ret) + " " + g_errs[ret] + "\r\n";
+	this->header_content_len += std::to_string(this->_response.length() - 2) + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
+	this->header_content_type += "text\r\n";
 	this->header_date += this->__get_time() + "\r\n";
-	this->_header += this->header_http1	+ this->header_content_loc + this->header_date
+	
+	this->_header += this->header_http1
+				+ this->header_content_loc
+				+ this->header_content_len
+				+ this->header_content_type
+				+ this->header_date
 				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
 
-//	this->_response = html_template[ret]; <<-- SI PAGES HTML PREDEFINIES PAR ERREUR
-	this->_response = this->_header + "\r\n" /* + this->_response + "\r\n" */ ;
+	this->_response = this->_header + "\r\n"  + this->_response + "\r\n";
+}
+
+void	Http_handler::__body_gen(int ret)
+{
+	this->_response += "<!DOCTYPE html>\r\n";
+	this->_response += "<html>\r\n";
+	this->_response += "	<head>\r\n";
+	this->_response += "		<meta charset=\"UTF-8\">\r\n";
+	this->_response += "		<title>webserv</title>\r\n";
+	this->_response += "	</head>\r\n";
+	this->_response += "	<body bgcolor=\"white\">\r\n";
+	this->_response += "		<center><h1>" + std::to_string(ret) + " " + g_errs[ret] + "</h1></center>\r\n";
+	this->_response += "		<center><hr>" + this->header_server + "</hr></center>\r\n";
+	this->_response += "		<center><p>Click <a href=\"/\">here</a> to return home.</p></center>\r\n";
+	this->_response += "	</body>\r\n";
+	this->_response += "</html>\r\n";
 }
 
 

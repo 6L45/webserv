@@ -59,6 +59,7 @@ class Http_handler // : inherit from a execution class ?
 		// response generator		
 		void			__200_response(int ret);
 		void			__err_header(int ret);
+		void			__body_gen(int ret);
 
 		// utils
 		std::string		__get_time(void);
