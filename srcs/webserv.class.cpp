@@ -256,7 +256,6 @@ void	Webserv::__print_connexions_stats() const
 void	Webserv::__http_process(int fd, std::string &request)
 {
 	Http_handler	request_handler(request);
-	std::string		host_port;
 	std::string		response;
 
 	if (request_handler.invalid_request())
@@ -269,7 +268,7 @@ void	Webserv::__http_process(int fd, std::string &request)
 		return;
 	}
 	
-	host_port = request_handler.get_host_name();
+	std::string	host_port = request_handler.get_host_name();
 	std::vector<Server>::iterator it;
 	for (it = _servers.begin(); it != _servers.end(); it++)
 	{
