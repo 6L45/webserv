@@ -260,7 +260,7 @@ void	Webserv::__http_process(int fd, std::string &request)
 
 	if (request_handler.invalid_request())
 	{
-		std::cout << "Host:Port target -> " << host_port << std::endl;
+		std::cout << "fd -> " << fd << std::endl;
 		std::cout << "bad request 400 no host || 505 != HTTP/1.1" << std::endl;
 		response = request_handler.bad_request();
 		send_response(fd, response);
