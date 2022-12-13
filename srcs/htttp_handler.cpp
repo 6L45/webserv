@@ -151,7 +151,7 @@ void	Http_handler::__200_response(int ret)
 	if (!this->_response.empty())
 	{
 		this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
-		this->header_content_len += std::to_string(this->_response.length() - 4) + "\r\n";
+		this->header_content_len += std::to_string(this->_response.length() - 2) + "\r\n";
 		this->header_content_type += "text\r\n";
 		
 		this->_header += this->header_http1
@@ -375,13 +375,13 @@ void         Http_handler::directory_browser(const char *path, std::string const
     DIR *dir	= opendir(path);
 
     std::string page =\
-"<!DOCTYPE html>\n\
-<html>\n\
-<head>\n\
-<title>" + dirName + "</title>\n\
-</head>\n\
-<body>\n\
-<h1>INDEX</h1>\n\
+"<!DOCTYPE html>\r\n\
+<html>\r\n\
+<head>\r\n\
+<title>" + dirName + "</title>\r\n\
+</head>\r\n\
+<body>\r\n\
+<h1>INDEX</h1>\r\n\
 <p>\n";
 
     if (dirName[0] != '/')
@@ -391,9 +391,9 @@ void         Http_handler::directory_browser(const char *path, std::string const
     }
 
     page +="\
-</p>\n\
-</body>\n\
-</html>\n";
+</p>\r\n\
+</body>\r\n\
+</html>\r\n";
 
     closedir(dir);
     this->_response = page;
