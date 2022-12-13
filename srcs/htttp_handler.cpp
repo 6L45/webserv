@@ -5,6 +5,7 @@ t_errs	g_errs;
 // code success request
 t_ret	g_ret;
 
+// CONSTRUCT
 Http_handler::Http_handler(std::string &request)
 {
 	std::cout << request << std::endl << std::endl;
@@ -50,33 +51,62 @@ Http_handler::Http_handler(std::string &request)
 	this->_req_dict.insert(std::make_pair("BODY", request.substr(pos + 4)));
 }
 
+
+
+
+
+
+
+
+
+
+
+// PUBLIC METHOD
 std::string	Http_handler::exec_request(Server &serv)
 {
 	typename Http_handler::MMAPIterator	val;
 
 	try
 	{
+		// GET METHOD
 		if ( (val = this->_req_dict.find("GET")) != this->_req_dict.end() )
 		{
 			if (!SV_GETISSET(serv))
 				throw 406;
-			this->__GET_method(val->second, serv);
+
+			this->__GET_response(val->second, serv);
+
+			if (!this->_response.empty())
+				this->__200_response(200);
+			else
+				this->__200_response(204);
 		}
+
+		// POST_METHOD
 		else if ( (val = this->_req_dict.find("POST")) != this->_req_dict.end() )
 		{
 			if (!SV_POSTISSET(serv))
 				throw 406;
-			this->__POST_method(val->second, serv);
+
+			int ret = this->__POST_response(val->second, serv);
+			this->__200_response(ret);
 		}
+
+		// DELETE_METHOD
 		else if ( (val = this->_req_dict.find("DELETE")) != this->_req_dict.end() )
 		{
 			if (!SV_DELETEISSET(serv))
 				throw 406;
-			this->__DELETE_method(val->second, serv);
+
+			this->__DELETE_response(val->second, serv);
+			this->__200_response(204);
 		}
+
+		// ANY OTHER TYPE OF METHOD -> 406
 		else if (this->_method == "OPTIONS" ||this->_method == "HEAD"
 				||this->_method == "PUT" || this->_method == "PATCH")
 			throw 406;
+		// BAD REQUEST NO METHOD OR BS METHOD
 		else
 			throw 400;
 	}
@@ -87,62 +117,37 @@ std::string	Http_handler::exec_request(Server &serv)
 	return (this->_response);
 }
 
-std::string	Http_handler::get_host_name() const {
+std::string	Http_handler::get_host_name() const {			// GET HOST NAME
 	return (this->_req_dict.find("Host")->second);
 }
 
-
 std::pair<typename Http_handler::MMAPConstIterator,
 			typename Http_handler::MMAPConstIterator>
-	Http_handler::get_elems(const std::string key) const {
+	Http_handler::get_elems(const std::string key) const {	// GET ELEMS
 		return (this->_req_dict.equal_range(key));
 }
 
+int	Http_handler::invalid_request() const {
+	return (this->_valid);
+}
 
-void	Http_handler::__GET_method(std::string &value, Server &serv)
+std::string	Http_handler::bad_request(void)
 {
-	this->__GET_response(value, serv);
-	
-	this->header_content_loc += this->_address + "\r\n";
-	this->header_date += this->__get_time() + "\r\n";
-	
-	if (!this->_response.empty())
-	{
-		this->__200_response(200);
-/*
-		this->header_http1 += "200 OK\r\n";
-		this->header_content_len += std::to_string(this->_response.length() - 4) + "\r\n";
-		this->header_content_type += "text\r\n";
-		
-		this->_header += this->header_http1 + this->header_content_len
-					+ this->header_content_loc + this->header_content_type
-					+ this->header_date + this->header_server + "\r\n"
-					+ this->header_encoding + "\r\n";
-
-		if  (!this->_response.empty())	
-			this->_response = this->_header + "\r\n" + this->_response + "\r\n";
-		else
-			this->_response = this->_header + "\r\n";
-*/	}
-	else
-	{
-		this->__200_response(204);
-/*
-		this->header_http1 += "204 No Content\r\n";
-		
-		this->_header += this->header_http1
-					+ this->header_content_loc + this->header_date
-					+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
-	
-		if  (!this->_response.empty())	
-			this->_response = this->_header + "\r\n" + this->_response + "\r\n";
-		else
-			this->_response = this->_header + "\r\n";	
-*/	}
-
+	this->__err_header(_valid);
+	return (this->_response);
 }
 
 
+
+
+
+
+
+
+
+
+
+// response generator
 void	Http_handler::__200_response(int ret)
 {
 	this->header_content_loc += this->_address + "\r\n";
@@ -178,41 +183,29 @@ void	Http_handler::__200_response(int ret)
 	}
 }
 
-void	Http_handler::__POST_method(std::string &value, Server &serv)
+void	Http_handler::__err_header(const int ret)
 {
-	int ret = this->__POST_response(value, serv);
-	this->__200_response(ret);
-/*
-	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
-	this->_header += this->header_http1
-				+ this->header_content_loc + this->header_date
-				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
-	
-	if  (!this->_response.empty())	
-		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
-	else
-		this->_response = this->_header + "\r\n";	
-*/
-}
-
-void	Http_handler::__DELETE_method(std::string &value, Server &serv)
-{
-	this->__DELETE_response(value, serv);
-	this->__200_response(204);
-/*
+	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
-	this->header_http1 += "204 No Content\r\n";
-	
-	this->_header += this->header_http1
-				+ this->header_content_loc + this->header_date
+	this->_header += this->header_http1	+ this->header_content_loc + this->header_date
 				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
 
-	this->_response = this->_header + "\r\n";	
-*/
+//	this->_response = html_template[ret]; <<-- SI PAGES HTML PREDEFINIES PAR ERREUR
+	this->_response = this->_header + "\r\n" /* + this->_response + "\r\n" */ ;
 }
 
 
+
+
+
+
+
+
+
+
+
+// RESPONSES
 void	Http_handler::__GET_response(std::string &value, Server &serv)
 {
 	this->__init_response(value);
@@ -265,7 +258,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 	if (S_ISDIR(path_stat.st_mode))
 	{
-		directory_browser(request_loc.c_str(), this->_address);
+		__directory_browser(request_loc.c_str(), this->_address);
 		file.close();
 		return ;
 	}
@@ -285,7 +278,6 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	file.close();
 	this->_response = buffer.str() + "\r\n";
 }
-
 
 int	Http_handler::__POST_response(std::string &value, Server &serv)
 {
@@ -343,33 +335,18 @@ void	Http_handler::__DELETE_response(std::string &value, Server &serv)
 	}
 }
 
-void	Http_handler::__err_header(const int ret)
-{
-	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
-	this->header_content_loc += this->_address + "\r\n";
-	this->header_date += this->__get_time() + "\r\n";
-	this->_header += this->header_http1	+ this->header_content_loc + this->header_date
-				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
 
-//	this->_response = html_template[ret]; <<-- SI PAGES HTML PREDEFINIES PAR ERREUR
-	this->_response = this->_header + "\r\n" /* + this->_response + "\r\n" */ ;
-}
 
-std::string	Http_handler::__get_time()
-{
-	time_t		rawtime;
-	struct tm	*timeinfo;
-	
-	char buffer[80];
 
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
 
-	return (std::string(buffer));
-}
 
-void         Http_handler::directory_browser(const char *path, std::string const &host)
+
+
+
+
+
+// DIRECTORY _BROWSER
+void         Http_handler::__directory_browser(const char *path, std::string const &host)
 {
     std::string	dirName(path);
     DIR *dir	= opendir(path);
@@ -387,7 +364,7 @@ void         Http_handler::directory_browser(const char *path, std::string const
     if (dirName[0] != '/')
         dirName = "/" + dirName;
     for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir)) {
-        page += filesLst(std::string(dirEntry->d_name), dirName, host);
+        page += __filesLst(std::string(dirEntry->d_name), dirName, host);
     }
 
     page +="\
@@ -399,7 +376,7 @@ void         Http_handler::directory_browser(const char *path, std::string const
     this->_response = page;
 }
 
-std::string         Http_handler::filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host)
+std::string         Http_handler::__filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host)
 {
     std::stringstream   ss;
 
@@ -407,6 +384,17 @@ std::string         Http_handler::filesLst(std::string const &dirEntry, std::str
     return ss.str();
 }
 
+
+
+
+
+
+
+
+
+
+
+// UTILS
 void	Http_handler::__init_response(std::string &value)
 {
 	int index = value.find("HTTP");
@@ -423,93 +411,16 @@ void	Http_handler::__init_response(std::string &value)
 	}
 }
 
-int	Http_handler::invalid_request() const {
-	return (this->_valid);
-}
-
-
-std::string	Http_handler::bad_request(void)
+std::string	Http_handler::__get_time()
 {
-	this->__err_header(_valid);
-	return (this->_response);
+	time_t		rawtime;
+	struct tm	*timeinfo;
+	
+	char buffer[80];
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+
+	return (std::string(buffer));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-		while (index > 0)
-		{
-			std::string		val;
-			line = line.substr(index + 1);
-			if (line[0] == ' ')
-				line = line.substr(1);
-			index = line.find(';');
-			val = line.substr(0, index);
-
-		}
-*/
-
-
-
-	/*
-		std::stringstream	req(request.c_str());
-		std::string			line;
-
-		std::cout << request << std::endl;
-
-		while (std::getline(req, line, '\n'))
-		{
-			int			index;
-			std::string	key;
-
-			if (line[0] == '\n' && line[1] == '\n')
-				break;
-
-			index = line.find(':');
-			if (index == -1)
-			{
-				index = line.find(' ');
-				if (index == -1)
-					break;
-			}
-			key = line.substr(0, index);
-			std::string		val;
-			line = line.substr(index + 1);
-			if (line[0] == ' ')
-					line = line.substr(1);
-			val = line;
-			this->_req_dict.insert(std::make_pair(key, val));
-		}
-
-		int index = request.find("\n\n");
-		if (index > 0)
-		{
-			std::string	body(&request[index + 2]);
-			body = body.substr(0, body.find("\n\n"));
-			this->_req_dict.insert(std::make_pair("BODY", body));
-		}
-	*/
