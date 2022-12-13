@@ -256,21 +256,21 @@ void	Webserv::__print_connexions_stats() const
 void	Webserv::__http_process(int fd, std::string &request)
 {
 	Http_handler	request_handler(request);
-	std::string		host_port = request_handler.get_host_name();
+	std::string		host_port;
 	std::string		response;
+
+	if (request_handler.invalid_request())
+	{
+		std::cout << "Host:Port target -> " << host_port << std::endl;
+		std::cout << "bad request 400 no host || 505 != HTTP/1.1" << std::endl;
+		response = request_handler.bad_request();
+		send_response(fd, response);
+		__close_connexion(fd);
+		return;
+	}
+	
+	host_port = request_handler.get_host_name();
 	std::vector<Server>::iterator it;
-
-	// response = request_handler.exec_request(*_servers.begin());
-	// send_response(fd, response);
-	// int	ret;
-	// std::string host;
-	// if ( (ret = host_port.find(':')) > 0 )
-	// 	host = host_port.substr(ret + 1);
-	// else
-	// 	host = host_port;
-
-	// std::cout << host << std::endl;
-
 	for (it = _servers.begin(); it != _servers.end(); it++)
 	{
 		if ((*it).belong_to(host_port))
@@ -279,7 +279,6 @@ void	Webserv::__http_process(int fd, std::string &request)
 	if (it == _servers.end())
 	{
 		std::cout << "Host doesnt exist -> " << host_port << std::endl;
-		//Http_handler.bad_server();
 		__close_connexion(fd);
 	}
 	else

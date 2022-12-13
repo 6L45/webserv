@@ -2,54 +2,52 @@
 
 // code error request
 t_errs	g_errs;
-
 // code success request
 t_ret	g_ret;
 
 Http_handler::Http_handler(std::string &request)
 {
-	std::stringstream	req(request.c_str());
-	std::string			line;
+	std::cout << request << std::endl << std::endl;
+	
+	// Read the first line from the string stream
+	std::istringstream iss(request);
+	std::string firstLine;
+	std::getline(iss, firstLine);
 
-	std::cout << request << std::endl;
+	// Split the first line into its individual components
+	std::istringstream firstLineStream(firstLine);
+	std::string address, version;
 
-	while (std::getline(req, line, '\n'))
+	firstLineStream >> this->_method >> address >> version;
+	this->_req_dict.insert(std::make_pair(this->_method, address));
+
+	std::string line;
+	while (std::getline(iss, line))
 	{
-		int			index;
-		std::string	key;
-		
-		if (line[0] == '\n' && line[1] == '\n')
-			break;
-		
-		index = line.find(':');
-		if (index == -1)
+		// Extract the field name and value from each line
+		std::size_t colonPos = line.find(':');
+		if (colonPos != std::string::npos)
 		{
-			index = line.find(' ');
-			if (index == -1)
-				break;
-		}
-		key = line.substr(0, index);
-
-		while (index > 0)
-		{
-			std::string		val;
-			line = line.substr(index + 1);
-			if (line[0] == ' ')
-				line = line.substr(1);
-			index = line.find(';');
-			val = line.substr(0, index);
-
-			this->_req_dict.insert(std::make_pair(key, val));
+			std::string field = line.substr(0, colonPos);
+			std::string value = line.substr(colonPos + 1);
+			if (value[0] == ' ')
+				value = value.substr(1);
+			this->_req_dict.insert(std::make_pair(field, value));
 		}
 	}
 
-	int index = request.find("\n\n");
-	if (index > 0)
-	{
-		std::string	body(&request[index + 2]);
-		body = body.substr(0, body.find("\n\n"));
-		this->_req_dict.insert(std::make_pair("BODY", body));
-	}
+	if (version != "HTTP/1.1")
+		this->_valid = 505;
+	else if (this->_req_dict.find("Host") == this->_req_dict.end())
+		this->_valid = 400;
+	else
+		this->_valid = 0;
+
+	size_t pos = request.find("\r\n\r\n");
+	if (pos == std::string::npos)
+		return;
+	// Extract the body from the request
+	this->_req_dict.insert(std::make_pair("BODY", request.substr(pos + 4)));
 }
 
 std::string	Http_handler::exec_request(Server &serv)
@@ -76,6 +74,9 @@ std::string	Http_handler::exec_request(Server &serv)
 				throw 406;
 			this->__DELETE_method(val->second, serv);
 		}
+		else if (this->_method == "OPTIONS" ||this->_method == "HEAD"
+				||this->_method == "PUT" || this->_method == "PATCH")
+			throw 406;
 		else
 			throw 400;
 	}
@@ -107,6 +108,8 @@ void	Http_handler::__GET_method(std::string &value, Server &serv)
 	
 	if (!this->_response.empty())
 	{
+		this->__200_response(200);
+/*
 		this->header_http1 += "200 OK\r\n";
 		this->header_content_len += std::to_string(this->_response.length() - 4) + "\r\n";
 		this->header_content_type += "text\r\n";
@@ -120,9 +123,11 @@ void	Http_handler::__GET_method(std::string &value, Server &serv)
 			this->_response = this->_header + "\r\n" + this->_response + "\r\n";
 		else
 			this->_response = this->_header + "\r\n";
-	}
+*/	}
 	else
 	{
+		this->__200_response(204);
+/*
 		this->header_http1 += "204 No Content\r\n";
 		
 		this->_header += this->header_http1
@@ -133,13 +138,51 @@ void	Http_handler::__GET_method(std::string &value, Server &serv)
 			this->_response = this->_header + "\r\n" + this->_response + "\r\n";
 		else
 			this->_response = this->_header + "\r\n";	
+*/	}
+
+}
+
+
+void	Http_handler::__200_response(int ret)
+{
+	this->header_content_loc += this->_address + "\r\n";
+	this->header_date += this->__get_time() + "\r\n";
+
+	if (!this->_response.empty())
+	{
+		this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
+		this->header_content_len += std::to_string(this->_response.length() - 4) + "\r\n";
+		this->header_content_type += "text\r\n";
+		
+		this->_header += this->header_http1
+					+ this->header_content_len
+					+ this->header_content_loc
+					+ this->header_content_type
+					+ this->header_date
+					+ this->header_server + "\r\n"
+					+ this->header_encoding + "\r\n";
+
+		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
+	}
+	else
+	{
+		this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
+		
+		this->_header += this->header_http1
+					+ this->header_content_loc
+					+ this->header_date
+					+ this->header_server + "\r\n"
+					+ this->header_encoding + "\r\n";
+
+		this->_response = this->_header + "\r\n";
 	}
 }
 
 void	Http_handler::__POST_method(std::string &value, Server &serv)
 {
 	int ret = this->__POST_response(value, serv);
-
+	this->__200_response(ret);
+/*
 	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->_header += this->header_http1
 				+ this->header_content_loc + this->header_date
@@ -149,12 +192,14 @@ void	Http_handler::__POST_method(std::string &value, Server &serv)
 		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
 	else
 		this->_response = this->_header + "\r\n";	
+*/
 }
 
 void	Http_handler::__DELETE_method(std::string &value, Server &serv)
 {
 	this->__DELETE_response(value, serv);
-	
+	this->__200_response(204);
+/*
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
 	this->header_http1 += "204 No Content\r\n";
@@ -164,6 +209,7 @@ void	Http_handler::__DELETE_method(std::string &value, Server &serv)
 				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
 
 	this->_response = this->_header + "\r\n";	
+*/
 }
 
 
@@ -240,22 +286,18 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	this->_response = buffer.str() + "\r\n";
 }
 
+
 int	Http_handler::__POST_response(std::string &value, Server &serv)
 {
-	if (this->_req_dict.find("Content-Length") == this->_req_dict.end() )
-		throw 411;
-	if (this->_req_dict.find("Content-Type") == this->_req_dict.end() )
+	if (this->_req_dict.find("Content-Length") == this->_req_dict.end()
+		|| this->_req_dict.find("Content-Type") == this->_req_dict.end() )
 		throw 411;
 
 	this->__init_response(value);
 
-
 	int ret;
 	struct stat path_stat;
-
 	std::string	path = serv._root + &this->_address[1];
-	std::cout << "---> " << path << std::endl;
-
 	stat(path.c_str(), &path_stat);
 	if (S_ISDIR(path_stat.st_mode))
 		throw 401;
@@ -269,9 +311,11 @@ int	Http_handler::__POST_response(std::string &value, Server &serv)
 	if (serv.min_size > 0 && std::atol(this->_req_dict.find("Content-Length")->second.c_str()) > serv.min_size)
 		throw 400; // min size not met
 */
+
 	std::fstream	file(path, std::ios::out);
 	if (!file.is_open())
 		throw 500;
+
 	file << this->_req_dict.find("BODY")->second;
 	file.close();
 
@@ -304,8 +348,7 @@ void	Http_handler::__err_header(const int ret)
 	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
-	this->_header += this->header_http1 + this->header_content_len
-				+ this->header_content_loc + this->header_date
+	this->_header += this->header_http1	+ this->header_content_loc + this->header_date
 				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
 
 //	this->_response = html_template[ret]; <<-- SI PAGES HTML PREDEFINIES PAR ERREUR
@@ -379,3 +422,94 @@ void	Http_handler::__init_response(std::string &value)
 		}
 	}
 }
+
+int	Http_handler::invalid_request() const {
+	return (this->_valid);
+}
+
+
+std::string	Http_handler::bad_request(void)
+{
+	this->__err_header(_valid);
+	return (this->_response);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+		while (index > 0)
+		{
+			std::string		val;
+			line = line.substr(index + 1);
+			if (line[0] == ' ')
+				line = line.substr(1);
+			index = line.find(';');
+			val = line.substr(0, index);
+
+		}
+*/
+
+
+
+	/*
+		std::stringstream	req(request.c_str());
+		std::string			line;
+
+		std::cout << request << std::endl;
+
+		while (std::getline(req, line, '\n'))
+		{
+			int			index;
+			std::string	key;
+
+			if (line[0] == '\n' && line[1] == '\n')
+				break;
+
+			index = line.find(':');
+			if (index == -1)
+			{
+				index = line.find(' ');
+				if (index == -1)
+					break;
+			}
+			key = line.substr(0, index);
+			std::string		val;
+			line = line.substr(index + 1);
+			if (line[0] == ' ')
+					line = line.substr(1);
+			val = line;
+			this->_req_dict.insert(std::make_pair(key, val));
+		}
+
+		int index = request.find("\n\n");
+		if (index > 0)
+		{
+			std::string	body(&request[index + 2]);
+			body = body.substr(0, body.find("\n\n"));
+			this->_req_dict.insert(std::make_pair("BODY", body));
+		}
+	*/
