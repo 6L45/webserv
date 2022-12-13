@@ -203,6 +203,10 @@ void	Http_handler::__err_header(const int ret)
 
 void	Http_handler::__body_gen(int ret)
 {
+	static	bool lol = true;
+	std::string	trololol	= "		<center><iframe src=\"https://giphy.com/embed/Rkis28kMJd1aE\" width=\"480\" height=\"317\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe>";
+	std::string	lolilol		= "		<center><iframe src=\"https://giphy.com/embed/hLwSzlKN8Fi6I\" width=\"480\" height=\"356\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
+
 	this->_response += "<!DOCTYPE html>\r\n";
 	this->_response += "<html>\r\n";
 	this->_response += "	<head>\r\n";
@@ -212,6 +216,11 @@ void	Http_handler::__body_gen(int ret)
 	this->_response += "	<body bgcolor=\"white\">\r\n";
 	this->_response += "		<center><h1>" + std::to_string(ret) + " " + g_errs[ret] + "</h1></center>\r\n";
 	this->_response += "		<center><hr>" + this->header_server + "</hr></center>\r\n";
+	if (lol)
+		this->_response += lolilol;
+	else
+		this->_response += trololol;
+	lol = !lol;
 	this->_response += "		<center><p>Click <a href=\"/\">here</a> to return home.</p></center>\r\n";
 	this->_response += "	</body>\r\n";
 	this->_response += "</html>\r\n";
