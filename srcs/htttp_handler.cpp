@@ -288,10 +288,10 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	}
 		
 	// get body response
-	if (file.peek() != EOF)
+	if (file.peek() == EOF)
 	{
 		file.close();
-		return ;
+		throw 204;
 	}
 	// There are readable characters remaining in the file
 	std::stringstream	buffer;
