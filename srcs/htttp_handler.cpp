@@ -288,13 +288,13 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	// si s'ouvre pas retour 404 Not found
 	if (!file.is_open())
 		throw 404;
-
+		
 	// get body response
-	if (file.rdbuf()->in_avail() == 0)
-	{
+	if (file.peek() != EOF) {
 		file.close();
 		return ;
 	}
+	// There are readable characters remaining in the file
 	std::stringstream	buffer;
 	buffer << file.rdbuf();
 	file.close();
