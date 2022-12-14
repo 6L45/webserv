@@ -68,13 +68,10 @@ class Http_handler // : inherit from a execution class ?
 
 typedef struct links
 {
-
 	std::string	trololol	= "		<center><iframe src=\"https://giphy.com/embed/Rkis28kMJd1aE\" width=\"480\" height=\"317\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	haha		= "		<center><iframe src=\"https://giphy.com/embed/uprwwjptZW4Za\" width=\"480\" height=\"358\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	hihi		= "		<center><iframe src=\"https://giphy.com/embed/9ZOyRdXL7ZVKg\" width=\"480\" height=\"360\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	hoho		= "		<center><iframe src=\"https://giphy.com/embed/ReImZejkBnqYU\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
-
-
 	std::string	vmars		= "		<center><iframe src=\"https://giphy.com/embed/R195TgCcRZNZe\" width=\"480\" height=\"271\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe><p></center>";
 	std::string	nope		= "		<center><iframe src=\"https://giphy.com/embed/1iTI7wQfPEJu1wjK\" width=\"480\" height=\"271\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	kpnope		= "		<center><iframe src=\"https://giphy.com/embed/WVUWw9ItZS048\" width=\"480\" height=\"305\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
@@ -86,7 +83,6 @@ typedef struct links
 	std::string	pickleR		= "		<center><iframe src=\"https://giphy.com/embed/SANT0ESrslle7yE9xV\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	not2D		= "		<center><iframe src=\"https://giphy.com/embed/RGSZZQC7SSc91VhDe7\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	RickFk		= "		<center><iframe src=\"https://giphy.com/embed/fvfRNXU8gkH0sLvDzQ\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
-	std::string	RickButt	= "		<center><iframe src=\"https://giphy.com/embed/fvfRNXU8gkH0sLvDzQ\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	RickSht		= "		<center><iframe src=\"https://giphy.com/embed/3Fdskc7J0timI\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	
 	std::vector<std::string>	hehe;
@@ -108,7 +104,6 @@ typedef struct links
 		hehe.push_back(pickleR);
 		hehe.push_back(not2D);
 		hehe.push_back(RickFk);
-		hehe.push_back(RickButt);
 		hehe.push_back(RickSht);
 		
 		hehe.shrink_to_fit();

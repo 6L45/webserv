@@ -149,7 +149,7 @@ std::string	Http_handler::bad_request(void)
 // response generator
 void	Http_handler::__200_response(int ret)
 {
-	this->header_http1 += "HTTP/1.1 " +  std::to_string(ret) + " " + g_ret[ret] + "\r\n";
+	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
 
@@ -184,7 +184,7 @@ void	Http_handler::__err_header(const int ret)
 {
 	this->__body_gen(ret);
 
-	this->header_http1 += "HTTP/1.1 " + std::to_string(ret) + " " + g_errs[ret] + "\r\n";
+	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
 	this->header_content_len += std::to_string(this->_response.length() - 2) + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_content_type += "text\r\n";
