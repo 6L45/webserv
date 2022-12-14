@@ -155,7 +155,7 @@ void	Http_handler::__200_response(int ret)
 
 	if (!this->_response.empty())
 	{
-		this->header_content_len += std::to_string(this->_response.length() - 2) + "\r\n";
+		this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
 		this->header_content_type += "text\r\n";
 		
 		this->_header += this->header_http1
@@ -185,7 +185,7 @@ void	Http_handler::__err_header(const int ret)
 	this->__body_gen(ret);
 
 	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
-	this->header_content_len += std::to_string(this->_response.length() - 2) + "\r\n";
+	this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_content_type += "text\r\n";
 	this->header_date += this->__get_time() + "\r\n";
@@ -273,7 +273,9 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 	std::ifstream file(request_loc);
 	file.open(request_loc, std::ios::in);
-	
+	if (!file.is_open())
+		throw 404;
+
 	// évalue si c'est un directory
 	struct stat	path_stat;
 	stat(request_loc.c_str(), &path_stat);
@@ -284,10 +286,6 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		file.close();
 		return ;
 	}
-
-	// si s'ouvre pas retour 404 Not found
-	if (!file.is_open())
-		throw 404;
 
 	// get body response
 	if (file.rdbuf()->in_avail() == 0)
@@ -325,7 +323,6 @@ int	Http_handler::__POST_response(std::string &value, Server &serv)
 	if (serv.min_size > 0 && std::atol(this->_req_dict.find("Content-Length")->second.c_str()) > serv.min_size)
 		throw 400; // min size not met
 */
-
 	std::fstream	file(path, std::ios::out);
 	if (!file.is_open())
 		throw 500;
