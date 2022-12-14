@@ -8,7 +8,8 @@ Server::Server(__server_conf sc)
 		_name(sc.server_name),
 		_options(sc.options),
 		_methods(sc.methods),
-		_body_max_size(sc.body_limits)
+		_body_max_size(sc.body_limits),
+		_body_min_size(sc.body_min_size)
 { }
 
 // Server::Server(int port)

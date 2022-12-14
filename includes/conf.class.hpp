@@ -35,6 +35,7 @@ public:
 	char						options;
 	char						methods;
 	int							body_limits;
+	int							body_min_size;
 	int							unactive_max_delay;
 };
 

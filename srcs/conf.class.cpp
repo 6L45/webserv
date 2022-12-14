@@ -58,7 +58,8 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 	new_serv.methods = 0;
 	new_serv.options = 0;
 	new_serv.body_limits = 30000;
-	
+	new_serv.body_min_size = 0;
+
 	__erase_tab_space(line);
 	if (line.empty() && !fs.eof())
 		__get_line(fs, line);
@@ -158,10 +159,9 @@ void	Conf::__parse_html(std::ifstream &fs, std::string& line, __server_conf& srv
 			}
 		}
 		else if (!line.compare(0, 16, "body-size-limit:"))
-		{
 			__add_to<int>(srv.body_limits, line.erase(0, line.find(':') + 1));
-			_SC_BODYLIMITACTIVATE(srv);
-		}
+		else if (!line.compare(0, 14, "body-min-size:"))
+			__add_to<int>(srv.body_min_size, line.erase(0, line.find(':') + 1));
 		else if (!line.compare(0, 1, "}"))
 			break ;
 		else
@@ -308,8 +308,7 @@ void	Conf::__print_everything() const
 			std::cout << *c_it << " ";
 		std::cout << std::endl;
  		std::cout << "	Root - " << it->root << std::endl;
-		if (SC_BODYISLIMITED((*it)))
-			std::cout << "	Body limit size - " << it->body_limits << std::endl;
+		std::cout << "	Body limit size (min:max) - " << it->body_min_size << ":" << it->body_limits << std::endl;
 		if (!SC_DIRISACTIVE((*it)))
 			std::cout << "	The Directory browsing is desactivated" << std::endl;
 		std::cout << "	available methods : ";
