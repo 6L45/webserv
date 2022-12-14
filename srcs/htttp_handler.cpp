@@ -152,6 +152,7 @@ void	Http_handler::__200_response(int ret)
 	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
+	this->header_connect += "close\r\n";
 
 	if (!this->_response.empty())
 	{
@@ -163,6 +164,7 @@ void	Http_handler::__200_response(int ret)
 					+ this->header_content_loc
 					+ this->header_content_type
 					+ this->header_date
+					+ this->header_connect
 					+ this->header_server + "\r\n"
 					+ this->header_encoding + "\r\n";
 
@@ -173,6 +175,7 @@ void	Http_handler::__200_response(int ret)
 		this->_header += this->header_http1
 					+ this->header_content_loc
 					+ this->header_date
+					+ this->header_connect
 					+ this->header_server + "\r\n"
 					+ this->header_encoding + "\r\n";
 
@@ -189,13 +192,16 @@ void	Http_handler::__err_header(const int ret)
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_content_type += "text\r\n";
 	this->header_date += this->__get_time() + "\r\n";
+	this->header_connect += "close\r\n";
 	
 	this->_header += this->header_http1
 				+ this->header_content_loc
 				+ this->header_content_len
 				+ this->header_content_type
 				+ this->header_date
-				+ this->header_server + "\r\n" + this->header_encoding + "\r\n";
+				+ this->header_connect
+				+ this->header_server + "\r\n"
+				+ this->header_encoding + "\r\n";
 
 	this->_response = this->_header + "\r\n"  + this->_response + "\r\n";
 }
@@ -288,10 +294,10 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	}
 		
 	// get body response
-	if (file.peek() == EOF)
+	if (file.rdbuf()->in_avail() == 0)
 	{
 		file.close();
-		throw 204;
+		return ;
 	}
 	// There are readable characters remaining in the file
 	std::stringstream	buffer;
