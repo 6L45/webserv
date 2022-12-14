@@ -57,6 +57,8 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 
 	new_serv.methods = 0;
 	new_serv.options = 0;
+	new_serv.body_limits = 30000;
+	
 	__erase_tab_space(line);
 	if (line.empty() && !fs.eof())
 		__get_line(fs, line);
