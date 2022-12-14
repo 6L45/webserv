@@ -90,11 +90,6 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 			__add_to<std::string>(new_serv.root, line.erase(0, line.find(':') + 1));
 		else if (!line.compare(0, 19, "unactive-max-delay:"))
 			__add_to<int>(new_serv.unactive_max_delay, line.erase(0, line.find(':') + 1));
-		else if (!line.compare(0, 16, "body-size-limit:"))
-		{
-			__add_to<int>(new_serv.body_limits, line.erase(0, line.find(':') + 1));
-			_SC_BODYLIMITACTIVATE(new_serv);
-		}
 		else if (!line.compare(0, 18, "directory-browser:"))
 		{
 			//check the argument if == activate
@@ -159,6 +154,11 @@ void	Conf::__parse_html(std::ifstream &fs, std::string& line, __server_conf& srv
 				srv.index.push_back(temp);
 				__erase_tab_space(line);
 			}
+		}
+		else if (!line.compare(0, 16, "body-size-limit:"))
+		{
+			__add_to<int>(srv.body_limits, line.erase(0, line.find(':') + 1));
+			_SC_BODYLIMITACTIVATE(srv);
 		}
 		else if (!line.compare(0, 1, "}"))
 			break ;

@@ -35,6 +35,7 @@ class Server
 		std::string					_name;
 		char						_options;
 		char						_methods;
+		int							_body_max_size;
 
 
 

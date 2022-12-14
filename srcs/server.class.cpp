@@ -7,7 +7,8 @@ Server::Server(__server_conf sc)
 		_root(sc.root),
 		_name(sc.server_name),
 		_options(sc.options),
-		_methods(sc.methods)
+		_methods(sc.methods),
+		_body_max_size(sc.body_limits)
 { }
 
 // Server::Server(int port)

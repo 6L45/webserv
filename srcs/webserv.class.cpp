@@ -2,7 +2,8 @@
 
 Webserv::Webserv(Conf config)
 	:	_state(1),
-		_conf(config)
+		_conf(config),
+		_max_connexion(config._max_connexion)
 {
 	port_fd					socket; // opened socket
 

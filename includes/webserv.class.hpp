@@ -53,6 +53,7 @@ class Webserv
 		std::list<Client>							_clients; //list car beaucoup de connexion et deconnexions sont attendues.
 		char										_state;
 		fd_set										_current_sockets;
+		int											_max_connexion;
 
 		Conf										_conf;
 
