@@ -64,7 +64,9 @@ class Http_handler // : inherit from a execution class ?
 
 		// utils
 		std::string		__get_time(void);
-		void			__init_response(std::string &value);
+		void			__clean_address(void);
+		void			__close_and_throw(std::fstream &file, int err);
+
 };
 
 typedef struct links

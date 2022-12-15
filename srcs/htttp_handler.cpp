@@ -16,10 +16,12 @@ Http_handler::Http_handler(std::string &request)
 
 	// Split the first line into its individual components
 	std::istringstream firstLineStream(firstLine);
-	std::string address, version;
+	std::string	version;
 
-	firstLineStream >> this->_method >> address >> version;
-	this->_req_dict.insert(std::make_pair(this->_method, address));
+	firstLineStream >> this->_method >> this->_address >> version;
+	this->__clean_address();
+
+	this->_req_dict.insert(std::make_pair(this->_method, this->_address));
 
 	std::string line;
 	while (std::getline(iss, line))
@@ -50,20 +52,16 @@ Http_handler::Http_handler(std::string &request)
 	this->_req_dict.insert(std::make_pair("BODY", request.substr(pos + 4)));
 }
 
-
-
-
-
-
-
-
-
-
-
 // PUBLIC METHOD
 std::string	Http_handler::exec_request(Server &serv)
 {
 	typename Http_handler::MMAPIterator	val;
+	struct stat	path_stat;
+	bool		cgi;
+
+	if (stat(this->_address.c_str(), &path_stat) == 0
+		&& path_stat.st_mode & S_IXUSR) 
+		cgi == true;
 
 	try
 	{
@@ -72,7 +70,13 @@ std::string	Http_handler::exec_request(Server &serv)
 		{
 			if (!SV_GETISSET(serv))
 				throw 406;
-
+/*			
+			if (cgi)
+			{
+				this->__cgi_handler(this->_address);
+				return (this->_response);
+			}
+*/
 			this->__GET_response(val->second, serv);
 
 			if (!this->_response.empty())
@@ -86,7 +90,10 @@ std::string	Http_handler::exec_request(Server &serv)
 		{
 			if (!SV_POSTISSET(serv))
 				throw 406;
-
+/*
+			if (cgi)
+				throw 400;
+*/
 			int ret = this->__POST_response(val->second, serv);
 			this->__200_response(ret);
 		}
@@ -96,7 +103,10 @@ std::string	Http_handler::exec_request(Server &serv)
 		{
 			if (!SV_DELETEISSET(serv))
 				throw 406;
-
+/*
+			if (cgi)
+				throw 400;
+*/
 			this->__DELETE_response(val->second, serv);
 			this->__200_response(204);
 		}
@@ -236,7 +246,6 @@ void	Http_handler::__body_gen(int ret)
 // RESPONSES
 void	Http_handler::__GET_response(std::string &value, Server &serv)
 {
-	this->__init_response(value);
 	std::string	request_loc(this->_address);
 
 	// HOME ----------------------------------------------------------------	
@@ -312,27 +321,37 @@ int	Http_handler::__POST_response(std::string &value, Server &serv)
 		|| this->_req_dict.find("Content-Type") == this->_req_dict.end() )
 		throw 411;
 
-	this->__init_response(value);
-
 	int ret;
-	struct stat path_stat;
+	
 	std::string	path = serv._root + &this->_address[1];
+	std::fstream	file(path, std::ios::out);
+	if (!file.is_open())
+		throw 404;
+
+	struct stat path_stat;
 	stat(path.c_str(), &path_stat);
+
 	if (S_ISDIR(path_stat.st_mode))
-		throw 401;
+		this->__close_and_throw(file, 401);
+
 	if (S_ISREG(path_stat.st_mode))
 		ret = 202;
 	else
 		ret = 201;
-/*
-	if (serv.max_size > 0 && std::atol(this->_req_dict.find("Content-Length")->second.c_str()) > serv.max_size)
-		throw 413; // Max size exceeded
-	if (serv.min_size > 0 && std::atol(this->_req_dict.find("Content-Length")->second.c_str()) > serv.min_size)
-		throw 400; // min size not met
-*/
-	std::fstream	file(path, std::ios::out);
-	if (!file.is_open())
-		throw 500;
+
+	if (this->_req_dict.find("Content-Type")->second.find("multipart/form-data")
+			== std::string::npos)
+		this->__close_and_throw(file, 400);
+	
+	if (serv._body_max_size > 0
+		&& std::atol(this->_req_dict.find("Content-Length")->second.c_str())
+			> serv._body_max_size)
+		this->__close_and_throw(file, 413);
+	
+	if (serv._body_min_size > 0
+		&& std::atol(this->_req_dict.find("Content-Length")->second.c_str())
+			> serv._body_min_size)
+		this->__close_and_throw(file, 400);
 
 	file << this->_req_dict.find("BODY")->second;
 	file.close();
@@ -342,8 +361,6 @@ int	Http_handler::__POST_response(std::string &value, Server &serv)
 
 void	Http_handler::__DELETE_response(std::string &value, Server &serv)
 {
-	this->__init_response(value);
-
 	struct stat path_stat;
 	std::string	path = (serv._root + &this->_address[1]);
 	stat(path.c_str(), &path_stat);
@@ -421,11 +438,8 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
 
 
 // UTILS
-void	Http_handler::__init_response(std::string &value)
+void	Http_handler::__clean_address()
 {
-	int index = value.find("HTTP");
-	this->_address = value.substr(0, index - 1);
-
 	if (this->_address.compare("/"))
 	{
 		int i = this->_address.length() - 1; 
@@ -449,4 +463,10 @@ std::string	Http_handler::__get_time()
 	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
 
 	return (std::string(buffer));
+}
+
+void	Http_handler::__close_and_throw(std::fstream &file, int err)
+{
+	file.close();
+	throw err;
 }
