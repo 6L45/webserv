@@ -286,7 +286,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	// QUELQUE PART DANS LE SITE --------------------------------------------------
 	request_loc = serv._root + &request_loc[1];
 
-	std::ifstream file(request_loc);
+	std::ifstream file;
 	file.open(request_loc, std::ios::in);
 	if (!file.is_open())
 		throw 404;
