@@ -284,12 +284,23 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	}
 
 	// QUELQUE PART DANS LE SITE --------------------------------------------------
-	request_loc = serv._root + &request_loc[1];
 
 	std::ifstream file;
-	file.open(request_loc, std::ios::in);
-	if (!file.is_open())
-		throw 404;
+	if (request_loc == "/autoindex")
+	{
+		request_loc = serv._root;
+		file.open(request_loc, std::ios::in);
+		if (!file.is_open())
+			throw 500;
+
+	}
+	else
+	{
+		request_loc = serv._root + &request_loc[1];
+		file.open(request_loc, std::ios::in);
+		if (!file.is_open())
+			throw 404;
+	}
 
 	// évalue si c'est un directory
 	struct stat	path_stat;
@@ -297,6 +308,8 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 	if (S_ISDIR(path_stat.st_mode))
 	{
+		if (!SV_DIRISACTIVE(serv))
+			throw 403;
 		__directory_browser(request_loc.c_str(), this->_address);
 		file.close();
 		return ;
