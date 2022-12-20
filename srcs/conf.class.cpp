@@ -98,6 +98,18 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 			//check the argument if == activate
 			_SC_DIRACTIVATE(new_serv);
 		}
+		else if (!line.compare(0, 4, "cgi:"))
+		{
+			line.erase(0, line.find(':') + 1);
+			__erase_tab_space(line);
+			while (!line.empty())
+			{
+				std::string temp;
+				__get_info(temp, line);
+				new_serv.cgi.push_back(temp);
+				__erase_tab_space(line);
+			}
+		}
 		else if (!line.compare(0, 4, "html"))
 			__parse_html(fs, line.erase(0,4), new_serv);
 		else if (!line.compare(0, 1, "}"))
@@ -321,8 +333,16 @@ void	Conf::__print_everything() const
 		if (!it->methods)
 			std::cout << "none";
 		std::cout << std::endl;
+		std::cout << "	CGI : ";
+		if (it->cgi.empty())
+			std::cout << "Unactive";
+		else
+		{
+			for (std::vector<std::string>::const_iterator c_it = it->cgi.begin(); c_it != it->cgi.end(); c_it++)
+				std::cout << *c_it << " ";
+		}
+		std::cout << std::endl << std::endl;
 	}
-
 	std::cout << "End of Conifguration file parsing" << std::endl;
 }
 

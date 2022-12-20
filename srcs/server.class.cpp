@@ -6,44 +6,12 @@ Server::Server(__server_conf sc)
 		_index(sc.index),
 		_root(sc.root),
 		_name(sc.server_name),
+		_cgi(sc.cgi),
 		_options(sc.options),
 		_methods(sc.methods),
 		_body_max_size(sc.body_limits),
 		_body_min_size(sc.body_min_size)
 { }
-
-// Server::Server(int port)
-// {
-// 	this->_domain =		AF_INET | PF_INET;
-// 	this->_service =	SOCK_STREAM;
-// 	this->_protocol =	0;
-// 	this->_port =		port;
-// 	this->_interface =	INADDR_ANY;
-
-// 	this->_address.sin_family =			this->_domain; //AF_INET
-// 	this->_address.sin_port =			htons(this->_port);
-// 	this->_address.sin_addr.s_addr =	htonl(this->_interface); // INADRR_ANY
-
-// 	// socket creation 
-// 	this->_sock = socket(this->_domain, this->_service, this->_protocol);
-// 	fcntl(_sock, F_SETFL, O_NONBLOCK);
-// 	// bind socket to a port
-// 	if ( (bind(this->_sock, (struct sockaddr *)&(this->_address), 
-// 					sizeof(this->_address))) < 0 )
-// 	{
-// 		perror("Error : bind socket");
-// 		exit(EXIT_FAILURE);
-// 	}
-
-// 	// listen to the port
-// 	if ( (listen(this->_sock, 10)) < 0 ) // <--- second arg = backlog : defines the maximum length to which the queue of pending connections for sockfd may grow
-// 	{
-// 		perror("Error : listen");
-// 		exit(EXIT_FAILURE);
-// 	}
-
-// 	std::cout << "connected and listening : " << this->_sock << std::endl;
-// }
 
 bool		Server::belong_to(const std::string& host_port) const
 {

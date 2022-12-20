@@ -32,6 +32,7 @@ public:
 	std::string					root;
 	std::vector<std::string>	host;
 	std::vector<std::string>	index;
+	std::vector<std::string>	cgi;
 	char						options;
 	char						methods;
 	int							body_limits;

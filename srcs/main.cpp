@@ -26,7 +26,7 @@ int main(int ac, char **av, char **env)
 	try
 	{
 		Conf	config(path_to_conf);
-		Webserv test(config);
+		Webserv test(config, env);
 		test.launch();
 	}
 	catch(const std::exception& e)

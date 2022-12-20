@@ -33,6 +33,7 @@ class Server
 		std::vector<std::string>	_index;
 		std::string					_root;
 		std::string					_name;
+		std::vector<std::string>	_cgi;
 		char						_options;
 		char						_methods;
 		int							_body_max_size;

@@ -1,9 +1,10 @@
 #include "webserv.class.hpp"
 
-Webserv::Webserv(Conf config)
+Webserv::Webserv(Conf config, char** env)
 	:	_state(1),
 		_conf(config),
-		_max_connexion(config._max_connexion)
+		_max_connexion(config._max_connexion),
+		_env(env)
 {
 	port_fd					socket; // opened socket
 
@@ -88,6 +89,8 @@ Webserv::~Webserv()
 	for (std::map<int,port_fd>::const_iterator c_it = _track.begin(); c_it != _track.end(); c_it++)
 		close(c_it->second);
 	FD_ZERO(&_current_sockets); // just in case
+	std::cout << "++ closing the webserver ++" << std::endl;
+	std::cout << "If you enjoyed the experience, please donate on Paypal to @webservteam42" << std::endl;
 }
 
 void 	Webserv::launch()
@@ -96,18 +99,20 @@ void 	Webserv::launch()
 	socklen_t			client_len;
 	fd_set				ready_sockets;
 	port_fd				fd;
-/*	struct timeval		tempo;
+	int					select_ret;
+	int					write = 0;
+	struct timeval		tempo;
 
-	tempo.tv_sec = 0;
-	tempo.tv_usec = 1;
-*/
-//	uint16_t			conn_port;
+	tempo.tv_sec = 1;
+	tempo.tv_usec = 0;
 	client_len = sizeof(client);
-	FD_SET(STDIN_FILENO, &_current_sockets); //listening to the stdin for console manipulations
+	/* Listening to STDIN for console manipulations */
+	FD_SET(STDIN_FILENO, &_current_sockets);
 
 	while (WS_ISRUNNING)
 	{
-		std::cout << "++ waiting for connection ++" << std::endl; 
+		if (!write)
+			std::cout << "++ waiting for connections ++" << std::endl; 
 		if (WS_ISINPAUSE)
 		{
 			FD_ZERO(&ready_sockets);
@@ -115,11 +120,27 @@ void 	Webserv::launch()
 		}
 		else
 			ready_sockets = _current_sockets;
-		if (select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL) < 0)
+		select_ret = select(FD_SETSIZE, &ready_sockets, NULL, NULL, &tempo);
+		if (select_ret < 0)
 		{
-			perror("select error");
-			exit(EXIT_FAILURE);
+			perror("fatal error : select");
+			break ;
 		}
+		if (select_ret == 0)
+		{
+			if (!std::cin.gcount())
+			{
+				write++;
+				std::cout << '\r';
+				for (int i = 0; i < write; i++)
+					std::cout << '=';
+				std::cout << '>';
+				std::cout.flush();
+				continue ;
+			}
+		}
+		write = 0;
+		std::cout << std::endl;
 		for (int i = 0; i < FD_SETSIZE; i++)
 		{
 			if (FD_ISSET(i, &ready_sockets))
@@ -143,7 +164,6 @@ void 	Webserv::launch()
 					FD_SET(fd, &_current_sockets);
 					std::cout << "++ Connexion accepted ++" << std::endl;
 					
-					// this->_fds.insert(std::pair<int, int>(this->_confd, i));
 //					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
 //					std::cout << "sin_addr : " << ntohs(client.sin_addr.s_addr) << std::endl;
 				}

@@ -34,7 +34,7 @@ class Webserv
 {
 	public :
 		// constru - destru
-		Webserv(Conf config);
+		Webserv(Conf config, char** env);
 		~Webserv();
 		
 		// public methods
@@ -54,6 +54,7 @@ class Webserv
 		char										_state;
 		fd_set										_current_sockets;
 		int											_max_connexion;
+		char										**_env;
 
 		Conf										_conf;
 
