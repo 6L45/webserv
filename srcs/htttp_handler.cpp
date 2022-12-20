@@ -57,12 +57,10 @@ std::string	Http_handler::exec_request(Server &serv)
 {
 	typename Http_handler::MMAPIterator	val;
 	struct stat	path_stat;
-	bool		cgi;
+	bool		cgi = false;
 
-
-	if (stat((serv._root + this->_address).c_str(), &path_stat) == 0
-		&& path_stat.st_mode & S_IXUSR) 
-			cgi == true;
+	if (this->__extension_checker(serv))
+		cgi == true;
 	try
 	{
 		// GET METHOD
@@ -70,13 +68,13 @@ std::string	Http_handler::exec_request(Server &serv)
 		{
 			if (!SV_GETISSET(serv))
 				throw 406;
-/*			
-			if (cgi)
+			
+			if (cgi && !serv._cgi.empty())
 			{
-				this->__cgi_handler(this->_address);
+				this->__CGI_exec(serv._root + this->_address, serv);
 				return (this->_response);
 			}
-*/
+
 			this->__GET_response(val->second, serv);
 
 			if (!this->_response.empty())
@@ -90,10 +88,10 @@ std::string	Http_handler::exec_request(Server &serv)
 		{
 			if (!SV_POSTISSET(serv))
 				throw 406;
-/*
+
 			if (cgi)
-				throw 400;
-*/
+				throw 403;
+
 			int ret = this->__POST_response(val->second, serv);
 			this->__200_response(ret);
 		}
@@ -103,10 +101,10 @@ std::string	Http_handler::exec_request(Server &serv)
 		{
 			if (!SV_DELETEISSET(serv))
 				throw 406;
-/*
+
 			if (cgi)
-				throw 400;
-*/
+				throw 403;
+
 			this->__DELETE_response(val->second, serv);
 			this->__200_response(204);
 		}
@@ -244,11 +242,6 @@ void	Http_handler::__body_gen(int ret)
 
 
 // RESPONSES
-void	Http_handler::__CGI_exec(const std::string path)
-{
-
-}
-
 void	Http_handler::__GET_response(std::string &value, Server &serv)
 {
 	std::string	request_loc(this->_address);
@@ -395,6 +388,79 @@ void	Http_handler::__DELETE_response(std::string &value, Server &serv)
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+// CGI_PART
+void	Http_handler::__CGI_exec(const std::string path, Server &serv)
+{
+	int pipefd[2];
+
+	if (pipe(pipefd) == -1)
+		throw 500;
+
+	pid_t	pid = fork();
+	if (pid == -1)
+		throw 500;
+
+	else if (pid == 0) // child
+	{
+		close(pipefd[0]);				// Close la partie read
+		dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout + str sur la partie write de pipe
+		dup2(pipefd[1], STDERR_FILENO);
+
+		char *argv[] = {const_cast<char *>(path.c_str()), nullptr};
+		execve(argv[0], argv, nullptr);
+
+		exit(EXIT_FAILURE);
+	}
+
+	else // parent
+	{
+		close(pipefd[1]); // close la partie write
+
+		int	status;
+		waitpid(pid, &status, 0);
+
+		if (WIFEXITED(status)) // child process terminated normally
+		{
+			int exitCode = WEXITSTATUS(status);
+			if (exitCode != 0) // the child process exited with error code
+				throw 500;
+		}
+		else
+			throw 500; // The child process terminated abnormally (e.g. due to a signal)
+		
+		char buffer[MAXLINE];
+		ssize_t	n;
+		
+		while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0)
+			this->_response.append(buffer, n);
+	}
+}
+
+bool	Http_handler::__extension_checker(Server &serv)
+{
+	std::size_t dotPos = this->_address.find_last_of('.');
+
+	if (dotPos != std::string::npos)
+	{
+		std::string	extension = this->_address.substr(dotPos + 1);
+
+		if (!extension.empty()
+			&& (std::find(serv._cgi.begin(),
+							serv._cgi.end(), extension) != serv._cgi.end()))
+			return (true);
+	}
+	return (false);
+}
 
 
 

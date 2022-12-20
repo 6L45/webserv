@@ -31,6 +31,9 @@
 # include <cstdio>
 # include <cstdlib>  // for rand(), srand(), and RAND_MAX
 
+# include <unistd.h>
+# include <sys/wait.h>
+
 # include "http_ret_code.hpp"
 
 # define SERVER_PORT 18002

@@ -53,10 +53,13 @@ class Http_handler // : inherit from a execution class ?
 		std::string		__filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host);
 
 		// method exec - response init
-		void			__CGI_exec(const std::string path);
 		void			__GET_response(std::string &value, Server &serv);
 		void			__DELETE_response(std::string &value, Server &serv);
 		int				__POST_response(std::string &value, Server &serv);
+
+		// CGI part
+		void			__CGI_exec(const std::string path, Server &serv);
+		bool			__extension_checker(Server &serv);
 
 		// response generator		
 		void			__200_response(int ret);
