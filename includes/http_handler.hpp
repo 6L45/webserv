@@ -52,7 +52,8 @@ class Http_handler // : inherit from a execution class ?
 		void			__directory_browser(const char *path, std::string const &host);
 		std::string		__filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host);
 
-		// method exec - response init 		
+		// method exec - response init
+		void			__CGI_exec(const std::string path);
 		void			__GET_response(std::string &value, Server &serv);
 		void			__DELETE_response(std::string &value, Server &serv);
 		int				__POST_response(std::string &value, Server &serv);

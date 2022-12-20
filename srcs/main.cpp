@@ -12,7 +12,6 @@ void	fatal_error(std::string msg, int exit_status)
 int main(int ac, char **av, char **env)
 {
 /*
-	
 		Check if there is a good number of argument
 		Usage : webserv <path_to_config_file>
 */	
