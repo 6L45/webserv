@@ -20,10 +20,12 @@
 class Server
 {
 	public :
-		Server(__server_conf sc);
+		Server(__server_conf sc, char **env);
 		~Server() {};
 
 		bool		belong_to(const std::string& host_port) const;
+		bool		cgi_exec(const std::string& file_name) const;
+		std::string		get_cgi_path(const std::string& file_name) const;
 		// void		request_handler(int &fd);
 		// void		send_response(int fd, fd_set &current_sockets, std::string &response);
 
@@ -33,11 +35,12 @@ class Server
 		std::vector<std::string>	_index;
 		std::string					_root;
 		std::string					_name;
-		std::vector<std::string>	_cgi;
+		std::vector<std::pair<std::string, std::string> >	_cgi;
 		char						_options;
 		char						_methods;
 		int							_body_max_size;
 		int							_body_min_size;
+		char						**_env;
 
 
 

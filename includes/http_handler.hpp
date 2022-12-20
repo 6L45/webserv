@@ -59,7 +59,7 @@ class Http_handler // : inherit from a execution class ?
 
 		// CGI part
 		void			__CGI_exec(const std::string path, Server &serv);
-		bool			__extension_checker(Server &serv);
+		// bool			__extension_checker(Server &serv);
 
 		// response generator		
 		void			__200_response(int ret);

@@ -59,8 +59,8 @@ std::string	Http_handler::exec_request(Server &serv)
 	struct stat	path_stat;
 	bool		cgi = false;
 
-	if (this->__extension_checker(serv))
-		cgi == true;
+	// if (this->__extension_checker(serv))
+	// 	cgi == true;
 	try
 	{
 		// GET METHOD
@@ -69,13 +69,12 @@ std::string	Http_handler::exec_request(Server &serv)
 			if (!SV_GETISSET(serv))
 				throw 406;
 			
-			if (cgi && !serv._cgi.empty())
+			if (serv.cgi_exec(this->_address))
 			{
 				this->__CGI_exec(serv._root + this->_address, serv);
-				return (this->_response);
 			}
-
-			this->__GET_response(val->second, serv);
+			else
+				this->__GET_response(val->second, serv);
 
 			if (!this->_response.empty())
 				this->__200_response(200);
@@ -260,11 +259,11 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 			if (file.is_open())
 			{
 				// read / get file and close file
-				if (file.rdbuf()->in_avail() == 0)
-				{
-					file.close();
-					return ;
-				}
+				// if (file.rdbuf()->in_avail() == 0)
+				// {
+				// 	file.close();
+				// 	return ;
+				// }
 				std::stringstream	buffer;
 				buffer << file.rdbuf();
 				file.close();
@@ -313,11 +312,11 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	}
 		
 	// get body response
-	if (file.rdbuf()->in_avail() == 0)
-	{
-		file.close();
-		return ;
-	}
+	// if (file.rdbuf()->in_avail() == 0)
+	// {
+	// 	file.close();
+	// 	return ;
+	// }
 	// There are readable characters remaining in the file
 	std::stringstream	buffer;
 	buffer << file.rdbuf();
@@ -412,19 +411,26 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 
 	else if (pid == 0) // child
 	{
-		close(pipefd[0]);				// Close la partie read
-		dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout + str sur la partie write de pipe
-		dup2(pipefd[1], STDERR_FILENO);
 
-		char *argv[] = {const_cast<char *>(path.c_str()), nullptr};
-		execve(argv[0], argv, nullptr);
+		char *argv[3];
 
-		exit(EXIT_FAILURE);
+		if (close(pipefd[0]) == -1 // Close la partie read
+			|| dup2(pipefd[1], STDOUT_FILENO) == -1 // Redirect stdout + str sur la partie write de pipe
+			|| dup2(pipefd[1], STDERR_FILENO) == -1)
+			exit(EXIT_FAILURE);
+
+		argv[0] = const_cast<char *>(serv.get_cgi_path(path).c_str());
+		argv[1] = const_cast<char *>(path.c_str());
+		argv[2] = NULL;
+		// char *argv[] = {const_cast<char *>(path.c_str()), nullptr};
+		execve(argv[0], argv, serv._env);
+		exit(EXIT_FAILURE);	
 	}
 
 	else // parent
 	{
-		close(pipefd[1]); // close la partie write
+		if (close(pipefd[1]) == -1) // close la partie write
+			throw 500;
 
 		int	status;
 		waitpid(pid, &status, 0);
@@ -437,7 +443,6 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 		}
 		else
 			throw 500; // The child process terminated abnormally (e.g. due to a signal)
-		
 		char buffer[MAXLINE];
 		ssize_t	n;
 		
@@ -446,21 +451,21 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 	}
 }
 
-bool	Http_handler::__extension_checker(Server &serv)
-{
-	std::size_t dotPos = this->_address.find_last_of('.');
+// bool	Http_handler::__extension_checker(Server &serv)
+// {
+// 	std::size_t dotPos = this->_address.find_last_of('.');
 
-	if (dotPos != std::string::npos)
-	{
-		std::string	extension = this->_address.substr(dotPos + 1);
+// 	if (dotPos != std::string::npos)
+// 	{
+// 		std::string	extension = this->_address.substr(dotPos + 1);
 
-		if (!extension.empty()
-			&& (std::find(serv._cgi.begin(),
-							serv._cgi.end(), extension) != serv._cgi.end()))
-			return (true);
-	}
-	return (false);
-}
+// 		if (!extension.empty()
+// 			&& (std::find(serv._cgi.begin(),
+// 							serv._cgi.end(), extension) != serv._cgi.end()))
+// 			return (true);
+// 	}
+// 	return (false);
+// }
 
 
 

@@ -15,7 +15,6 @@ int main(int ac, char **av, char **env)
 		Check if there is a good number of argument
 		Usage : webserv <path_to_config_file>
 */	
-
     srand(time(nullptr));
 	if (ac == 1)
 		fatal_error("Not enough argument, usage: webserv <path_to_config_file>", 1);

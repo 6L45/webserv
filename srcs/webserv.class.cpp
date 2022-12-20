@@ -12,7 +12,7 @@ Webserv::Webserv(Conf config, char** env)
 
 	for (std::vector<__server_conf>::const_iterator it = _conf._sc.begin(); it != _conf._sc.end(); it++)
 	{
-		Server new_server(*it);
+		Server new_server(*it, env);
 		_servers.push_back(new_server);
 	}
 	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); it++)
@@ -100,7 +100,7 @@ void 	Webserv::launch()
 	fd_set				ready_sockets;
 	port_fd				fd;
 	int					select_ret;
-	int					write = 0;
+	int					write = -1;
 	struct timeval		tempo;
 
 	tempo.tv_sec = 1;
@@ -111,7 +111,7 @@ void 	Webserv::launch()
 
 	while (WS_ISRUNNING)
 	{
-		if (!write)
+		if (write == -1)
 			std::cout << "++ waiting for connections ++" << std::endl; 
 		if (WS_ISINPAUSE)
 		{
@@ -128,18 +128,20 @@ void 	Webserv::launch()
 		}
 		if (select_ret == 0)
 		{
-			if (!std::cin.gcount())
+			write = (write + 1) % 5;
+			std::cout << '\r';
+			for (int i = 0; i < 5; i++)
 			{
-				write++;
-				std::cout << '\r';
-				for (int i = 0; i < write; i++)
+				if (i < write)
 					std::cout << '=';
-				std::cout << '>';
-				std::cout.flush();
-				continue ;
+				else
+					std::cout << ' ';
 			}
+			std::cout << '>';
+			std::cout.flush();
+			continue ;
 		}
-		write = 0;
+		write = -1;
 		std::cout << std::endl;
 		for (int i = 0; i < FD_SETSIZE; i++)
 		{

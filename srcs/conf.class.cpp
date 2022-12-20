@@ -100,15 +100,18 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 		}
 		else if (!line.compare(0, 4, "cgi:"))
 		{
+			std::string frst;
+			std::string scnd;
+			
 			line.erase(0, line.find(':') + 1);
 			__erase_tab_space(line);
-			while (!line.empty())
-			{
-				std::string temp;
-				__get_info(temp, line);
-				new_serv.cgi.push_back(temp);
-				__erase_tab_space(line);
-			}
+			__get_info(frst, line);
+			__erase_tab_space(line);
+			__get_info(scnd, line);
+			__erase_tab_space(line);
+			new_serv.cgi.push_back(make_pair(frst,scnd));
+			if (!line.empty())
+				__error_file_notif(_line_read, "lastest arguments are ignored");
 		}
 		else if (!line.compare(0, 4, "html"))
 			__parse_html(fs, line.erase(0,4), new_serv);
@@ -338,8 +341,8 @@ void	Conf::__print_everything() const
 			std::cout << "Unactive";
 		else
 		{
-			for (std::vector<std::string>::const_iterator c_it = it->cgi.begin(); c_it != it->cgi.end(); c_it++)
-				std::cout << *c_it << " ";
+			for (std::vector<std::pair<std::string,std::string> >::const_iterator c_it = it->cgi.begin(); c_it != it->cgi.end(); c_it++)
+				std::cout << "(" << c_it->first << "," << c_it->second<< ") ";
 		}
 		std::cout << std::endl << std::endl;
 	}

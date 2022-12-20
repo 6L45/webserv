@@ -1,6 +1,6 @@
 #include "server.class.hpp"
 
-Server::Server(__server_conf sc)
+Server::Server(__server_conf sc, char **env)
 	:	_port(sc.port),
 		_host(sc.host),
 		_index(sc.index),
@@ -10,8 +10,33 @@ Server::Server(__server_conf sc)
 		_options(sc.options),
 		_methods(sc.methods),
 		_body_max_size(sc.body_limits),
-		_body_min_size(sc.body_min_size)
+		_body_min_size(sc.body_min_size),
+		_env(env)
 { }
+
+bool		Server::cgi_exec(const std::string& file_name) const
+{
+	for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _cgi.begin(); it != _cgi.end(); it++)
+	{
+		if (it->first.size() > file_name.size())
+			continue ;
+		if (! file_name.compare(file_name.size() - it->first.size(), it->first.size(), it->first))
+			return (true);
+	}
+	return (false);
+}
+
+std::string		Server::get_cgi_path(const std::string& file_name) const
+{
+	for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _cgi.begin(); it != _cgi.end(); it++)
+	{
+		if (it->first.size() > file_name.size())
+			continue ;
+		if (! file_name.compare(file_name.size() - it->first.size(), it->first.size(), it->first))
+			return (it->second);
+	}
+	return (NULL);
+}
 
 bool		Server::belong_to(const std::string& host_port) const
 {
