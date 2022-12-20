@@ -59,10 +59,10 @@ std::string	Http_handler::exec_request(Server &serv)
 	struct stat	path_stat;
 	bool		cgi;
 
-	if (stat(this->_address.c_str(), &path_stat) == 0
-		&& path_stat.st_mode & S_IXUSR) 
-		cgi == true;
 
+	if (stat((serv._root + this->_address).c_str(), &path_stat) == 0
+		&& path_stat.st_mode & S_IXUSR) 
+			cgi == true;
 	try
 	{
 		// GET METHOD
@@ -244,13 +244,18 @@ void	Http_handler::__body_gen(int ret)
 
 
 // RESPONSES
+void	Http_handler::__CGI_exec(const std::string path)
+{
+
+}
+
 void	Http_handler::__GET_response(std::string &value, Server &serv)
 {
 	std::string	request_loc(this->_address);
 
 	// HOME ----------------------------------------------------------------	
 	// Si l'adresse est home -> '/'  look dans config files les index
-	if  (!request_loc.compare("/"))
+	if  (request_loc == "/" && !SV_DIRISACTIVE(serv))
 	{
 		// parcours les index
 		for (std::vector<std::string>::iterator it = serv._index.begin();
@@ -286,13 +291,12 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	// QUELQUE PART DANS LE SITE --------------------------------------------------
 
 	std::ifstream file;
-	if (request_loc == "/autoindex")
+	if (request_loc == "/autoindex" || request_loc == "/")
 	{
 		request_loc = serv._root;
 		file.open(request_loc, std::ios::in);
 		if (!file.is_open())
 			throw 500;
-
 	}
 	else
 	{
@@ -419,7 +423,8 @@ void         Http_handler::__directory_browser(const char *path, std::string con
 
     if (dirName[0] != '/')
         dirName = "/" + dirName;
-    for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir)) {
+    for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
+	{
         page += __filesLst(std::string(dirEntry->d_name), dirName, host);
     }
 
@@ -436,7 +441,10 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
 {
     std::stringstream   ss;
 
-    ss << "<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
+	if (host == "/autoindex" || host == "/")
+    	ss << "<p><a href=/"  << dirEntry + '>' + dirEntry + "</a></p>\n";
+	else
+   		ss << "<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
     return ss.str();
 }
 
