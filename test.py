@@ -14,8 +14,8 @@ url_entry = tk.Entry()
 host_label = tk.Label(text="Host:")
 host_entry = tk.Entry()
 
-header_label = tk.Label(text="Body:")
-header_text = tk.Text()
+body_label = tk.Label(text="Body:")
+body_text = tk.Text()
 
 charset_label = tk.Label(text="Accept-Charset")
 charset_entry = tk.Entry()
@@ -33,15 +33,22 @@ def build_header():
     url = url_entry.get()
     host = host_entry.get()
     charset = charset_entry.get()
-    header = header_text.get("1.0", "end")
+    body = body_text.get("1.0", "end")
 
-    request = f"{method} {url} HTTP/1.1\r\nHost: {host}\r\nAccept_Charset: {charset}\r\n\r\n{header}\r\n\r\n"
+    request = f"{method} {url} HTTP/1.1\r\n\
+Host: {host}\r\n\
+Accept_Charset: {charset}\r\n\
+\r\n"
+
+    if len(body) == 0:
+        request += f"{body}\r\n\
+\r\n"
 
     # Print the HTTP header
-    print(request)
+    print(request, end="")
 
 # Create the button
-button = tk.Button(text="Build Header", command=build_header)
+button = tk.Button(text="Build Request", command=build_header)
 
 # Create the layout
 method_label.grid(row=0, column=0)
@@ -56,8 +63,8 @@ host_entry.grid(row=2, column=1)
 charset_label.grid(row=3, column=0)
 charset_entry.grid(row=3, column=1)
 
-header_label.grid(row=4, column=0)
-header_text.grid(row=4, column=1)
+body_label.grid(row=4, column=0)
+body_text.grid(row=4, column=1)
 
 button.grid(row=5, column=1)
 
