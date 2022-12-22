@@ -91,6 +91,8 @@ typedef struct links
 	std::string	not2D		= "		<center><iframe src=\"https://giphy.com/embed/RGSZZQC7SSc91VhDe7\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	RickFk		= "		<center><iframe src=\"https://giphy.com/embed/fvfRNXU8gkH0sLvDzQ\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	std::string	RickSht		= "		<center><iframe src=\"https://giphy.com/embed/3Fdskc7J0timI\" width=\"480\" height=\"270\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
+	std::string	theOffice	= "		<center><iframe src=\"https://giphy.com/embed/Yycc82XEuWDaLLi2GV\" width=\"480\" height=\"400\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
+	std::string	chicken		= "		<center><iframe src=\"https://giphy.com/embed/ftqLysT45BJMagKFuk\" width=\"480\" height=\"405\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe></center>";
 	
 	std::vector<std::string>	hehe;
 
@@ -112,6 +114,8 @@ typedef struct links
 		hehe.push_back(not2D);
 		hehe.push_back(RickFk);
 		hehe.push_back(RickSht);
+		hehe.push_back(theOffice);
+		hehe.push_back(chicken);
 		
 		hehe.shrink_to_fit();
 	}

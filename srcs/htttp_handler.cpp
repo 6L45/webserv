@@ -59,8 +59,6 @@ std::string	Http_handler::exec_request(Server &serv)
 	struct stat	path_stat;
 	bool		cgi = false;
 
-	// if (this->__extension_checker(serv))
-	// 	cgi == true;
 	try
 	{
 		// GET METHOD
@@ -70,9 +68,7 @@ std::string	Http_handler::exec_request(Server &serv)
 				throw 406;
 			
 			if (serv.cgi_exec(this->_address))
-			{
-				this->__CGI_exec(serv._root + this->_address, serv);
-			}
+				this->__CGI_exec(serv._root + &this->_address[1], serv);
 			else
 				this->__GET_response(val->second, serv);
 
@@ -258,12 +254,12 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 			file.open(serv._root + *it, std::ios::in);
 			if (file.is_open())
 			{
-				// read / get file and close file
-				// if (file.rdbuf()->in_avail() == 0)
-				// {
-				// 	file.close();
-				// 	return ;
-				// }
+				//read / get file and close file
+				if (file.rdbuf()->in_avail() == 0)
+				{
+					file.close();
+					return ;
+				}
 				std::stringstream	buffer;
 				buffer << file.rdbuf();
 				file.close();
@@ -312,12 +308,12 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	}
 		
 	// get body response
-	// if (file.rdbuf()->in_avail() == 0)
-	// {
-	// 	file.close();
-	// 	return ;
-	// }
-	// There are readable characters remaining in the file
+	if (file.rdbuf()->in_avail() == 0)
+	{
+		file.close();
+		return ;
+	}
+	//There are readable characters remaining in the file
 	std::stringstream	buffer;
 	buffer << file.rdbuf();
 	file.close();
@@ -404,14 +400,12 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 
 	if (pipe(pipefd) == -1)
 		throw 500;
-
+	
 	pid_t	pid = fork();
 	if (pid == -1)
 		throw 500;
-
 	else if (pid == 0) // child
 	{
-
 		char *argv[3];
 
 		if (close(pipefd[0]) == -1 // Close la partie read
@@ -419,10 +413,12 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 			|| dup2(pipefd[1], STDERR_FILENO) == -1)
 			exit(EXIT_FAILURE);
 
-		argv[0] = const_cast<char *>(serv.get_cgi_path(path).c_str());
+		std::string	tmp(serv.get_cgi_path(path));
+
+		argv[0] = const_cast<char *>(tmp.c_str());
 		argv[1] = const_cast<char *>(path.c_str());
 		argv[2] = NULL;
-		// char *argv[] = {const_cast<char *>(path.c_str()), nullptr};
+
 		execve(argv[0], argv, serv._env);
 		exit(EXIT_FAILURE);	
 	}
@@ -431,7 +427,6 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 	{
 		if (close(pipefd[1]) == -1) // close la partie write
 			throw 500;
-
 		int	status;
 		waitpid(pid, &status, 0);
 
@@ -443,29 +438,21 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 		}
 		else
 			throw 500; // The child process terminated abnormally (e.g. due to a signal)
-		char buffer[MAXLINE];
+
+		char buffer[1048];
 		ssize_t	n;
-		
-		while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0)
+		std::cout << "WTF" << std::endl;
+		while ((n = read(pipefd[0], buffer, 1048)) > 0)
 			this->_response.append(buffer, n);
+
+		if (close(pipefd[0]) == -1)
+		{
+			this->_response.clear();
+			throw 500;
+		}
 	}
 }
 
-// bool	Http_handler::__extension_checker(Server &serv)
-// {
-// 	std::size_t dotPos = this->_address.find_last_of('.');
-
-// 	if (dotPos != std::string::npos)
-// 	{
-// 		std::string	extension = this->_address.substr(dotPos + 1);
-
-// 		if (!extension.empty()
-// 			&& (std::find(serv._cgi.begin(),
-// 							serv._cgi.end(), extension) != serv._cgi.end()))
-// 			return (true);
-// 	}
-// 	return (false);
-// }
 
 
 
