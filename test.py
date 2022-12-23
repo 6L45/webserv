@@ -65,20 +65,20 @@ charset_entry.insert(0, "utf-8")
 # Define the callback function for the button
 def build_header():
     # Build the HTTP header
-    method = selected_option.get()
-    url = url_entry.get()
-    host = host_entry.get()
-    charset = charset_entry.get()
-    accept = accept_entry.get()
-    encoding = encoding_entry.get()
-    language = language_entry.get()
-    cache = cache_entry.get()
-    connection = connection_entry.get()
-    cookie = cookie_entry.get()
-    var1 = method_var1_entry.get()
-    var2 = method_var2_entry.get()
+    method = selected_option.get().strip()
+    url = url_entry.get().strip()
+    host = host_entry.get().strip()
+    charset = charset_entry.get().strip()
+    accept = accept_entry.get().strip()
+    encoding = encoding_entry.get().strip()
+    language = language_entry.get().strip()
+    cache = cache_entry.get().strip()
+    connection = connection_entry.get().strip()
+    cookie = cookie_entry.get().strip()
+    var1 = method_var1_entry.get().strip()
+    var2 = method_var2_entry.get().strip()
 
-    body = body_text.get("1.0", "end")
+    body = body_text.get("1.0", "end").strip()
 
     request = f"{method} {url} HTTP/1.1\r\n"
 
@@ -124,10 +124,13 @@ def build_header():
         if len(var2):
             request += f"If-Unmodified-Since: {var2}\r\n"
 
-    request += "\r\n"    
-    request += body + "\r\n\r\n"
+    request += "\r\n"
+
+    if len(body):
+        request += body + "\r\n\r\n"
 
     print(request, end="")
+
 
 
 def update_entry(name, index, mode):
