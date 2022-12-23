@@ -1,0 +1,10 @@
+Dockerfile cmds
+	1 : docker build -t [name] .
+	2 : docker run -d -p 4280:4280 -p 42443:42443 [name]
+
+to erase
+	1 : docker rm $(docker ps -aq)
+	2 : docker rmi $(docker images -q)
+
+PS : webserv.conf est juste un exemple que j'ai utilisé pour ouvrir les ports 4280 et 42443 du docker nginx
+

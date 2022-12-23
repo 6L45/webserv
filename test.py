@@ -16,7 +16,7 @@ option2 = tk.Radiobutton(window, text="POST", variable=selected_option, value="P
 option3 = tk.Radiobutton(window, text="DEL", variable=selected_option, value="DELETE")
 
 
-# COMMON ------------------------------------------------------
+# COMMON ALL METHOD --------------------------------------------------
 
 url_label = tk.Label(text="URL:")
 url_entry = tk.Entry()
@@ -49,13 +49,13 @@ cookie_label = tk.Label(text="Cookie")
 cookie_entry = tk.Entry()
 # ----------------------------------------------------------------
 
-
+# FOR SPECIFIC METHOD ---------------------------------------------
 method_var1_label = tk.Label(text="")
 method_var1_entry = tk.Entry()
 
 method_var2_label = tk.Label(text="")
 method_var2_entry = tk.Entry()
-
+# ----------------------------------------------------------------
 
 # Set the default values for the widgets
 url_entry.insert(0, "localhost:18002")
