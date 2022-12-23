@@ -220,7 +220,7 @@ void	Http_handler::__body_gen(int ret)
 	this->_response += "	<body bgcolor=\"white\">\r\n";
 	this->_response += "		<center><h1>" + std::to_string(ret) + " " + g_errs[ret] + "</h1></center>\r\n";
 	this->_response += "		<center><hr>" + this->header_server + "</hr></center>\r\n";
-	this->_response +=			g_gif[1];
+	this->_response +=			g_gif[1] + "\r\n";
 	this->_response += "		<center><p>Click <a href=\"/\">here</a> to return home.</p></center>\r\n";
 	this->_response += "	</body>\r\n";
 	this->_response += "</html>\r\n";
