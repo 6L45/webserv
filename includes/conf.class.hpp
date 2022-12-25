@@ -47,14 +47,20 @@ public:
 	Conf(std::string path_to_file);
 	~Conf();
 
+#ifdef CONF_BYPASS
+	public:
+		Conf();
+		std::vector<__server_conf>	_sc;
+#else
+	private:
+		Conf();
+		std::vector<__server_conf>	_sc;
+#endif
 
 private:
-	std::vector<__server_conf>	_sc;
 	int							_max_connexion;
 	std::string					_default_error_root;
 	int							_line_read;
-	
-	Conf();
 
 	void						__parse_config_file(std::ifstream& fs);
 	void						__parse_server(std::ifstream &fs, std::string& line);

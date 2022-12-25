@@ -108,26 +108,27 @@ def send(request):
 #    send_length += b' ' * (HEADER - len(send_length))
 #    client.send(send_length)
 	try:
-		client.send(message)
+#		client.send(message)
 		docker.send(message)
 
 	except socket.error as e:
-		try:
-			client.fileno()
-		except ValueError:
-			client.connect(addr)
-			client.send(message)
+#		try:
+#			client.fileno()
+#		except ValueError:
+#			client.connect(addr)
+#			client.send(message)
 		
 		try:
 			docker.fileno()
 		except ValueError:
-			client.connect(docker_addr)
-			client.send(message)
+			docker.connect(docker_addr)
+			docker.send(message)
 
-	print()
-	print(client.recv(2048).decode(FORMAT))
+#	print()
+#	print(client.recv(2048).decode(FORMAT))
 	print()
 	print(docker.recv(2048).decode(FORMAT))
+	docker.close()
 
 
 if __name__ == "__main__":
@@ -139,8 +140,8 @@ if __name__ == "__main__":
 
 	print(f"[PORT] = {port}")
 	
-	addr = (SERVER, port)
-	client.connect(addr)
+#	addr = (SERVER, port)
+#	client.connect(addr)
 
 	# Create the main window
 	window = tk.Tk()

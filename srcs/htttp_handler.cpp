@@ -37,8 +37,9 @@ Http_handler::Http_handler(std::string &request)
 			this->_req_dict.insert(std::make_pair(field, value));
 		}
 	}
-
-	if (version != "HTTP/1.1")
+	if (this->_method.empty())
+		this->_valid = 400;
+	else if (version != "HTTP/1.1")
 		this->_valid = 505;
 	else if (this->_req_dict.find("Host") == this->_req_dict.end())
 		this->_valid = 400;

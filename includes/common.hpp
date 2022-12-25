@@ -11,6 +11,7 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <dirent.h>
+# include <limits.h>
 
 # include <map>
 # include <unordered_map>
