@@ -44,7 +44,9 @@ int main(int ac, char **av, char **env)
 		bypass_config.port = 18000;
 		bypass_config.root = "./www/web/serveur1/";
 		bypass_config.host.push_back("localhost");
-//		bypass_confsc.index = ;
+		bypass_config.index.push_back("index.php");
+		bypass_config.index.push_back("index.html");
+		bypass_config.index.push_back("index.htm");
 		bypass_config.cgi.push_back(std::make_pair(".py", "/usr/bin/python3")) ;
 		bypass_config.cgi.push_back(std::make_pair(".php", "/usr/bin/php")) ;
 		bypass_config.options = CHAR_MAX;
@@ -58,6 +60,7 @@ int main(int ac, char **av, char **env)
 		confception._sc.push_back(bypass_config);
 
 		Webserv	webserver(confception, env);
+		webserver.launch();
 	}
 	catch(const	std::exception &e)
 	{

@@ -2,12 +2,13 @@
 
 t_errs		g_errs;
 t_ret		g_ret;
+t_ext		g_ext;
 memelord	g_gif;
 
 // CONSTRUCT
 Http_handler::Http_handler(std::string &request)
 {
-	std::cout << request << std::endl << std::endl;
+//	std::cout << request << std::endl << std::endl;
 	
 	// Read the first line from the string stream
 	std::istringstream iss(request);
@@ -27,7 +28,7 @@ Http_handler::Http_handler(std::string &request)
 	while (std::getline(iss, line))
 	{
 		// Extract the field name and value from each line
-		std::size_t colonPos = line.find(':');
+		std::size_t	colonPos = line.find(':');
 		if (colonPos != std::string::npos)
 		{
 			std::string field = line.substr(0, colonPos);
@@ -37,7 +38,7 @@ Http_handler::Http_handler(std::string &request)
 			this->_req_dict.insert(std::make_pair(field, value));
 		}
 	}
-	if (this->_method.empty())
+	if (this->_method.empty() || this->__not_a_method())
 		this->_valid = 400;
 	else if (version != "HTTP/1.1")
 		this->_valid = 505;
@@ -66,49 +67,59 @@ std::string	Http_handler::exec_request(Server &serv)
 		if ( (val = this->_req_dict.find("GET")) != this->_req_dict.end() )
 		{
 			if (!SV_GETISSET(serv))
-				throw 406;
+				throw 405;
 			
 			if (serv.cgi_exec(this->_address))
 				this->__CGI_exec(serv._root + &this->_address[1], serv);
 			else
 				this->__GET_response(val->second, serv);
 
-			if (!this->_response.empty())
-				this->__200_response(200);
-			else
-				this->__200_response(204);
+			this->__200_response(200, false, serv);
 		}
 
 		// POST_METHOD
 		else if ( (val = this->_req_dict.find("POST")) != this->_req_dict.end() )
 		{
 			if (!SV_POSTISSET(serv))
-				throw 406;
+				throw 405;
 
 			if (cgi)
 				throw 403;
 
 			int ret = this->__POST_response(val->second, serv);
-			this->__200_response(ret);
+			this->__200_response(ret, false, serv);
 		}
 
 		// DELETE_METHOD
 		else if ( (val = this->_req_dict.find("DELETE")) != this->_req_dict.end() )
 		{
 			if (!SV_DELETEISSET(serv))
-				throw 406;
+				throw 405;
 
 			if (cgi)
 				throw 403;
 
 			this->__DELETE_response(val->second, serv);
-			this->__200_response(204);
+			this->__200_response(204, false, serv);
 		}
 
-		// ANY OTHER TYPE OF METHOD -> 406
-		else if (this->_method == "OPTIONS" ||this->_method == "HEAD"
-				||this->_method == "PUT" || this->_method == "PATCH")
-			throw 406;
+		else if ( (val = this->_req_dict.find("HEAD")) != this->_req_dict.end() )
+		{
+//			if (!SV_HEADISSET(serv))
+//				throw 405;
+
+			if (cgi)
+				throw 403;
+
+			this->__GET_response(val->second, serv);
+			this->__200_response(200, true, serv);
+		}
+	
+		// ANY OTHER TYPE OF METHOD -> 405
+		else if (this->_method == "OPTIONS" || this->_method == "PUT"
+				|| this->_method == "PATCH" || this->_method == "TRACE"
+				|| this->_method == "CONNECT" || this->_method == "PATCH")
+			throw 405;
 		// BAD REQUEST NO METHOD OR BS METHOD
 		else
 			throw 400;
@@ -120,6 +131,17 @@ std::string	Http_handler::exec_request(Server &serv)
 	return (this->_response);
 }
 
+
+
+
+
+
+
+
+
+
+
+// GETTER
 std::string	Http_handler::get_host_name() const {			// GET HOST NAME
 	return (this->_req_dict.find("Host")->second);
 }
@@ -140,6 +162,14 @@ std::string	Http_handler::bad_request(void)
 	return (this->_response);
 }
 
+std::string	Http_handler::get_connection() const
+{
+	std::map<std::string, std::string>::const_iterator	it = this->_req_dict.find("Connection");
+
+	if (it != this->_req_dict.end())
+		return (it->second);
+	return (std::string("null"));
+}
 
 
 
@@ -151,40 +181,31 @@ std::string	Http_handler::bad_request(void)
 
 
 // response generator
-void	Http_handler::__200_response(int ret)
+void	Http_handler::__200_response(int ret, bool head, Server &serv)
 {
 	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += this->__get_time() + "\r\n";
 	this->header_connect += "close\r\n";
-
-	if (!this->_response.empty())
-	{
-		this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
-		this->header_content_type += "text\r\n";
-		
-		this->_header += this->header_http1
-					+ this->header_content_len
-					+ this->header_content_loc
-					+ this->header_content_type
-					+ this->header_date
-					+ this->header_connect
-					+ this->header_server + "\r\n"
-					+ this->header_encoding + "\r\n";
-
-		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
-	}
+	if (this->header_content_type == "Content-Type: ")
+		this->header_content_type += g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()) + "\r\n";
+	if (this->_response.empty())
+		this->header_content_len += "0\r\n";
 	else
-	{
-		this->_header += this->header_http1
-					+ this->header_content_loc
-					+ this->header_date
-					+ this->header_connect
-					+ this->header_server + "\r\n"
-					+ this->header_encoding + "\r\n";
+		this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
+	this->_header += this->header_http1
+				+ this->header_content_len
+				+ this->header_content_loc
+				+ this->header_content_type
+				+ this->header_date
+				+ this->header_connect
+				+ this->header_server + "\r\n"
+				+ this->header_encoding + "\r\n";
 
+	if (!head && !this->_response.empty())
+		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
+	else
 		this->_response = this->_header + "\r\n";
-	}
 }
 
 void	Http_handler::__err_header(const int ret)
@@ -194,7 +215,7 @@ void	Http_handler::__err_header(const int ret)
 	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
 	this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
-	this->header_content_type += "text\r\n";
+	this->header_content_type += "text/html\r\n";
 	this->header_date += this->__get_time() + "\r\n";
 	this->header_connect += "close\r\n";
 	
@@ -207,6 +228,11 @@ void	Http_handler::__err_header(const int ret)
 				+ this->header_server + "\r\n"
 				+ this->header_encoding + "\r\n";
 
+	if (ret == 301)
+	{
+		this->header_location += this->_address + "/\r\n";
+		this->_header += this->header_location;
+	}
 	this->_response = this->_header + "\r\n"  + this->_response + "\r\n";
 }
 
@@ -268,7 +294,6 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 				// init body response avec \r\n\r\n de fin
 				this->_response = buffer.str() + "\r\n";
 
-				// OUT
 				return ;
 			}
 			// si file not open && next == end vector Aucun index valable
@@ -279,13 +304,24 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 	// QUELQUE PART DANS LE SITE --------------------------------------------------
 
-	std::ifstream file;
+	std::ifstream	file;
+	struct stat		path_stat;
+	stat(request_loc.c_str(), &path_stat);
+
 	if (request_loc == "/autoindex" || request_loc == "/")
 	{
 		request_loc = serv._root;
 		file.open(request_loc, std::ios::in);
 		if (!file.is_open())
 			throw 500;
+	}
+	else if (g_ext.get_category((serv._root + &request_loc[1]), this->__get_extension())
+				== BIN)
+	{
+		request_loc = serv._root + &request_loc[1];
+		file.open(request_loc, std::ios::binary);
+		if (!file.is_open())
+			throw 404;
 	}
 	else
 	{
@@ -296,14 +332,23 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	}
 
 	// évalue si c'est un directory
-	struct stat	path_stat;
 	stat(request_loc.c_str(), &path_stat);
 
 	if (S_ISDIR(path_stat.st_mode))
 	{
+		if (this->_address[this->_address.length() - 1] != '/')
+		{
+			file.close();
+			throw 301;
+		}
 		if (!SV_DIRISACTIVE(serv))
+		{
+			file.close();
 			throw 403;
-		__directory_browser(request_loc.c_str(), this->_address);
+		}
+		else
+			__directory_browser(request_loc.c_str(), this->_address);
+		this->header_content_type += "text/html\r\n";
 		file.close();
 		return ;
 	}
@@ -323,27 +368,31 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 int	Http_handler::__POST_response(std::string &value, Server &serv)
 {
-	if (this->_req_dict.find("Content-Length") == this->_req_dict.end()
-		|| this->_req_dict.find("Content-Type") == this->_req_dict.end() )
-		throw 411;
-
-	int ret;
-	
 	std::string	path = serv._root + &this->_address[1];
-	std::fstream	file(path, std::ios::out);
-	if (!file.is_open())
-		throw 404;
+
+	if (this->_req_dict.find("BODY") == this->_req_dict.end())
+		throw 501;
 
 	struct stat path_stat;
-	stat(path.c_str(), &path_stat);
+	if (stat(path.c_str(), &path_stat) < 0)
+		throw 404;
 
+	int ret;
 	if (S_ISDIR(path_stat.st_mode))
-		this->__close_and_throw(file, 401);
+		throw 403;
+
+	std::fstream	file(path, std::ios::out);
+	if (!file.is_open())
+		throw 500;
 
 	if (S_ISREG(path_stat.st_mode))
 		ret = 202;
 	else
 		ret = 201;
+
+	if (this->_req_dict.find("Content-Length") == this->_req_dict.end()
+		|| this->_req_dict.find("Content-Type") == this->_req_dict.end() )
+		this->__close_and_throw(file, 411);
 
 	if (this->_req_dict.find("Content-Type")->second.find("multipart/form-data")
 			== std::string::npos)
@@ -442,7 +491,6 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 
 		char buffer[1048];
 		ssize_t	n;
-		std::cout << "WTF" << std::endl;
 		while ((n = read(pipefd[0], buffer, 1048)) > 0)
 			this->_response.append(buffer, n);
 
@@ -520,13 +568,41 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
 // UTILS
 void	Http_handler::__clean_address()
 {
+	size_t pos = this->_address.find("://");
+	if (pos != std::string::npos)
+	{
+		this->_address = this->_address.substr(pos + 3);
+		this->_address = this->_address.substr(this->_address.find('/'));
+	}
 	if (this->_address.compare("/"))
 	{
 		int i = this->_address.length() - 1; 
-		while (i > 0 && this->_address[i] == '/')
+		while (i > 0 && this->_address[i] == '/' && this->_address[i - 1] == '/')
 		{
 			this->_address.erase(i);
 			i--;
+		}
+	}
+	
+	std::stringstream ss;
+	for (std::string::iterator it = this->_address.begin(); it != this->_address.end(); ++it)
+	{
+		if (*it == '%')
+		{
+			// This character is the start of a URL-encoded sequence.
+			// Get the next two characters and interpret them as a hexadecimal number.
+			std::string hex_str = "0x" + std::string(it + 1, it + 3);
+			int value;
+			ss << std::hex << hex_str;
+			ss >> value;
+			// Replace the URL-encoded sequence with the corresponding character.
+			*it = static_cast<char>(value);
+			// Erase the next two characters from the string.
+			this->_address.erase(it + 1, it + 3);
+			// Increment the iterator past the two characters that were erased.
+			it += 2;
+			// Clear the error flags on the stringstream, but don't reset it.
+			ss.clear();
 		}
 	}
 }
@@ -539,8 +615,8 @@ std::string	Http_handler::__get_time()
 	char buffer[80];
 
 	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+	timeinfo = gmtime(&rawtime);
+	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeinfo);
 
 	return (std::string(buffer));
 }
@@ -550,3 +626,33 @@ void	Http_handler::__close_and_throw(std::fstream &file, int err)
 	file.close();
 	throw err;
 }
+
+bool	Http_handler::__not_a_method()
+{
+	if (this->_method != "GET"
+		&& this->_method != "POST"
+		&& this->_method != "DELETE"
+		&& this->_method != "HEAD"
+		&& this->_method != "PUT"
+		&& this->_method != "CONNECT"
+		&& this->_method != "OPTIONS"
+		&& this->_method != "TRACE"
+		&& this->_method != "PATCH")
+		return (true);
+
+	return (false);
+}
+
+std::string	Http_handler::__get_extension()
+{
+	std::string	ext = this->_address.substr(this->_address.find_last_of(".") + 1);
+	if (ext == this->_address)
+		return (std::string());
+
+	return (ext);
+}
+
+//	one line by request
+//	IP			auth	date						request						resp size		referer							user-agent------------------->
+// 127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://www.example.com/start.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
+

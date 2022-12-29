@@ -309,6 +309,8 @@ void	Webserv::__http_process(int fd, std::string &request)
 		std::cout << "Server name : " << it->_name << std::endl;
 		response = request_handler.exec_request(*it);
 		send_response(fd, response);
+		if (request_handler.get_connection() == "close")
+			__close_connexion(fd);
 	}
 }
 

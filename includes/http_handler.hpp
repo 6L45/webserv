@@ -16,12 +16,13 @@ class Http_handler // : inherit from a execution class ?
 		std::string	header_connect		= "Connection: ";
 		std::string	header_server		= "Server: FT_Webserv/1.0.0";
 		std::string	header_encoding		= "Transfert-Encoding: identity";
+		std::string	header_location		= "Location: ";
 
 	public :
 	// DICO DECLARATION	
-		typedef	std::multimap<std::string, std::string>					dico;
-		typedef std::multimap<std::string, std::string>::iterator		MMAPIterator;
-		typedef std::multimap<std::string, std::string>::const_iterator	MMAPConstIterator;
+		typedef	std::map<std::string, std::string>					dico;
+		typedef std::map<std::string, std::string>::iterator		MMAPIterator;
+		typedef std::map<std::string, std::string>::const_iterator	MMAPConstIterator;
 
 	// CONSTRUCT DESTRUCT	
 		Http_handler(std::string &request); // receive htttp request
@@ -31,6 +32,7 @@ class Http_handler // : inherit from a execution class ?
 		std::string		get_host_name(void) const;
 		std::pair<MMAPConstIterator, MMAPConstIterator>
 						get_elems(const std::string key) const;
+		std::string		get_connection(void) const;
 
 	// PUBLIC METHODS
 		int				invalid_request(void) const;
@@ -62,7 +64,7 @@ class Http_handler // : inherit from a execution class ?
 		// bool			__extension_checker(Server &serv);
 
 		// response generator		
-		void			__200_response(int ret);
+		void			__200_response(int ret, bool head, Server &serv);
 		void			__err_header(int ret);
 		void			__body_gen(int ret);
 
@@ -70,6 +72,8 @@ class Http_handler // : inherit from a execution class ?
 		std::string		__get_time(void);
 		void			__clean_address(void);
 		void			__close_and_throw(std::fstream &file, int err);
+		bool			__not_a_method();
+		std::string		__get_extension();
 
 };
 
@@ -128,5 +132,191 @@ typedef struct links
 	}
 
 } memelord;
+
+enum	ext_category
+{
+	NORM = 1,
+	BIN
+};
+
+typedef struct	ExTypes
+{
+	std::map<std::string, std::string>	ext_type;
+
+	ExTypes()
+	{
+		ext_type["log"]		= "text/plain";
+		ext_type["ics"]		= "text/calendar";
+		ext_type["csv"]		= "text/csv";
+		ext_type["html"]	= "text/html";
+		ext_type["htm"]		= "text/html";
+		ext_type["shtml"]	= "text/html";
+		ext_type["css"]		= "text/css";
+		ext_type["xml"]		= "text/xml";
+		ext_type["mml"]		= "text/mathml";
+		ext_type["txt"]		= "text/plain";
+		ext_type["jad"]		= "text/vnd.sun.j2me.app-descriptor";
+		ext_type["wml"]		= "text/vnd.wap.wml";
+		ext_type["htc"]		= "text/x-component";
+
+		ext_type["gif"]		= "image/gif";
+		ext_type["jpg"]		= "image/jpeg";
+		ext_type["jpeg"]	= "image/jpeg";
+		ext_type["png"]		= "image/png";
+		ext_type["svg"]		= "image/svg+xml";
+		ext_type["svgz"]	= "image/svg+xml";
+		ext_type["tif"]		= "image/tiff";
+		ext_type["tiff"]	= "image/tiff";
+		ext_type["wbmp"]	= "image/vnd.wap.wbmp";
+		ext_type["webp"]	= "image/webp";
+		ext_type["ico"]		= "image/x-icon";
+		ext_type["jng"]		= "image/x-jng";
+		ext_type["bmp"]		= "image/x-ms-bmp";
+
+		ext_type["woff"]	= "font/woff";
+		ext_type["woff2"]	= "font/woff2";
+
+		ext_type["xul"]		= "application/vnd.mozilla.xul+xml";
+		ext_type["epub"]	= "application/epub+zip";
+		ext_type["mpkg"]	= "application/vnd.apple.installer+xml";
+		ext_type["azw"]		= "application/vnd.amazon.ebook";
+		ext_type["bz"]		= "application/x-bzip";
+		ext_type["bz2"]		= "application/x-bzip2";
+		ext_type["csh"]		= "application/x-csh";
+		ext_type["arc"]		= "application/octet-stream";
+		ext_type["abw"]		= "application/x-abiword";
+		ext_type["js"]		= "application/javascript";
+		ext_type["atom"]	= "application/atom+xml";
+		ext_type["rss"]		= "application/rss+xml";
+		ext_type["jar"]		= "application/java-archive";
+		ext_type["war"]		= "application/java-archive";
+		ext_type["ear"]		= "application/java-archive";
+		ext_type["json"]	= "application/json";
+		ext_type["hqx"]		= "application/mac-binhex40";
+		ext_type["doc"]		= "application/msword";
+		ext_type["pdf"]		= "application/pdf";
+		ext_type["ps"]		= "application/postscript";
+		ext_type["eps"]		= "application/postscript";
+		ext_type["ai"]		= "application/postscript";
+		ext_type["rtf"]		= "application/rtf";
+		ext_type["m3u8"]	= "application/vnd.apple.mpegurl";
+		ext_type["kml"]		= "application/vnd.google-earth.kml+xml";
+		ext_type["kmz"]		= "application/vnd.google-earth.kmz";
+		ext_type["xls"]		= "application/vnd.ms-excel";
+		ext_type["eot"]		= "application/vnd.ms-fontobject";
+		ext_type["ppt"]		= "application/vnd.ms-powerpoint";
+		ext_type["odg"]		= "application/vnd.oasis.opendocument.graphics";
+		ext_type["odp"]		= "application/vnd.oasis.opendocument.presentation";
+		ext_type["ods"]		= "application/vnd.oasis.opendocument.spreadsheet";
+		ext_type["odt"]		= "application/vnd.oasis.opendocument.text";
+		ext_type["pptx"]	= "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+		ext_type["xlsx"]	= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+		ext_type["docx"]	= "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+		ext_type["wmlc"]	= "application/vnd.wap.wmlc";
+		ext_type["7z"]		= "application/x-7z-compressed";
+		ext_type["cco"]		= "application/x-cocoa";
+		ext_type["jardiff"]	= "application/x-java-archive-diff";
+		ext_type["jnlp"]	= "application/x-java-jnlp-file";
+		ext_type["run"]		= "application/x-makeself";
+		ext_type["pl"]		= "application/x-perl";
+		ext_type["pm"]		= "application/x-perl";
+		ext_type["prc"]		= "application/x-pilot";
+		ext_type["pdb"]		= "application/x-pilot";
+		ext_type["rar"]		= "application/x-rar-compressed";
+		ext_type["rpm"]		= "application/x-redhat-package-manager";
+		ext_type["sea"]		= "application/x-sea";
+		ext_type["swf"]		= "application/x-shockwave-flash";
+		ext_type["sit"]		= "application/x-stuffit";
+		ext_type["tcl"]		= "application/x-tcl";
+		ext_type["tk"]		= "application/x-tcl";
+		ext_type["der"]		= "application/x-x509-ca-cert";
+		ext_type["pem"]		= "application/x-x509-ca-cert";
+		ext_type["crt"]		= "application/x-x509-ca-cert";
+		ext_type["xpi"]		= "application/x-xpinstall";
+		ext_type["xhtml"]	= "application/xhtml+xml";
+		ext_type["xspf"]	= "application/xspf+xml";
+		ext_type["zip"]		= "application/zip";
+		ext_type["ogx"]		= "application/ogg";
+		ext_type["sh"]		= "application/x-sh";
+		ext_type["tar"]		= "application/x-tar";
+		ext_type["ttf"]		= "application/x-font-ttf";
+		ext_type["vsd"]		= "application/vnd.visio";
+
+		ext_type["bin"]		= "application/octet-stream";
+		ext_type["exe"]		= "application/octet-stream";
+		ext_type["dll"]		= "application/octet-stream";
+		ext_type["deb"]		= "application/octet-stream";
+		ext_type["dmg"]		= "application/octet-stream";
+		ext_type["iso"]		= "application/octet-stream";
+		ext_type["img"]		= "application/octet-stream";
+		ext_type["msi"]		= "application/octet-stream";
+		ext_type["msp"]		= "application/octet-stream";
+		ext_type["msm"]		= "application/octet-stream";
+
+		ext_type["oga"]		= "audio/ogg";
+		ext_type["wav"]		= "audio/x-wav";
+		ext_type["weba"]	= "audio/webm";
+		ext_type["aac"]		= "audio/aac";
+		ext_type["mid"]		= "audio/midi";
+		ext_type["midi"]	= "audio/midi";
+		ext_type["kar"]		= "audio/midi";
+		ext_type["mp3"]		= "audio/mpeg";
+		ext_type["ogg"]		= "audio/ogg";
+		ext_type["m4a"]		= "audio/x-m4a";
+		ext_type["ra"]		= "audio/x-realaudio";
+
+		ext_type["3g2"]		= "video/3gpp2 audio/3gpp2";
+
+		ext_type["ogv"]		= "video/ogg";
+		ext_type["3gpp"]	= "video/3gpp";
+		ext_type["3gp"]		= "video/3gpp";
+		ext_type["ts"]		= "video/mp2t";
+		ext_type["mp4"]		= "video/mp4";
+		ext_type["mpeg"]	= "video/mpeg";
+		ext_type["mpg"]		= "video/mpeg";
+		ext_type["mov"]		= "video/quicktime";
+		ext_type["webm"]	= "video/webm";
+		ext_type["flv"]		= "video/x-flv";
+		ext_type["m4v"]		= "video/x-m4v";
+		ext_type["mng"]		= "video/x-mng";
+		ext_type["asx"]		= "video/x-ms-asf";
+		ext_type["asf"]		= "video/x-ms-asf";
+		ext_type["wmv"]		= "video/x-ms-wmv";
+		ext_type["avi"]		= "video/x-msvideo";
+	}
+
+	std::string	get_type(std::string path, std::string extension)
+	{
+		struct stat	path_stat;
+		stat(path.c_str(), &path_stat);
+
+		if (extension.empty() && path_stat.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
+			extension = "exe";
+
+		std::map<std::string, std::string>::iterator it = ext_type.find(extension);
+		
+		if (it != ext_type.end())
+			return (it->second);
+		return ("text/html");
+	}
+
+	int get_category(std::string path, std::string extension)
+	{
+		struct stat	path_stat;
+		stat(path.c_str(), &path_stat);
+
+		if (S_ISDIR(path_stat.st_mode))
+			return (BIN);
+
+		if (extension.empty() && path_stat.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
+			return (BIN);
+
+		std::string	type = this->get_type(path, extension);
+
+		if (extension.find("text"))
+			return (NORM);
+		return (BIN);
+	}
+}	t_ext;
 
 # include "server.class.hpp"

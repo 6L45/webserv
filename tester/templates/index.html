@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>CS 531 WebServer Deployer and Tester</title>
+    <style media="screen">
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      a {
+        color: #17a2b8;
+      }
+      #wrapper {
+        max-width: 800px;
+        min-height: calc(100vh - 110px);
+        margin: 0 auto;
+        padding: 10px;
+      }
+      h1.branding {
+        background: #000;
+        color: #fff;
+        font-size: 40px;
+        line-height: 50px;
+        padding: 5px;
+        margin: 0;
+        text-align: center;
+      }
+      .box h2 {
+        background: #343a40;
+        color: #ccc;
+        padding: 5px;
+        margin: -10px -10px 10px -10px;
+        line-height: 30px;
+      }
+      .box h3 {
+        background: #6c757d;
+        color: #fff;
+        padding: 5px;
+        margin: -10px -10px 10px -10px;
+        overflow-wrap: break-word;
+        line-height: 30px;
+      }
+      .box h4, pre {
+        margin: 5px 0 0 0;
+      }
+      .box {
+        border: 1px solid #333;
+        margin-bottom: 15px;
+        padding: 10px;
+      }
+      .box.intro {
+        border: 3px solid #333;
+        border-radius: 20px;
+      }
+      .box.intro p {
+        margin: 15px;
+        text-align: justify;
+      }
+      .box p {
+        margin: 0;
+      }
+      .box .description {
+        font-style: italic;
+        color: #17a2b8;
+      }
+      .results:not(:empty) {
+        margin-top: 10px;
+      }
+      .box ul.summary-list, .box p.counts, .failure.reason, ul.notes {
+        font-family: monospace;
+        font-weight: bold;
+      }
+      .box ul.summary-list a {
+        text-decoration: none;
+      }
+      .text-input {
+        padding: 4px;
+        width: 180px;
+        margin-bottom: 4px;
+      }
+      #hostport {
+        width: 235px;
+      }
+      select {
+        padding: 4px;
+      }
+      button {
+        background: #007bff;
+        border: 1px solid #007bff;
+        color: #fff;
+        font-size: 14px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        user-select: none;
+      }
+      button.secondary {
+        background: #6c757d;
+        border: 1px solid #6c757d;
+      }
+      button.danger {
+        background: #dc3545;
+        border: 1px solid #dc3545;
+      }
+      button.run-single-test {
+        float: right;
+      }
+      .hidden {
+        display: none;
+      }
+      .success, li.PASSED {
+        color: #28a745;
+      }
+      .failure, li.FAILED {
+        color: #dc3545;
+      }
+      .PASSED h3 {
+        background-color: #28a745;
+      }
+      .FAILED h3 {
+        background-color: #dc3545;
+      }
+      i.highlight {
+        background-color: #ffc;
+        border: 1px dotted;
+        border-radius: 4px;
+        padding: 0 2px;
+        font-style: italic;
+        white-space: pre-wrap;
+        font-size: 0.8em;
+      }
+      .box pre {
+        overflow: auto;
+        background: #ccc;
+        padding: 5px;
+        border: 1px dotted #999;
+        max-height: 100px;
+      }
+      .box pre.terminal {
+        background: #000;
+        color: #fff;
+        max-height: 200px;
+        margin: 10px auto;
+      }
+      footer {
+        text-align: center;
+        background: #000;
+        color: #fff;
+        padding: 6px;
+      }
+    </style>
+    <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAT1PZADmEOQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAERAAEQAAAAABEQEQABEREAAREQAAARERAAERAAAAAAAAEREQABEREAEQAREAAREREQAAERAAAAAAAAAAAAAAAAAAAAAAAAAAACIAAAAAAAACIiAAACIiICICIgAAAiIiIAAiIAAAAAAAAAIiACIiIAAAACIgAiIiAAAAAiIAAAAc/wAAicEAAMPgAADj/wAAwcEAAJjgAAA8fwAA//8AAP//AADP/wAAh8EAACPgAABx/wAA+MEAAPxgAAD+PwAA" rel="icon" type="image/x-icon" />
+  </head>
+  <body>
+    <h1 class="branding">CS 531 WebServer Deployer and Tester</h1>
+
+    <div id="wrapper">
+      <section class="intro box">
+        <p>A deployment and testing system for the <a href="https://cs531-f22.github.io/">CS 431/531 Web Server Design, Fall 2022</a> projects. The system utilizes a <a href="https://www.docker.com/">Docker</a>-based setup for both, this testing/deployment system as well as deploying students' projects. The code behind this system is available at <a href="https://github.com/ibnesayeed/webserver-tester">https://github.com/ibnesayeed/webserver-tester</a>. Please feel free to report issues and contribute.</p>
+      </section>
+
+      {%- if show_deployer %}
+      <section class="deployment box">
+        <h2>Deploy a Web Server</h2>
+        <input type="search" id="csid" class="text-input" value="" list="studentids" placeholder="Enter CS-ID">
+        <datalist id="studentids">
+          {%- for k, v in allowed_members.items() %}
+          <option value="{{ k }}">{{ v["name"] }} @{{ v["ghid"] }}</option>
+          {%- endfor %}
+        </datalist>
+        <input type="search" id="gitref" class="text-input" value="" list="gitrefs" placeholder="Branch/Tag (main)">
+        <datalist id="gitrefs">
+          <option value="main">Latest</option>
+          {%- for batch in test_batches %}
+          {%- if batch.startswith("cs531") %}
+          <option value="{{ batch[5:] }}">Assignment {{ batch[6:] }}</option>
+          {%- endif %}
+          {%- endfor %}
+        </datalist>
+        <button id="deploy-server">Deploy the Web Server</button>
+        <input type="checkbox" id="rebuild" value="force" checked>
+        <label for="rebuild">Force rebuild</label>
+        <div class="results" id="deployment-results"></div>
+        <div class="hidden" id="logs-container">
+          <pre class="terminal"><code id="server-logs"></code></pre>
+          <button id="destroy-server" class="danger">Destroy the Web Server</button>
+        </div>
+      </section>
+      {%- endif %}
+
+      <section class="testing box">
+        <h2>Test a Web Server</h2>
+        <input type="search" id="hostport" class="text-input" value="" list="contnames" placeholder="<HOST>[:<PORT>]">
+        <datalist id="contnames">
+          {%- for k, v in allowed_members.items() %}
+          <option value="{{ courseid }}-{{ k }}">{{ v["name"] }}</option>
+          {%- endfor %}
+        </datalist>
+        <select id="batch-selector">
+          <option value="">All Test Cases</option>
+          {%- for batch in test_batches %}
+          <option value="{{ batch }}">Test Suite: {{ batch }}</option>
+          {%- endfor %}
+        </select>
+        <button id="run-batch-tests">Run Tests</button>
+        <button id="test-resetter" class="secondary">Reset Tests</button>
+        <div class="results" id="test-summary"></div>
+      </section>
+
+      <section class="testcases" id="testcases"></section>
+    </div>
+
+    <footer><a href="https://github.com/ibnesayeed/webserver-tester">WebServer Tester</a> by <a href="https://twitter.com/ibnesayeed">Sawood Alam</a></footer>
+
+    <script type="text/javascript">
+      const courseId = '{{ courseid }}';
+
+      const testCaseContainer = document.getElementById('testcases');
+      const batchSelector = document.getElementById('batch-selector');
+      const csidInp = document.getElementById('csid');
+      const gitRefInp = document.getElementById('gitref');
+      const hostportInp = document.getElementById('hostport');
+      const deployerBtn = document.getElementById('deploy-server');
+      const rebuildCheck = document.getElementById('rebuild');
+      const deployerResDiv = document.getElementById('deployment-results');
+      const logsContainer = document.getElementById('logs-container');
+      const serverLogsCode = document.getElementById('server-logs');
+      const destroyerBtn = document.getElementById('destroy-server');
+      const testBatchRunnerBtn = document.getElementById('run-batch-tests');
+      const testResetterBtn = document.getElementById('test-resetter');
+      const testSummaryDiv = document.getElementById('test-summary');
+
+      const htmlEscapes = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      const utf8decoder = new TextDecoder('utf-8');
+      let controller = new AbortController();
+      let signal = controller.signal;
+
+      let testCases = [];
+      let testResults = {};
+      let activeTests = activeFaviconIdx = faviconIdxBase = 0;
+
+      function ShowResMsg(target, msg, state) {
+        target.innerHTML = `<p class="${state}">${msg.replace(/`(.*?)`/g, '<i class="highlight">$1</i>')}</p>`;
+      }
+
+      function renderTestCases() {
+        let markup = testCases.map(tc => `
+        <section class="testcase box suite-${tc.suite}" id="box-${tc.suite}-${tc.id}">
+          <h3>
+            <button class="run-single-test" value="${tc.suite}-${tc.id}" id="run-${tc.id}">Run This Test</button>
+            <span>${tc.suite}: ${tc.id}</span>
+          </h3>
+          <p class="description">${tc.description}</p>
+          <div class="results" id="result-${tc.suite}-${tc.id}"></div>
+        </section>`).join('');
+        testCaseContainer.innerHTML = markup;
+      }
+
+      ShowResMsg(testCaseContainer, 'Loading test cases...', '');
+      fetch('/tests/').then(r => {
+        return r.json();
+      }).then(j => {
+        testCases = j;
+        renderTestCases();
+      }).catch(e => {
+        console.log(e);
+        ShowResMsg(testCaseContainer, 'Failed to load test cases!', 'failure');
+      });
+
+      function showBatchTestCases() {
+        let batch = batchSelector.value;
+        Array.from(testCaseContainer.querySelectorAll('.testcase')).forEach(box => {
+          box.classList.toggle('hidden', batch && !box.classList.contains('suite-' + batch));
+        });
+      }
+      batchSelector.onchange = showBatchTestCases;
+
+      function deployServer() {
+        let csid = csidInp.value;
+        let gitref = gitRefInp.value;
+        let state = msg = '';
+        if (csid) {
+          resetLogs();
+          resetTests();
+          activateFavicon(0);
+          msg = `Deploying server for \`${csid}\`${gitref ? ` with code branch/tag \`${gitref}\`` : ''}...`;
+          let status = 0;
+          fetch(`/servers/deploy/${csid}/${gitref}${rebuildCheck.checked ? '' : '?rebuild=skip'}`).then(r => {
+            state = r.ok ? 'success' : 'failure';
+            status = r.status;
+            return r.text();
+          }).then(text => {
+            const service = `${courseId}-${csid}`;
+            if (status == 200) {
+              msg = `Server \`${service}\` deployed successfully, ready to test!`;
+              hostportInp.value = service;
+              showLogs(text + '\n\n');
+              streamServerLogs();
+            } else if (status == 500) {
+              msg = `Server \`${service}\` deployment failed!`;
+              showLogs(text);
+            } else {
+              msg = text;
+            }
+          }).catch(e => {
+            state = 'failure';
+            msg = e;
+          }).finally(() => {
+            ShowResMsg(deployerResDiv, msg, state);
+            resetFavicon();
+          });
+        } else {
+          state = 'failure';
+          msg = 'Enter a valid CS-ID (e.g., `salam`)';
+        }
+        ShowResMsg(deployerResDiv, msg, state);
+      }
+      if (deployerBtn) {
+        deployerBtn.onclick = deployServer;
+      }
+
+      function destroyServer() {
+        let csid = csidInp.value;
+        let state = msg = '';
+        if (csid) {
+          resetLogs();
+          resetTests();
+          msg = `Destroying server for \`${csid}\`...`;
+          fetch(`/servers/destroy/${csid}`).then(r => {
+            state = r.ok ? 'success' : 'failure';
+            return r.text();
+          }).then(text => {
+            msg = text;
+          }).catch(e => {
+            state = 'failure';
+            msg = e;
+          }).finally(() => {
+            ShowResMsg(deployerResDiv, msg, state);
+          });
+        } else {
+          state = 'failure';
+          msg = 'Enter a valid CS-ID (e.g., `salam`)';
+        }
+        ShowResMsg(deployerResDiv, msg, state);
+      }
+      if (destroyerBtn) {
+        destroyerBtn.onclick = destroyServer;
+      }
+
+      function resetLogs() {
+        controller.abort();
+        serverLogsCode.innerText = '';
+        logsContainer.classList.add('hidden');
+      }
+
+      function showLogs(txt) {
+        logsContainer.classList.remove('hidden');
+        serverLogsCode.innerText += txt;
+        serverLogsCode.parentElement.scrollTop = serverLogsCode.parentElement.scrollHeight;
+      }
+
+      function streamServerLogs() {
+        if (typeof ReadableStream === 'undefined') {
+          showLogs('This browser does not support log streaming!');
+          return;
+        }
+        let csid = csidInp.value;
+        if (csid) {
+          showLogs(`Streaming STDOUT/STDERR logs of \`${courseId}-${csid}\` server...\n`);
+          controller = new AbortController();
+          signal = controller.signal;
+          fetch(`/servers/logs/${csid}`, {signal}).then(r => {
+            const reader = r.body.getReader();
+            reader.read().then(function processLogs({done, value}) {
+              if (!done) {
+                showLogs(utf8decoder.decode(value));
+                return reader.read().then(processLogs);
+              }
+              return;
+            }).catch(e => {
+              console.log(e);
+            });
+          }).catch(e => {
+            console.log(e);
+          });
+        } else {
+          ShowResMsg(deployerResDiv, 'Enter a valid CS-ID (e.g., `salam`)', 'failure');
+        }
+      }
+
+      function showTestSummary(hostport) {
+        if (!activeTests) {
+          return;
+        }
+        var counts = Object.values(testResults).reduce((c, r) => {c[r]++; return c;}, {'PASSED': 0, 'FAILED': 0})
+        let markup = `
+        <h4>Server: <span class="description">${hostport}</span></h4>
+        <ul class="summary-list">
+          ${Object.entries(testResults).map(r => `<li class="${r[1]}">[${r[1]}]: <a href="#box-${r[0].replace(': ', '-')}">${r[0]}</a></li>`).join('')}
+        </ul>
+        <p class="counts">
+          <span class="total">TOTAL:</span> <span>${Object.keys(testResults).length}</span>,
+          <span class="success">PASSED:</span> <span>${counts['PASSED']}</span>,
+          <span class="failure">FAILED:</span> <span>${counts['FAILED']}</span>
+        </p>`;
+        testSummaryDiv.innerHTML = markup;
+      }
+
+      function showTestResult(result) {
+        if (!activeTests) {
+          return;
+        }
+        let r = JSON.parse(result);
+        let nt = r.notes.map(n => `<li>${n.replace(/[&<>"']/g, m => htmlEscapes[m])}</li>`).join('');
+        let err = r.errors.map(e => `<li>${e.replace(/[&<>"']/g, m => htmlEscapes[m])}</li>`).join('');
+        let state = err ? 'FAILED' : 'PASSED';
+        testResults[`${r.suite}: ${r.id}`] = state;
+        document.getElementById(`box-${r.suite}-${r.id}`).classList.add(state);
+        let markup = `
+        ${nt ? `<h4>Notes</h4><ul class="notes">${nt.replace(/`(.*?)`/g, '<i class="highlight">$1</i>')}</ul>` : ''}
+        ${err ? `<h4>Failures</h4><ul class="failure reason">${err.replace(/`(.*?)`/g, '<i class="highlight">$1</i>')}</ul>` : ''}
+        <h4>Original Request</h4>
+        <pre><code>${r.req.raw.replace(/[&<>"']/g, m => htmlEscapes[m])}</code></pre>`;
+        if (r.res.raw_headers) {
+          let ctype = (r.res.headers["content-type"] || 'text/plain').replace(/\s/g, '');
+          let pld = r.res.payload_size ? ['text', 'message'].includes(ctype.split('/')[0]) ? atob(r.res.payload).replace(/[&<>"']/g, m => htmlEscapes[m]) : `<object data="data:${ctype};base64,${r.res.payload}">[<a href="data:${ctype};base64,${r.res.payload}" target="_blank">Download ${ctype} payload</a>]</object>` : '';
+          markup += `
+          <h4>Original Response <span class="description">(Payload: ${r.res.payload_size} bytes, Connection: ${r.res.connection})</span></h4>
+          <pre><code>${r.res.raw_headers.replace(/[&<>"']/g, m => htmlEscapes[m])}${r.errors.includes('Missing empty line after headers') ? '\r\n' : '\r\n\r\n'}${pld}</code></pre>`;
+        }
+        document.getElementById(`result-${r.suite}-${r.id}`).innerHTML = markup;
+      }
+
+      function runTestBatch() {
+        let batch = batchSelector.value;
+        let hostport = hostportInp.value;
+        let state = msg = '';
+        testResults = {};
+        if (hostport) {
+          activateFavicon(2);
+          msg = `Testing server \`${hostport}\` with all test cases${batch ? ` of \`Assignment ${batch}\`` : ''}...`;
+          let selector = batch ? `.suite-${batch}` : '.testcase';
+          Array.from(testCaseContainer.querySelectorAll(selector)).forEach(box => {
+            box.classList.remove('FAILED', 'PASSED');
+            ShowResMsg(box.querySelector('.results'), `Running this test against the server \`${hostport}\`...`, '');
+          });
+          fetch(`/tests/${hostport}/${batch}`).then(r => {
+            state = r.ok ? '' : 'failure';
+            return r.text();
+          }).then(text => {
+            if (state) {
+              ShowResMsg(testSummaryDiv, text, state);
+              Array.from(testCaseContainer.querySelectorAll(selector)).forEach(box => {
+                box.querySelector('.results').innerHTML = '';
+              });
+            } else {
+              text.trim().split('\n').forEach(line => showTestResult(line));
+              showTestSummary(hostport);
+            }
+          }).catch(e => {
+            ShowResMsg(testSummaryDiv, e, 'failure');
+          }).finally(resetFavicon);
+        } else {
+          state = 'failure';
+          msg = 'Enter a valid host and port combination (e.g., `localhost:5000`)';
+        }
+        ShowResMsg(testSummaryDiv, msg, state);
+      }
+      testBatchRunnerBtn.onclick = runTestBatch;
+
+      function runSingleTest(e) {
+        if (e.target.matches('button.run-single-test')) {
+          let [suiteId, testId] = e.target.value.split('-');
+          let box = document.getElementById(`box-${suiteId}-${testId}`);
+          let testResDiv = document.getElementById(`result-${suiteId}-${testId}`);
+          let hostport = hostportInp.value;
+          let state = msg = '';
+          if (hostport) {
+            activateFavicon(2);
+            msg = `Running this test against the server \`${hostport}\`...`;
+            box.classList.remove('FAILED', 'PASSED');
+            fetch(`/tests/${hostport}/${suiteId}/${testId}`).then(r => {
+              state = r.ok ? '' : 'failure';
+              return r.text();
+            }).then(text => {
+              if (state) {
+                ShowResMsg(testResDiv, text, state);
+              } else {
+                showTestResult(text.trim());
+              }
+            }).catch(e => {
+              state = 'failure';
+              msg = e;
+            }).finally(resetFavicon);
+          } else {
+            state = 'failure';
+            msg = 'Provide a valid host and port combination above (e.g., `localhost:5000`)';
+          }
+          ShowResMsg(testResDiv, msg, state);
+        }
+      }
+      testCaseContainer.onclick = runSingleTest;
+
+      function resetTests() {
+        activeTests = 0;
+        testResults = {};
+        hostportInp.value = '';
+        testSummaryDiv.innerHTML = '';
+        renderTestCases();
+        showBatchTestCases();
+      }
+      testResetterBtn.onclick = resetTests;
+
+      const faviconlink = document.querySelector('link[rel="icon"]');
+      const favicons = [
+        "data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAADUgwAAAAAAAE9T2QA5hDkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAERERERERERERERERESIiIREREREREiIiERERERERERERERERESIiIREREREREiIiERERERERERERERERERERERERARERERERERAAERERERERAAABETMzMRAAEAAREzMzAAERAAEREREAEREQATMzMQEREREBEzMzERERERERERH//wAA/8EAAP/gAAD//wAA/8EAAP/gAAD//wAA//8AAPf/AADj/wAAwcEAAIjgAAAcfwAAPkEAAH9gAAD//wAA",
+        "data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAADUgwAAAAAAAE9T2QA5hDkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEREREREREREREQERESIiIREQABEREiIiEQAAAREREREQABAAESIiIQABEQABEiIiABEREAEREREBERERARERERERERERERERERERERERERERERERETMzMREREREREzMzERERERERERERERERETMzMREREREREzMzERERERERERH//wAA98EAAOPgAADB/wAAiMEAABxgAAA+fwAAf38AAP//AAD//wAA/8EAAP/gAAD//wAA/8EAAP/gAAD//wAA",
+        "data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAT1PZADmEOQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEREAAAAAAAARERAAAAAAAAAAAAAAAAABEREAAAAAAAARERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIAAAAAAAAiIiAAAAAAAAAAAAAAAAACIiIAAAAAAAAiIiAAAAAAAAAAD//wAA/8EAAP/gAAD//wAA/8EAAP/gAAD//wAA//8AAP//AAD//wAA/8EAAP/gAAD//wAA/8EAAP/gAAD//wAA",
+        "data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAT1PZADmEOQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEREAAAAAAAARERAAAAAAAAAAAAAAAAABEREAAAAAAAARERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIAAAAAAAACIiAAACIiICICIgAAAiIiIAAiIAAAAAAAAAIiACIiIAAAACIgAiIiAAAAAiIAAAD//wAA/8EAAP/gAAD//wAA/8EAAP/gAAD//wAA//8AAP//AADP/wAAh8EAACPgAABx/wAA+MEAAPxgAAD+PwAA",
+        "data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAT1PZADmEOQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAERAAEQAAAAABEQEQABEREAAREQAAARERAAERAAAAAAAAEREQABEREAEQAREAAREREQAAERAAAAAAAAAAAAAAAAAAAAAAAAAAACIAAAAAAAACIiAAACIiICICIgAAAiIiIAAiIAAAAAAAAAIiACIiIAAAACIgAiIiAAAAAiIAAAAc/wAAicEAAMPgAADj/wAAwcEAAJjgAAA8fwAA//8AAP//AADP/wAAh8EAACPgAABx/wAA+MEAAPxgAAD+PwAA"
+      ];
+      function changeFavicon() {
+        faviconlink.href = favicons[faviconIdxBase + activeFaviconIdx];
+        activeFaviconIdx = (activeFaviconIdx + 1) % 3;
+      }
+      let iconLoop;
+      function activateFavicon(base) {
+        faviconIdxBase = base;
+        if (base) {
+          ++activeTests;
+        }
+        clearInterval(iconLoop);
+        iconLoop = setInterval(changeFavicon, 500);
+      }
+      function resetFavicon() {
+        if (--activeTests <= 0) {
+          clearInterval(iconLoop);
+          faviconIdxBase = 0;
+          activeFaviconIdx = favicons.length - 1;
+          changeFavicon();
+          activeTests = 0;
+        }
+      }
+    </script>
+  </body>
+</html>
