@@ -17,6 +17,8 @@ class Http_handler // : inherit from a execution class ?
 		std::string	header_server		= "Server: FT_Webserv/1.0.0";
 		std::string	header_encoding		= "Transfert-Encoding: identity";
 		std::string	header_location		= "Location: ";
+		std::string	header_ETag;
+		std::string	cookie;
 
 	public :
 	// DICO DECLARATION	
@@ -53,6 +55,11 @@ class Http_handler // : inherit from a execution class ?
 	// PRIVATE METHODS
 		void			__directory_browser(const char *path, std::string const &host);
 		std::string		__filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host);
+		std::string		__base64_encode(const std::string &input);
+		std::string		__base64_decode(const std::string &input);
+		void			__Etag_reader();
+		void			__Etag_gen(std::string path);
+		time_t			__get_date_http_field(const std::string &date_string);
 
 		// method exec - response init
 		void			__GET_response(std::string &value, Server &serv);
@@ -74,7 +81,8 @@ class Http_handler // : inherit from a execution class ?
 		void			__close_and_throw(std::fstream &file, int err);
 		bool			__not_a_method();
 		std::string		__get_extension();
-
+		bool			__is_valid_http_time(const std::string &s);
+		time_t			__string_to_time_t_header(const std::string &s);
 };
 
 typedef struct links
@@ -305,10 +313,8 @@ typedef struct	ExTypes
 		struct stat	path_stat;
 		stat(path.c_str(), &path_stat);
 
-		if (S_ISDIR(path_stat.st_mode))
-			return (BIN);
-
-		if (extension.empty() && path_stat.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
+		if (S_ISDIR(path_stat.st_mode) ||
+			(extension.empty() && path_stat.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)))
 			return (BIN);
 
 		std::string	type = this->get_type(path, extension);

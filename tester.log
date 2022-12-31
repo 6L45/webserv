@@ -20,7 +20,7 @@ test_url_get_ok: [96mTest whether the URL of the assignment 1 directory returns
 < Content-Length: 1940
 < Content-Location: /a1-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -50,7 +50,7 @@ test_url_head_ok: [96mTest whether the URL of the assignment 1 directory return
 < Content-Length: 1940
 < Content-Location: /a1-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -78,7 +78,7 @@ test_path_head_ok: [96mTest whether the relative path of the assignment 1 direc
 < Content-Length: 1940
 < Content-Location: /a1-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -100,7 +100,7 @@ test_path_options_ok: [96mTest whether the relative path of the assignment 1 di
 < Content-Location: /a1-test/2/index.html
 < Content-Length: 477
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -128,7 +128,7 @@ test_get_missing: [96mTest whether a non-existing path returns 404 on GET[0m
 < Content-Location: /1/1.1/go hokies.html
 < Content-Length: 468
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -156,7 +156,7 @@ test_get_duplicate_path_prefix: [96mTest tight path prefix checking[0m
 < Content-Location: /a1-test/a1-test/
 < Content-Length: 468
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -181,14 +181,14 @@ test_unsupported_version: [96mTest whether a request with unsupported version r
 
 < HTTP/1.1 505 HTTP Version not Supported
 < Content-Location: /
-< Content-Length: 488
+< Content-Length: 490
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (488 bytes)]
+* [Payload redacted (490 bytes)]
 
 --------------------------------------------------------------------------------
 test_invalid_request: [96mTest whether an invalid request returns 400[0m
@@ -206,14 +206,14 @@ test_invalid_request: [96mTest whether an invalid request returns 400[0m
 
 < HTTP/1.1 400 Bad Request
 < Content-Location: 
-< Content-Length: 475
+< Content-Length: 470
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (475 bytes)]
+* [Payload redacted (470 bytes)]
 
 --------------------------------------------------------------------------------
 test_missing_host_header: [96mTest whether missing Host header in a request returns 400[0m
@@ -234,7 +234,7 @@ test_missing_host_header: [96mTest whether missing Host header in a request ret
 < Content-Location: /
 < Content-Length: 475
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -259,14 +259,14 @@ test_post_not_implemented: [96mTest whether the assignment 1 returns 501 on POS
 
 < HTTP/1.1 501 Not Implemented
 < Content-Location: /a1-test/
-< Content-Length: 474
+< Content-Length: 479
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (474 bytes)]
+* [Payload redacted (479 bytes)]
 
 --------------------------------------------------------------------------------
 test_trace_echoback: [96mTest whether the server echoes back the request on TRACE[0m
@@ -278,7 +278,7 @@ test_trace_echoback: [96mTest whether the server echoes back the request on TRA
 
 > TRACE /a1-test/1/1.4/ HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 1 Tester/1672342756
+> User-Agent: CS531 Assignment 1 Tester/1672446146
 > Connection: close
 > 
 
@@ -286,7 +286,7 @@ test_trace_echoback: [96mTest whether the server echoes back the request on TRA
 < Content-Location: /a1-test/1/1.4/
 < Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -312,7 +312,7 @@ test_get_escaped_file_name: [96mTest whether the escaped file name is respected
 < Content-Length: 29
 < Content-Location: /a1-test/1/1.4/test:.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -338,7 +338,7 @@ test_get_escape_escaping_character: [96mTest whether the escaped escaping carac
 < Content-Length: 71
 < Content-Location: /a1-test/1/1.4/escape%this.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -364,7 +364,7 @@ test_get_jpeg_image: [96mTest whether a JPEG image returns 200 with proper Cont
 < Content-Length: 38461
 < Content-Location: /a1-test/2/0.jpeg
 < Content-Type: image/jpeg
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -390,7 +390,7 @@ test_get_case_sensitive_file_extension: [96mTest whether file extensions are tr
 < Content-Location: /a1-test/2/0.JPEG
 < Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -420,7 +420,7 @@ test_get_empty_text_file: [96mTest whether an empty file returns zero bytes wit
 < Content-Length: 0
 < Content-Location: /a1-test/4/thisfileisempty.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -448,7 +448,7 @@ test_get_empty_unknown_file_directory: [96mTest whether an unknown empty file o
 < Content-Length: 0
 < Content-Location: /a1-test/4/directory3isempty
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -473,7 +473,7 @@ test_get_filename_with_many_dots: [96mTest whether file names with multiple dot
 < Content-Length: 3146
 < Content-Location: /a1-test/1/1.2/arXiv.org.Idenitfy.repsonse.xml
 < Content-Type: text/xml
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -499,7 +499,7 @@ test_get_magic_cookie_of_a_binary_file: [96mTest whether a GIF file contains id
 < Content-Length: 49807
 < Content-Location: /a1-test/2/6.gif
 < Content-Type: image/gif
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -526,7 +526,7 @@ test_access_log_as_virtual_uri: [96mTest whether the access log is available as
 < Content-Length: 0
 < Content-Location: /.well-known/access.log
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -554,7 +554,7 @@ test_get_directory_listing: [96mTest whether a2-test directory root returns dir
 < Content-Length: 534
 < Content-Location: /a2-test/
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -580,15 +580,15 @@ test_redirect_to_trailing_slash_for_directory_url: [96mTest whether redirects U
 
 < HTTP/1.1 301 Moved Permanently
 < Content-Location: /a2-test/2
-< Content-Length: 481
+< Content-Length: 479
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < Location: /a2-test/2/
 < 
-* [Payload redacted (481 bytes)]
+* [Payload redacted (479 bytes)]
 
 --------------------------------------------------------------------------------
 test_redirect_to_trailing_slash_for_directory_path: [96mTest whether redirects path to trailing slashes when missing for existing directories[0m
@@ -611,7 +611,7 @@ test_redirect_to_trailing_slash_for_directory_path: [96mTest whether redirects 
 < Content-Location: /a2-test/1
 < Content-Length: 481
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -641,7 +641,7 @@ test_get_default_index_file: [96mTest whether default index.html is returned in
 < Content-Length: 414
 < Content-Location: /a2-test/2/
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -665,7 +665,7 @@ test_redirect_as_per_regexp_trailing_wildcard_capture: [96mTest whether redirec
 < Content-Length: 46596
 < Content-Location: /a2-test/1/1.3/assignment1.ppt
 < Content-Type: application/vnd.ms-powerpoint
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -687,7 +687,7 @@ test_redirect_as_per_regexp_trailing_specific_file: [96mTest whether redirects 
 < Content-Length: 98
 < Content-Location: /a2-test/coolcar.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -713,7 +713,7 @@ test_dont_redirect_target_file: [96mTest whether the target of the configured r
 < Content-Length: 100
 < Content-Location: /a2-test/galaxie.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -724,7 +724,9 @@ test_conditional_head_fresh: [96mTest whether conditional HEAD of a fresh file 
 * Request data sent
 * Response data read
 * Response parsed
-[91m[FAILED] ASSERTION: Status expected `304`, returned `200`[0m
+* Status is `304`
+* Payload is empty
+[92m[PASSED][0m
 
 > HEAD /a2-test/2/fairlane.html HTTP/1.1
 > Host: localhost:18002
@@ -732,14 +734,15 @@ test_conditional_head_fresh: [96mTest whether conditional HEAD of a fresh file 
 > Connection: close
 > 
 
-< HTTP/1.1 200 OK
-< Content-Length: 1940
+< HTTP/1.1 304 Not Modified
 < Content-Location: /a2-test/2/fairlane.html
+< Content-Length: 476
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
+< ETag: U2F0LCAyMCBPY3QgMjAxOCAwMTozMzoyMSBHTVT/Li93d3cvd2ViL3NlcnZldXIxL2EyLXRlc3QvMi9mYWlybGFuZS5odG1s
 
 --------------------------------------------------------------------------------
 test_conditional_head_stale: [96mTest whether conditional HEAD of a stale file returns 200 OK[0m
@@ -747,11 +750,7 @@ test_conditional_head_stale: [96mTest whether conditional HEAD of a stale file 
 * Request data sent
 * Response data read
 * Response parsed
-* Status is `200`
-* `Content-Type` header is present
-* `Content-Type` header begins with `text/html`
-* Payload is empty
-[92m[PASSED][0m
+[91m[FAILED] ASSERTION: Status expected `200`, returned `304`[0m
 
 > HEAD /a2-test/2/fairlane.html HTTP/1.1
 > Host: localhost:18002
@@ -759,14 +758,15 @@ test_conditional_head_stale: [96mTest whether conditional HEAD of a stale file 
 > Connection: close
 > 
 
-< HTTP/1.1 200 OK
-< Content-Length: 1940
+< HTTP/1.1 304 Not Modified
 < Content-Location: /a2-test/2/fairlane.html
+< Content-Length: 471
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
+< ETag: U2F0LCAyMCBPY3QgMjAxOCAwMTozMzoyMSBHTVT/Li93d3cvd2ViL3NlcnZldXIxL2EyLXRlc3QvMi9mYWlybGFuZS5odG1s
 
 --------------------------------------------------------------------------------
 test_conditional_head_invalid_datetime: [96mTest whether conditional HEAD with invalid datetime returns 200 OK[0m
@@ -790,7 +790,7 @@ test_conditional_head_invalid_datetime: [96mTest whether conditional HEAD with 
 < Content-Length: 1940
 < Content-Location: /a2-test/2/fairlane.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -817,7 +817,7 @@ test_conditional_head_unsupported_datetime_format: [96mTest whether conditional
 < Content-Length: 1940
 < Content-Location: /a2-test/2/fairlane.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -840,7 +840,7 @@ test_include_etag: [96mTest whether the HEAD response contains an ETag[0m
 < Content-Length: 1940
 < Content-Location: /a2-test/2/fairlane.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -863,7 +863,7 @@ test_valid_etag_ok: [96mTest whether a valid ETag returns 200 OK[0m
 < Content-Length: 1940
 < Content-Location: /a2-test/2/fairlane.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -886,7 +886,7 @@ test_etag_if_match_failure: [96mTest whether a random ETag returns 412 Precondi
 < Content-Length: 1940
 < Content-Location: /a2-test/2/fairlane.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -922,7 +922,7 @@ test_implicit_keep_alive_until_timeout: [96mTest whether the socket connection 
 < Content-Length: 1940
 < Content-Location: /a2-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:16 GMT
+< Date: Sat, 31 Dec 2022 00:22:26 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -931,7 +931,7 @@ test_implicit_keep_alive_until_timeout: [96mTest whether the socket connection 
 < Content-Length: 1940
 < Content-Location: /a2-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:22 GMT
+< Date: Sat, 31 Dec 2022 00:22:33 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -967,7 +967,7 @@ test_explicit_keep_alive_until_timeout: [96mTest whether the socket connection 
 < Content-Length: 1940
 < Content-Location: /a2-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:23 GMT
+< Date: Sat, 31 Dec 2022 00:22:33 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -976,7 +976,7 @@ test_explicit_keep_alive_until_timeout: [96mTest whether the socket connection 
 < Content-Length: 1940
 < Content-Location: /a2-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:29 GMT
+< Date: Sat, 31 Dec 2022 00:22:40 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1002,7 +1002,7 @@ test_trace_unnecessary_conditionals: [96mTest whether many unnecessary conditio
 < Content-Location: /a2-test/2/index.html
 < Content-Length: 477
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:30 GMT
+< Date: Sat, 31 Dec 2022 00:22:40 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1037,7 +1037,7 @@ test_pipeline_requests: [96mTest whether multiple pipelined requests are proces
 < Content-Length: 534
 < Content-Location: /a2-test/
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:30 GMT
+< Date: Sat, 31 Dec 2022 00:22:40 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1093,7 +1093,7 @@ test_long_lived_connection: [96mTest whether the socket connection is kept aliv
 < Content-Length: 534
 < Content-Location: /a2-test/
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:30 GMT
+< Date: Sat, 31 Dec 2022 00:22:40 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1102,7 +1102,7 @@ test_long_lived_connection: [96mTest whether the socket connection is kept aliv
 < Content-Length: 1940
 < Content-Location: /a2-test/2/index.html
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:30 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1111,7 +1111,7 @@ test_long_lived_connection: [96mTest whether the socket connection is kept aliv
 < Content-Length: 534
 < Content-Location: /a2-test/
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1132,7 +1132,7 @@ test_useragent_get_text_ok: [96mTest whether a request with a custom user-agent
 
 > GET http://localhost:18002/a3-test/fairlane.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Connection: close
 > 
 
@@ -1140,7 +1140,7 @@ test_useragent_get_text_ok: [96mTest whether a request with a custom user-agent
 < Content-Length: 197
 < Content-Location: /a3-test/fairlane.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1157,7 +1157,7 @@ test_partial_content_range_language: [96mTest whether a valid range request hea
 
 > GET http://localhost:18002/a3-test/index.html.es HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Referer: http://localhost:18002/a3-test/index.html
 > Range: bytes=0-99
 > Connection: close
@@ -1167,7 +1167,7 @@ test_partial_content_range_language: [96mTest whether a valid range request hea
 < Content-Length: 7647
 < Content-Location: /a3-test/index.html.es
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1187,20 +1187,20 @@ test_chunked_404: [96mTest whether a 404 Not Found page returns chunked encoded
 
 > GET /a3-test/index.htmll HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Connection: close
 > 
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a3-test/index.htmll
-< Content-Length: 468
+< Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (468 bytes)]
+* [Payload redacted (473 bytes)]
 
 --------------------------------------------------------------------------------
 test_conditional_head_image_fresh: [96mTest whether conditional HEAD of a fresh image file returns 304 Not Modified[0m
@@ -1208,7 +1208,9 @@ test_conditional_head_image_fresh: [96mTest whether conditional HEAD of a fresh
 * Request data sent
 * Response data read
 * Response parsed
-[91m[FAILED] ASSERTION: Status expected `304`, returned `200`[0m
+* Status is `304`
+* Payload is empty
+[92m[PASSED][0m
 
 > HEAD /a3-test/fairlane.gif HTTP/1.1
 > Host: localhost:18002
@@ -1216,14 +1218,15 @@ test_conditional_head_image_fresh: [96mTest whether conditional HEAD of a fresh
 > Connection: close
 > 
 
-< HTTP/1.1 200 OK
-< Content-Length: 49807
+< HTTP/1.1 304 Not Modified
 < Content-Location: /a3-test/fairlane.gif
-< Content-Type: image/gif
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Content-Length: 471
+< Content-Type: text/html
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
+< ETag: U2F0LCAwMyBOb3YgMjAxOCAxMzoxMDoxMSBHTVT/Li93d3cvd2ViL3NlcnZldXIxL2EzLXRlc3QvZmFpcmxhbmUuZ2lm
 
 --------------------------------------------------------------------------------
 test_conditional_head_image_stale: [96mTest whether conditional HEAD of a stale image file returns 200 OK[0m
@@ -1231,11 +1234,7 @@ test_conditional_head_image_stale: [96mTest whether conditional HEAD of a stale
 * Request data sent
 * Response data read
 * Response parsed
-* Status is `200`
-* `Content-Type` header is present
-* `Content-Type` header begins with `image/gif`
-* Payload is empty
-[92m[PASSED][0m
+[91m[FAILED] ASSERTION: Status expected `200`, returned `304`[0m
 
 > HEAD /a3-test/fairlane.gif HTTP/1.1
 > Host: localhost:18002
@@ -1243,14 +1242,15 @@ test_conditional_head_image_stale: [96mTest whether conditional HEAD of a stale
 > Connection: close
 > 
 
-< HTTP/1.1 200 OK
-< Content-Length: 49807
+< HTTP/1.1 304 Not Modified
 < Content-Location: /a3-test/fairlane.gif
-< Content-Type: image/gif
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Content-Length: 474
+< Content-Type: text/html
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
+< ETag: U2F0LCAwMyBOb3YgMjAxOCAxMzoxMDoxMSBHTVT/Li93d3cvd2ViL3NlcnZldXIxL2EzLXRlc3QvZmFpcmxhbmUuZ2lm
 
 --------------------------------------------------------------------------------
 test_no_accept_header_multiple_choices: [96mTest whether missing Accept header yields multiple choices[0m
@@ -1267,14 +1267,14 @@ test_no_accept_header_multiple_choices: [96mTest whether missing Accept header 
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a3-test/fairlane
-< Content-Length: 468
+< Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (468 bytes)]
+* [Payload redacted (473 bytes)]
 
 --------------------------------------------------------------------------------
 test_ambiguous_accept_header_multiple_choices: [96mTest whether an Accept header with the same qvalue for all image types yields multiple choices[0m
@@ -1294,7 +1294,7 @@ test_ambiguous_accept_header_multiple_choices: [96mTest whether an Accept heade
 < Content-Location: /a3-test/fairlane
 < Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1312,7 +1312,7 @@ test_accept_header_png_ok: [96mTest whether an Accept header with unique qvalue
 > HEAD /a3-test/fairlane HTTP/1.1
 > Host: localhost:18002
 > Accept: image/jpeg; q=0.9, image/png; q=0.91, image/tiff; q=0.95
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Connection: close
 > 
 
@@ -1320,7 +1320,7 @@ test_accept_header_png_ok: [96mTest whether an Accept header with unique qvalue
 < Content-Location: /a3-test/fairlane
 < Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1338,20 +1338,20 @@ test_accept_header_text_ok: [96mTest whether an Accept header with high qvalue 
 > HEAD /a3-test/fairlane HTTP/1.1
 > Host: localhost:18002
 > Accept: text/*; q=1.0, image/*; q=0.99
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Connection: close
 > 
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a3-test/fairlane
-< Content-Length: 473
+< Content-Length: 471
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (473 bytes)]
+* [Payload redacted (471 bytes)]
 
 --------------------------------------------------------------------------------
 test_not_accptable_encoding: [96mTest whether explicit zero qvalue for all supported encodings returns 406 Not Acceptable[0m
@@ -1371,7 +1371,7 @@ test_not_accptable_encoding: [96mTest whether explicit zero qvalue for all supp
 < Content-Location: /a3-test/vt-uva.html
 < Content-Length: 471
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1399,7 +1399,7 @@ test_explicit_extention_ignore_content_negotiation: [96mTest whether an explici
 < Content-Length: 42761
 < Content-Location: /a3-test/vt-uva.html.Z
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1422,7 +1422,7 @@ test_ambiguous_accept_language_multiple_choices: [96mTest whether an Accept-Lan
 < Content-Location: /a3-test/index.html
 < Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1446,14 +1446,14 @@ test_not_accptable_incompatiple_charset: [96mTest whether explicit zero qvalue 
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a3-test/index.html.ja
-< Content-Length: 468
+< Content-Length: 471
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (468 bytes)]
+* [Payload redacted (471 bytes)]
 
 --------------------------------------------------------------------------------
 test_partial_content_range_text: [96mTest whether a valid range request header returns partial content in plain text[0m
@@ -1473,7 +1473,7 @@ test_partial_content_range_text: [96mTest whether a valid range request header 
 < Content-Length: 197
 < Content-Location: /a3-test/fairlane.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1498,7 +1498,7 @@ test_etag_precondition_failure: [96mTest whether a random If-Match ETag returns
 < Content-Length: 197
 < Content-Location: /a3-test/fairlane.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1517,7 +1517,7 @@ test_explicit_language_charset_etag: [96mTest whether explicit language and cha
 
 > GET /a3-test/index.html.ru.koi8-r HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Connection: close
 > 
 
@@ -1525,7 +1525,7 @@ test_explicit_language_charset_etag: [96mTest whether explicit language and cha
 < Content-Length: 7281
 < Content-Location: /a3-test/index.html.ru.koi8-r
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1543,7 +1543,7 @@ test_valid_etag_conditional_get: [96mTest whether conditional GET with a valid 
 
 > GET /a3-test/index.html.ru.koi8-r HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 3 Tester/1672342771
+> User-Agent: CS531 Assignment 3 Tester/1672446161
 > Connection: close
 > 
 
@@ -1551,7 +1551,7 @@ test_valid_etag_conditional_get: [96mTest whether conditional GET with a valid 
 < Content-Length: 7281
 < Content-Location: /a3-test/index.html.ru.koi8-r
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1583,7 +1583,7 @@ test_pipeline_range_negotiate: [96mTest whether multiple pipelined requests wit
 < Content-Length: 7237
 < Content-Location: /a3-test/index.html.en
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1598,7 +1598,7 @@ test_basic_auth_realm: [96mTest whether files are protected with HTTP Basic aut
 
 > GET http://localhost:18002/a4-test/limited1/protected HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1606,7 +1606,7 @@ test_basic_auth_realm: [96mTest whether files are protected with HTTP Basic aut
 < Content-Length: 28
 < Content-Location: /a4-test/limited1/protected
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1623,7 +1623,7 @@ test_basic_wrong_auth_unauthorized: [96mTest whether access is unauthorized wit
 
 > GET http://localhost:18002/a4-test/limited1/protected HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Authorization: Basic YmRhOm1sbg==
 > Connection: close
 > 
@@ -1632,7 +1632,7 @@ test_basic_wrong_auth_unauthorized: [96mTest whether access is unauthorized wit
 < Content-Length: 28
 < Content-Location: /a4-test/limited1/protected
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1649,7 +1649,7 @@ test_nested_basic_auth: [96mTest whether files in nested directories are protec
 
 > GET http://localhost:18002/a4-test/limited1/1/protected2 HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1657,7 +1657,7 @@ test_nested_basic_auth: [96mTest whether files in nested directories are protec
 < Content-Length: 33
 < Content-Location: /a4-test/limited1/1/protected2
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1678,7 +1678,7 @@ test_basic_auth_ok: [96mTest whether access is granted with valid Authorization
 
 > GET http://localhost:18002/a4-test/limited1/protected HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Referer: http://localhost:18002/a4-test/index.html
 > Authorization: Basic bWxuOm1sbg==
 > Connection: close
@@ -1688,7 +1688,7 @@ test_basic_auth_ok: [96mTest whether access is granted with valid Authorization
 < Content-Length: 28
 < Content-Location: /a4-test/limited1/protected
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1709,7 +1709,7 @@ test_nested_basic_auth_ok: [96mTest whether access is granted with valid Author
 
 > GET http://localhost:18002/a4-test/limited1/1/protected2 HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Connection: close
 > 
@@ -1718,7 +1718,7 @@ test_nested_basic_auth_ok: [96mTest whether access is granted with valid Author
 < Content-Length: 33
 < Content-Location: /a4-test/limited1/1/protected2
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1735,7 +1735,7 @@ test_double_auth_bad: [96mTest whether two Authorization headers report a bad r
 
 > GET http://localhost:18002/a4-test/limited1/protected HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Authorization: Basic ZZRhOmJkYQ==
 > Connection: close
@@ -1745,7 +1745,7 @@ test_double_auth_bad: [96mTest whether two Authorization headers report a bad r
 < Content-Length: 28
 < Content-Location: /a4-test/limited1/protected
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1762,7 +1762,7 @@ test_nested_digest_auth: [96mTest whether files in nested directories are prote
 
 > GET http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1770,7 +1770,7 @@ test_nested_digest_auth: [96mTest whether files in nested directories are prote
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1787,7 +1787,7 @@ test_head_nested_digest_auth: [96mTest whether HEAD method in nested directorie
 
 > HEAD http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1795,7 +1795,7 @@ test_head_nested_digest_auth: [96mTest whether HEAD method in nested directorie
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1810,7 +1810,7 @@ test_options_nested_digest_auth: [96mTest whether OPTIONS method in nested dire
 
 > OPTIONS http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1818,7 +1818,7 @@ test_options_nested_digest_auth: [96mTest whether OPTIONS method in nested dire
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1835,7 +1835,7 @@ test_wrong_realm_unauthorized: [96mTest whether an incorrect realm prevents aut
 
 > GET http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1843,7 +1843,7 @@ test_wrong_realm_unauthorized: [96mTest whether an incorrect realm prevents aut
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1860,7 +1860,7 @@ test_wrong_ncount_unauthorized: [96mTest whether an incorrect nonce count preve
 
 > GET http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1868,7 +1868,7 @@ test_wrong_ncount_unauthorized: [96mTest whether an incorrect nonce count preve
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1885,7 +1885,7 @@ test_wrong_digest_response_unauthorized: [96mTest whether an incorrect digest r
 
 > GET http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1893,7 +1893,7 @@ test_wrong_digest_response_unauthorized: [96mTest whether an incorrect digest r
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1910,7 +1910,7 @@ test_wrong_digest_user_unauthorized: [96mTest whether an incorrect digest user 
 
 > GET http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1918,7 +1918,7 @@ test_wrong_digest_user_unauthorized: [96mTest whether an incorrect digest user 
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1935,7 +1935,7 @@ test_correct_realm_authorized: [96mTest whether a correct realm with other valu
 
 > GET http://localhost:18002/a4-test/limited2/foo/bar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Connection: close
 > 
 
@@ -1943,7 +1943,7 @@ test_correct_realm_authorized: [96mTest whether a correct realm with other valu
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1968,7 +1968,7 @@ test_auth_over_conditional_get: [96mTest whether authorization is ensured befor
 < Content-Length: 22
 < Content-Location: /a4-test/limited2/foo/bar.txt
 < Content-Type: text/plain
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -1993,7 +1993,7 @@ test_large_range_not_satisfiable: [96mTest whether a Range larger than the file
 < Content-Length: 7281
 < Content-Location: /a4-test/index.html.ru.koi8-r
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2008,7 +2008,7 @@ test_pipeline_auth: [96mTest whether authorization is respected in pipeline req
 
 > HEAD http://localhost:18002/a4-test/limited1/protected HTTP/1.1
 > Range: bytes=20000-29999
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Host: localhost:18002
 > 
@@ -2017,7 +2017,7 @@ test_pipeline_auth: [96mTest whether authorization is respected in pipeline req
 > 
 > HEAD http://localhost:18002/a4-test/limited1/protected HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 4 Tester/1672342771
+> User-Agent: CS531 Assignment 4 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQxx
 > 
 > HEAD http://localhost:18002/a4-test/index.html.en HTTP/1.1
@@ -2032,7 +2032,7 @@ test_pipeline_auth: [96mTest whether authorization is respected in pipeline req
 < Content-Length: 28
 < Content-Location: /a4-test/limited1/protected
 < Content-Type: application/octet-stream
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2047,14 +2047,14 @@ test_protected_options_trace_full_method_support: [96mTest whether OPTIONS and 
 
 > OPTIONS http://localhost:18002/a5-test/limited3/protected HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > 
 > TRACE /a5-test/env.cgi?var1=foo&var2=bar HTTP/1.1
 > Host: localhost:18002
 > 
 > OPTIONS http://localhost:18002/a5-test/limited3/env.cgi HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Referer: http://localhost:18002/a5-test/index.html
 > Authorization: Basic amJvbGxlbjpqYm9sbGVu
 > Connection: close
@@ -2062,14 +2062,14 @@ test_protected_options_trace_full_method_support: [96mTest whether OPTIONS and 
 
 < HTTP/1.1 405 Method Not Allowed
 < Content-Location: /a5-test/limited3/protected
-< Content-Length: 480
+< Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (480 bytes)]
+* [Payload redacted (482 bytes)]
 
 --------------------------------------------------------------------------------
 test_multiple_cgi_scripts: [96mTest whether CGI scripts are executed and resulted in custom status, directory listing, and redirection[0m
@@ -2094,7 +2094,7 @@ test_multiple_cgi_scripts: [96mTest whether CGI scripts are executed and result
 < Content-Length: 82
 < Content-Location: /a5-test/status.cgi
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2119,14 +2119,14 @@ test_cgi_auth_internal_error: [96mTest whether CGI scripts are protected and re
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a5-test/limited4/foo/barbar.txt
-< Content-Length: 473
+< Content-Length: 468
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (473 bytes)]
+* [Payload redacted (468 bytes)]
 
 --------------------------------------------------------------------------------
 test_allow_no_put_delete: [96mTest whether Allow header is present with values other than PUT and DELETE[0m
@@ -2138,7 +2138,7 @@ test_allow_no_put_delete: [96mTest whether Allow header is present with values 
 
 > OPTIONS http://localhost:18002/a5-test/env.cgi HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Connection: close
 > 
 
@@ -2146,7 +2146,7 @@ test_allow_no_put_delete: [96mTest whether Allow header is present with values 
 < Content-Location: /a5-test/env.cgi
 < Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2171,7 +2171,7 @@ test_delete_not_allowed: [96mTest whether Allow header is present with appropri
 < Content-Location: /a5-test/index.html.denmark
 < Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2189,7 +2189,7 @@ test_put_not_allowed: [96mTest whether Allow header is present with appropriate
 
 > PUT http://localhost:18002/a5-test/limited1/foobar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Connection: close
 > Content-Type: text/plain
@@ -2205,7 +2205,7 @@ test_put_not_allowed: [96mTest whether Allow header is present with appropriate
 < Content-Location: /a5-test/limited1/foobar.txt
 < Content-Length: 477
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2227,14 +2227,14 @@ test_put_success_auth_digest: [96mTest whether PUT method creates a new resourc
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a5-test/limited4/foo/barbar.txt
-< Content-Length: 473
+< Content-Length: 468
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (473 bytes)]
+* [Payload redacted (468 bytes)]
 
 --------------------------------------------------------------------------------
 test_put_success_auth_basic: [96mTest whether PUT method creates a new resource with the request payload after successful Basic auth[0m
@@ -2246,7 +2246,7 @@ test_put_success_auth_basic: [96mTest whether PUT method creates a new resource
 
 > PUT http://localhost:18002/a5-test/limited3/foobar.txt HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Connection: close
 > Content-Type: text/plain
@@ -2262,7 +2262,7 @@ test_put_success_auth_basic: [96mTest whether PUT method creates a new resource
 < Content-Location: /a5-test/limited3/foobar.txt
 < Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2284,14 +2284,14 @@ test_auth_created_files: [96mTest whether files created using PUT in earlier te
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a5-test/limited4/foo/barbar.txt
-< Content-Length: 473
+< Content-Length: 468
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (473 bytes)]
+* [Payload redacted (468 bytes)]
 
 --------------------------------------------------------------------------------
 test_delete_verify: [96mTest whether a DELETE request removes a resource and returns 404 on a subsequent GET[0m
@@ -2302,12 +2302,12 @@ test_delete_verify: [96mTest whether a DELETE request removes a resource and re
 [91m[FAILED] ASSERTION: Status expected `200`, returned `405`[0m
 
 > DELETE /a5-test/limited3/foobar.txt HTTP/1.1
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Host: localhost:18002
 > 
 > GET /a5-test/limited3/foobar.txt HTTP/1.1
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Host: localhost:18002
 > Connection: close
@@ -2315,14 +2315,14 @@ test_delete_verify: [96mTest whether a DELETE request removes a resource and re
 
 < HTTP/1.1 405 Method Not Allowed
 < Content-Location: /a5-test/limited3/foobar.txt
-< Content-Length: 480
+< Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (480 bytes)]
+* [Payload redacted (482 bytes)]
 
 --------------------------------------------------------------------------------
 test_pipeline_auth_put_get: [96mTest whether pipelined PUT and GET requests are auth protected (Note: some request headers maight be separated by LF instead of CRLF)[0m
@@ -2333,7 +2333,7 @@ test_pipeline_auth_put_get: [96mTest whether pipelined PUT and GET requests are
 [91m[FAILED] ASSERTION: Status expected `401`, returned `405`[0m
 
 > PUT /a5-test/limited2/test.txt HTTP/1.1
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Authorization: Basic YmRhOmJkYQ==
 > Host: localhost:18002
 > Content-Type: text/plain
@@ -2345,7 +2345,7 @@ test_pipeline_auth_put_get: [96mTest whether pipelined PUT and GET requests are
 > 
 > hooray for PUT!
 > GET /a5-test/limited3/foobar.txt HTTP/1.1
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Authorization: Basic alsdkfjlasjd
 > Host: localhost:18002
 > Connection: close
@@ -2355,7 +2355,7 @@ test_pipeline_auth_put_get: [96mTest whether pipelined PUT and GET requests are
 < Content-Location: /a5-test/limited2/test.txt
 < Content-Length: 482
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2377,14 +2377,14 @@ test_auth_get_delete: [96mTest whether a file that was PUT in an earlier test i
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a5-test/limited4/foo/barbar.txt
-< Content-Length: 473
+< Content-Length: 471
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (473 bytes)]
+* [Payload redacted (471 bytes)]
 
 --------------------------------------------------------------------------------
 test_cgi_env_query_str: [96mTest whether CGI script can see and report environment variables like QUERY_STRING and HTTP_USER_AGENT[0m
@@ -2396,20 +2396,20 @@ test_cgi_env_query_str: [96mTest whether CGI script can see and report environm
 
 > GET /a5-test/env.cgi?var1=foo&var2=bar HTTP/1.1
 > Host: localhost:18002
-> User-Agent: CS531 Assignment 5 Tester/1672342771
+> User-Agent: CS531 Assignment 5 Tester/1672446161
 > Connection: close
 > 
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a5-test/env.cgi?var1=foo&var2=bar
-< Content-Length: 468
+< Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (468 bytes)]
+* [Payload redacted (473 bytes)]
 
 --------------------------------------------------------------------------------
 test_cgi_protected_auth_basic: [96mTest whether CGI script is protected with HTTP Basic auth[0m
@@ -2426,14 +2426,14 @@ test_cgi_protected_auth_basic: [96mTest whether CGI script is protected with HT
 
 < HTTP/1.1 404 Not Found
 < Content-Location: /a5-test/limited3/env.cgi?var1=foo&var2=bar
-< Content-Length: 468
+< Content-Length: 473
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
 < 
-* [Payload redacted (468 bytes)]
+* [Payload redacted (473 bytes)]
 
 --------------------------------------------------------------------------------
 test_post_www_urlencoded: [96mTest whether CGI script reads and echoes back URL-encoded POST data[0m
@@ -2456,7 +2456,7 @@ test_post_www_urlencoded: [96mTest whether CGI script reads and echoes back URL
 < Content-Location: /a5-test/limited3/env.cgi
 < Content-Length: 474
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2492,7 +2492,7 @@ test_post_www_multipart: [96mTest whether CGI script reads and echoes back mult
 < Content-Location: /a5-test/limited3/env.cgi
 < Content-Length: 479
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2504,9 +2504,9 @@ test_echo_back_single_line: [96mTest echo back server with a single line messag
 * Connecting to the `localhost:18002` server
 * Request data sent
 * Response data read
-[91m[FAILED] ASSERTION: `The quick brown fox jumps over the lazy dog 4912 times!` is absent from the response[0m
+[91m[FAILED] ASSERTION: `The quick brown fox jumps over the lazy dog 319 times!` is absent from the response[0m
 
-> The quick brown fox jumps over the lazy dog 4912 times!
+> The quick brown fox jumps over the lazy dog 319 times!
 > 
 > 
 
@@ -2514,7 +2514,7 @@ test_echo_back_single_line: [96mTest echo back server with a single line messag
 < Content-Location: quick
 < Content-Length: 470
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2528,7 +2528,7 @@ test_echo_back_single_line: [96mTest echo back server with a single line messag
 < 	<body bgcolor="white">
 < 		<center><h1>400 Bad Request</h1></center>
 < 		<center><hr>Server: FT_Webserv/1.0.0</hr></center>
-< 		<center><iframe src="https://giphy.com/embed/Rkis28kMJd1aE" width="480" height="317" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
+< 		<center><iframe src="https://giphy.com/embed/uprwwjptZW4Za" width="480" height="358" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
 < 		<center><p>Click <a href="/">here</a> to return home.</p></center>
 < 	</body>
 < </html>
@@ -2540,9 +2540,9 @@ test_echo_back_multi_line: [96mTest echo back server with a multi line message
 * Connecting to the `localhost:18002` server
 * Request data sent
 * Response data read
-[91m[FAILED] ASSERTION: `4912 little monkeys jumping on the bed,` is absent from the response[0m
+[91m[FAILED] ASSERTION: `319 little monkeys jumping on the bed,` is absent from the response[0m
 
-> 4912 little monkeys jumping on the bed,
+> 319 little monkeys jumping on the bed,
 > One fell down and bumped his head,
 > Mama called the doctor and the doctor said,
 > "No more monkeys jumping on the bed!"
@@ -2551,9 +2551,9 @@ test_echo_back_multi_line: [96mTest echo back server with a multi line message
 
 < HTTP/1.1 400 Bad Request
 < Content-Location: little
-< Content-Length: 470
+< Content-Length: 475
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2567,7 +2567,7 @@ test_echo_back_multi_line: [96mTest echo back server with a multi line message
 < 	<body bgcolor="white">
 < 		<center><h1>400 Bad Request</h1></center>
 < 		<center><hr>Server: FT_Webserv/1.0.0</hr></center>
-< 		<center><iframe src="https://giphy.com/embed/spfi6nabVuq5y" width="480" height="392" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
+< 		<center><iframe src="https://giphy.com/embed/kd9h44W2CpZBLH7QpA" width="360" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
 < 		<center><p>Click <a href="/">here</a> to return home.</p></center>
 < 	</body>
 < </html>
@@ -2588,13 +2588,13 @@ test_echo_back_sparse_line: [96mTest echo back server with a message containing
 >   That is the time 00:00:00 UTC on 1 January 1970, minus leap seconds.
 > 
 > 
-> Current Epoch: 1672342771
+> Current Epoch: 1672446161
 
 < HTTP/1.1 400 Bad Request
 < Content-Location: Epoch
 < Content-Length: 470
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2608,7 +2608,7 @@ test_echo_back_sparse_line: [96mTest echo back server with a message containing
 < 	<body bgcolor="white">
 < 		<center><h1>400 Bad Request</h1></center>
 < 		<center><hr>Server: FT_Webserv/1.0.0</hr></center>
-< 		<center><iframe src="https://giphy.com/embed/spfi6nabVuq5y" width="480" height="392" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
+< 		<center><iframe src="https://giphy.com/embed/Rkis28kMJd1aE" width="480" height="317" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
 < 		<center><p>Click <a href="/">here</a> to return home.</p></center>
 < 	</body>
 < </html>
@@ -2637,7 +2637,7 @@ test_healthy_server: [96mTest healthy server root[0m
 < Content-Length: 406
 < Content-Location: /
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2661,7 +2661,7 @@ test_bad_request_header: [96mTest whether the server recognizes malformed heade
 < Content-Location: /foo
 < Content-Length: 468
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:41 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2685,7 +2685,7 @@ test_the_ultimate_question: [96mAnswer to the Ultimate Question of Life, the Un
 < Content-Length: 406
 < Content-Location: /
 < Content-Type: text/html
-< Date: Thu, 29 Dec 2022 19:39:31 GMT
+< Date: Sat, 31 Dec 2022 00:22:42 GMT
 < Connection: close
 < Server: FT_Webserv/1.0.0
 < Transfert-Encoding: identity
@@ -2695,14 +2695,12 @@ test_the_ultimate_question: [96mAnswer to the Ultimate Question of Life, the Un
 =================================== SUMMARY ====================================
 Server: [96mlocalhost:18002[0m
 Test Case Results:
-[91mFAILED[0m: test_path_options_ok
-[91mFAILED[0m: test_trace_echoback
 [91mFAILED[0m: test_get_jpeg_image
 [91mFAILED[0m: test_access_log_as_virtual_uri
 [91mFAILED[0m: test_get_default_index_file
 [91mFAILED[0m: test_redirect_as_per_regexp_trailing_wildcard_capture
 [91mFAILED[0m: test_redirect_as_per_regexp_trailing_specific_file
-[91mFAILED[0m: test_conditional_head_fresh
+[91mFAILED[0m: test_conditional_head_stale
 [91mFAILED[0m: test_include_etag
 [91mFAILED[0m: test_valid_etag_ok
 [91mFAILED[0m: test_etag_if_match_failure
@@ -2710,12 +2708,11 @@ Test Case Results:
 [91mFAILED[0m: test_explicit_keep_alive_until_timeout
 [91mFAILED[0m: test_trace_unnecessary_conditionals
 [91mFAILED[0m: test_pipeline_requests
-[92mPASSED[0m: test_long_lived_connection
 [91mFAILED[0m: test_useragent_get_text_ok
 [91mFAILED[0m: test_partial_content_range_language
 [91mFAILED[0m: test_chunked_404
-[91mFAILED[0m: test_conditional_head_image_fresh
-[92mPASSED[0m: test_conditional_head_image_stale
+[92mPASSED[0m: test_conditional_head_image_fresh
+[91mFAILED[0m: test_conditional_head_image_stale
 [91mFAILED[0m: test_no_accept_header_multiple_choices
 [91mFAILED[0m: test_ambiguous_accept_header_multiple_choices
 [91mFAILED[0m: test_accept_header_png_ok

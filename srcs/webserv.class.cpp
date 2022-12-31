@@ -129,7 +129,7 @@ void 	Webserv::launch()
 		if (select_ret == 0)
 		{
 			write = (write + 1) % 5;
-			std::cout << '\r';
+/*			std::cout << '\r';
 			for (int i = 0; i < 5; i++)
 			{
 				if (i < write)
@@ -139,7 +139,7 @@ void 	Webserv::launch()
 			}
 			std::cout << '>';
 			std::cout.flush();
-			continue ;
+		*/	continue ;
 		}
 		write = -1;
 		std::cout << std::endl;
@@ -165,9 +165,6 @@ void 	Webserv::launch()
 					_clients.push_back(Client(fd,__get_the_port(i),0));
 					FD_SET(fd, &_current_sockets);
 					std::cout << "++ Connexion accepted ++" << std::endl;
-					
-//					std::cout << "sin_port : " << ntohs(client.sin_port) << std::endl;
-//					std::cout << "sin_addr : " << ntohs(client.sin_addr.s_addr) << std::endl;
 				}
 				else if (i == STDIN_FILENO)
 					this->__console();

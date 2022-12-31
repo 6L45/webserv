@@ -8,8 +8,6 @@ memelord	g_gif;
 // CONSTRUCT
 Http_handler::Http_handler(std::string &request)
 {
-//	std::cout << request << std::endl << std::endl;
-	
 	// Read the first line from the string stream
 	std::istringstream iss(request);
 	std::string firstLine;
@@ -33,6 +31,8 @@ Http_handler::Http_handler(std::string &request)
 		{
 			std::string field = line.substr(0, colonPos);
 			std::string value = line.substr(colonPos + 1);
+			if (!value.empty() && value.back() == '\r')
+				value.pop_back();
 			if (value[0] == ' ')
 				value = value.substr(1);
 			this->_req_dict.insert(std::make_pair(field, value));
@@ -64,17 +64,31 @@ std::string	Http_handler::exec_request(Server &serv)
 	try
 	{
 		// GET METHOD
-		if ( (val = this->_req_dict.find("GET")) != this->_req_dict.end() )
+		if ( ((val = this->_req_dict.find("GET")) != this->_req_dict.end() )
+			|| ( (val = this->_req_dict.find("HEAD")) != this->_req_dict.end() ) )
 		{
-			if (!SV_GETISSET(serv))
+			if (val->first == "GET" && !SV_GETISSET(serv))
+//				|| (val->second == "HEAD" && !SV_HEADISSET(serv)))
 				throw 405;
+	
+			std::map<std::string, std::string>::iterator	it;
+			it = this->_req_dict.find("ETag");
+			if (it != this->_req_dict.end())
+				__Etag_reader();
 			
+			it = this->_req_dict.find("If-Modified-Since");
+			if (it != this->_req_dict.end())
+				__Etag_gen(serv._root + &this->_address[1]);
+
 			if (serv.cgi_exec(this->_address))
 				this->__CGI_exec(serv._root + &this->_address[1], serv);
 			else
 				this->__GET_response(val->second, serv);
-
-			this->__200_response(200, false, serv);
+	
+			if (val->first == "GET")
+				this->__200_response(200, false, serv);
+			else
+				this->__200_response(200, true, serv);
 		}
 
 		// POST_METHOD
@@ -101,18 +115,6 @@ std::string	Http_handler::exec_request(Server &serv)
 
 			this->__DELETE_response(val->second, serv);
 			this->__200_response(204, false, serv);
-		}
-
-		else if ( (val = this->_req_dict.find("HEAD")) != this->_req_dict.end() )
-		{
-//			if (!SV_HEADISSET(serv))
-//				throw 405;
-
-			if (cgi)
-				throw 403;
-
-			this->__GET_response(val->second, serv);
-			this->__200_response(200, true, serv);
 		}
 	
 		// ANY OTHER TYPE OF METHOD -> 405
@@ -202,6 +204,9 @@ void	Http_handler::__200_response(int ret, bool head, Server &serv)
 				+ this->header_server + "\r\n"
 				+ this->header_encoding + "\r\n";
 
+	if (!this->header_ETag.empty())
+		this->_header += this->header_ETag + "\r\n";
+
 	if (!head && !this->_response.empty())
 		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
 	else
@@ -227,13 +232,18 @@ void	Http_handler::__err_header(const int ret)
 				+ this->header_connect
 				+ this->header_server + "\r\n"
 				+ this->header_encoding + "\r\n";
-
 	if (ret == 301)
 	{
 		this->header_location += this->_address + "/\r\n";
 		this->_header += this->header_location;
 	}
-	this->_response = this->_header + "\r\n"  + this->_response + "\r\n";
+	if (!this->header_ETag.empty())
+		this->_header += this->header_ETag + "\r\n";
+
+	if (ret == 304)
+		this->_response = this->_header + "\r\n";
+	else
+		this->_response = this->_header + "\r\n"  + this->_response + "\r\n";
 }
 
 void	Http_handler::__body_gen(int ret)
@@ -512,7 +522,7 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 
 
 
-// DIRECTORY _BROWSER
+// PRIVATE METHODS
 void         Http_handler::__directory_browser(const char *path, std::string const &host)
 {
     std::string	dirName(path);
@@ -552,7 +562,337 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
     	ss << "<p><a href=/"  << dirEntry + '>' + dirEntry + "</a></p>\n";
 	else
    		ss << "<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
+
     return ss.str();
+}
+
+std::string Http_handler::__base64_encode(const std::string &input)
+{
+	// Initialize a base64 alphabet
+	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+										"abcdefghijklmnopqrstuvwxyz"
+										"0123456789+/";
+
+	// Initialize the base64 string to be returned
+	std::string base64_string;
+
+	// Get the length of the input string
+	size_t input_length = input.length();
+
+	// Iterate through the input string in blocks of 3 characters
+	for (size_t i = 0; i < input_length - 1; i += 3)
+	{
+		// Initialize a vector to store the 3 bytes
+		std::vector<unsigned char> triplet(3);
+
+		// Store the first, second and third character in the triplet
+		triplet[0] = (i < input_length) ? input[i] : 0;
+		triplet[1] = (i + 1 < input_length) ? input[i + 1] : 0;
+		triplet[2] = (i + 2 < input_length) ? input[i + 2] : 0;
+
+		// Convert the triplet to a 4-character base64 string
+		base64_string += base64_alphabet[triplet[0] >> 2];
+		base64_string += base64_alphabet[((triplet[0] & 0x03) << 4) | (triplet[1] >> 4)];
+		base64_string += (i + 1 < input_length) ? base64_alphabet[((triplet[1] & 0x0f) << 2) | (triplet[2] >> 6)] : '=';
+		base64_string += (i + 2 < input_length) ? base64_alphabet[triplet[2] & 0x3f] : '=';
+	}
+
+	// Handle remaining characters
+	if (input_length % 3 == 1)
+	{
+		base64_string += base64_alphabet[input[input_length - 1] >> 2];
+		base64_string += base64_alphabet[(input[input_length - 1] & 0x03) << 4];
+		base64_string += "==";
+	}
+	else if (input_length % 3 == 2)
+	{
+		base64_string += base64_alphabet[input[input_length - 2] >> 2];
+		base64_string += base64_alphabet[((input[input_length - 2] & 0x03) << 4) | (input[input_length - 1] >> 4)];
+		base64_string += base64_alphabet[(input[input_length - 1] & 0x0f) << 2];
+		base64_string += "=";
+	}
+
+	return base64_string;
+}
+
+std::string Http_handler::__base64_decode(const std::string &input)
+{
+	// Initialize a base64 alphabet
+	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+										"abcdefghijklmnopqrstuvwxyz"
+										"0123456789+/";
+
+	// Initialize the decoded string to be returned
+	std::string decoded_string;
+	decoded_string.resize((input.length() / 4) * 3);
+
+	// Get the length of the input string
+	size_t input_length = input.length();
+
+	// Iterate through the input string in blocks of 4 characters
+	for (size_t i = 0, j = 0; i < input_length; i += 4, j += 3)
+	{
+		// Initialize a vector to store the 4 base64 characters
+		std::vector<unsigned char> quad(4);
+
+		// Store the first, second, third and fourth character in the quad
+		quad[0] = (i < input_length) ? base64_alphabet.find(input[i]) : 0;
+		quad[1] = (i + 1 < input_length) ? base64_alphabet.find(input[i + 1]) : 0;
+		quad[2] = (i + 2 < input_length) ? base64_alphabet.find(input[i + 2]) : 0;
+		quad[3] = (i + 3 < input_length) ? base64_alphabet.find(input[i + 3]) : 0;
+
+		// Check for padding characters
+		bool padding_1 = (i + 1 < input_length && input[i + 1] == '=');
+		bool padding_2 = (i + 2 < input_length && input[i + 2] == '=');
+		bool padding_3 = (i + 3 < input_length && input[i + 3] == '=');
+
+		// Convert the quad to a 3-character string
+		decoded_string[j] = static_cast<char>((quad[0] << 2) + (quad[1] >> 4));
+		decoded_string[j + 1] = (padding_1) ? '\0' : static_cast<char>(((quad[1] & 0x0f) << 4) + (quad[2] >> 2));
+		decoded_string[j + 2] = (padding_2) ? '\0' : static_cast<char>(((quad[2] & 0x03) << 6) + quad[3]);
+	}
+
+	// Resize the decoded string to the correct length
+	size_t padding = 0;
+	if (input[input_length - 1] == '=')
+		padding++;
+	if (input[input_length - 2] == '=')
+		padding++;
+	decoded_string.resize(decoded_string.length() - padding);
+
+	return decoded_string;
+}
+
+/*
+std::string Http_handler::__base64_encode(const std::string &input)
+{
+	// Initialize a base64 alphabet
+	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+										"abcdefghijklmnopqrstuvwxyz"
+										"0123456789+/";
+
+	// Initialize the base64 string to be returned
+	std::string base64_string;
+
+	// Get the length of the input string
+	size_t input_length = input.length();
+
+	// Iterate through the input string in blocks of 3 characters
+	for (size_t i = 0; i < input_length - 1; i += 3)
+	{
+		// Initialize a vector to store the 3 bytes
+		std::vector<unsigned char> triplet(3);
+
+		// Store the first, second and third character in the triplet
+		triplet[0] = (i < input_length) ? input[i] : 0;
+		triplet[1] = (i + 1 < input_length) ? input[i + 1] : 0;
+		triplet[2] = (i + 2 < input_length) ? input[i + 2] : 0;
+
+		// Convert the triplet to a 4-character base64 string
+		base64_string += base64_alphabet[triplet[0] >> 2];
+		base64_string += base64_alphabet[((triplet[0] & 0x03) << 4) | (triplet[1] >> 4)];
+		base64_string += (i + 1 < input_length) ? base64_alphabet[((triplet[1] & 0x0f) << 2) | (triplet[2] >> 6)] : '=';
+		base64_string += (i + 2 < input_length) ? base64_alphabet[triplet[2] & 0x3f] : '=';
+	}
+
+	return base64_string;
+}
+
+std::string Http_handler::__base64_decode(const std::string &input)
+{
+	// Initialize a base64 alphabet
+	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+										"abcdefghijklmnopqrstuvwxyz"
+										"0123456789+/";
+
+	// Initialize the decoded string to be returned
+	std::string decoded_string;
+
+	// Get the length of the input string
+	size_t input_length = input.length();
+
+	// Iterate through the input string in blocks of 4 characters
+	for (size_t i = 0; i < input_length; i += 4)
+	{
+		// Initialize a vector to store the 4 base64 characters
+		std::vector<unsigned char>	quad(4);
+
+		// Store the first, second, third and fourth character in the quad
+		quad[0] = (i < input_length) ? base64_alphabet.find(input[i]) : 0;
+		quad[1] = (i + 1 < input_length) ? base64_alphabet.find(input[i + 1]) : 0;
+		quad[2] = (i + 2 < input_length) ? base64_alphabet.find(input[i + 2]) : 0;
+		quad[3] = (i + 3 < input_length) ? base64_alphabet.find(input[i + 3]) : 0;
+
+		// Convert the quad to a 3-character string
+		decoded_string += static_cast<char>((quad[0] << 2) + (quad[1] >> 4));
+		decoded_string += (i + 1 < input_length && input[i + 1] != '=') ? static_cast<char>(((quad[1] & 0x0f) << 4) + (quad[2] >> 2)) : '\0';
+		decoded_string += (i + 2 < input_length && input[i + 2] != '=') ? static_cast<char>(((quad[2] & 0x03) << 6) + quad[3]) : '\0';
+	}
+
+	return decoded_string;
+}
+
+std::string Http_handler::__base64_encode(const std::string &input)
+{
+    static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    std::string output;
+    output.reserve(((input.size() + 2) / 3) * 4);
+
+    int i = 0;
+    unsigned char char_array_3[3];
+    unsigned char char_array_4[4];
+
+    while (input.size() - i > 2)
+    {
+        char_array_3[0] = input[i++];
+        char_array_3[1] = input[i++];
+        char_array_3[2] = input[i++];
+
+        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+        char_array_4[3] = char_array_3[2] & 0x3f;
+
+        for (int j = 0; j < 4; j++)
+            output += base64_chars[char_array_4[j]];
+    }
+
+	int remaining = input.size() - i;
+	if (remaining > 0)
+	{
+		for (int j = 0; j < remaining; j++)
+			char_array_3[j] = input[i + j];
+
+		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[3] = char_array_3[2] & 0x3f;
+
+		for (int j = 0; j < remaining; j++)
+			output += base64_chars[char_array_4[j]];
+
+		for (int j = 0; j < (3 - remaining); j++)
+			output += '=';
+	}
+
+	return output;
+}
+*/
+/*
+std::string Http_handler::__base64_decode(const std::string &input)
+{
+    static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    std::string output;
+    output.reserve((input.size() / 4) * 3);
+
+    int i = 0;
+    unsigned char char_array_4[4], char_array_3[3];
+
+    while (input.size() - i > 3)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            char_array_4[j] = static_cast<unsigned char>(std::find(base64_chars, base64_chars + 64, input[i + j]) - base64_chars);
+        }
+
+        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+        for (int j = 0; j < 3; j++)
+            output += char_array_3[j];
+
+        i += 4;
+    }
+
+    int remaining = input.size() - i;
+    if (remaining > 0)
+    {
+        for (int j = 0; j < remaining; j++)
+            char_array_4[j] = static_cast<unsigned char>(std::find(base64_chars, base64_chars + 64, input[i + j]) - base64_chars);
+
+        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+        for (int j = 0; j < remaining - 1; j++)
+            output += char_array_3[j];
+    }
+
+    return output;
+}
+*/
+
+void	Http_handler::__Etag_gen(std::string path)
+{
+	std::map<std::string, std::string>::iterator it = this->_req_dict.find("If-Modified-Since");
+	if (!__is_valid_http_time(it->second))
+		return;
+
+	// check path 404 if not found
+	struct stat file_stat;
+	if (stat(path.c_str(), &file_stat) != 0)
+		throw 404;
+
+	// get last time modified
+	// to GMT
+	struct tm	*gmt_time = gmtime(&file_stat.st_mtime);
+	time_t		last_modified = mktime(gmt_time);
+
+	char buffer[32];
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", gmtime(&last_modified));
+
+    std::string	file_to_encode(buffer);	
+	file_to_encode += static_cast<char>(-1) + path;
+	
+	std::string	etag(__base64_encode(file_to_encode));
+	this->header_ETag = "ETag: " + etag;
+
+	time_t	request_time = __string_to_time_t_header(it->second);
+
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>" << ctime(&last_modified) << "<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>" << ctime(&request_time) << "<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	
+	if (request_time < last_modified)
+		throw 304;
+}
+
+void	Http_handler::__Etag_reader()
+{
+    std::string etag = __base64_decode(this->_req_dict.find("ETag")->second);
+
+	// find separator to get path and time.
+	int	sep = etag.find(static_cast<char>(-1));
+	// si ne trouve pas le séparateur alors ce n'est pas un ETag valid (not generated by us)
+	if (sep == std::string::npos)
+		throw 400;
+
+	std::string	date = etag.substr(0, sep);
+	std::string	file = etag.substr(sep + 1);
+
+	// si le path dans etag n'existe pas et que le etag est quand même reconnue
+	// alors Etag obsolete
+	struct stat file_stat;
+	if (stat(file.c_str(), &file_stat) != 0)
+		throw 412;
+
+	// cas de figure ou etag est utilisé avec If-Modified-Since
+	std::map<std::string, std::string>::iterator it = this->_req_dict.find("If-Modified-Since");
+	if (it == this->_req_dict.end())
+		return;
+	// get both times 
+
+	struct tm *gmt_time = gmtime(&file_stat.st_mtime);
+	time_t	last_modified = mktime(gmt_time);
+	time_t	request_time = __string_to_time_t_header(it->second);
+	
+	// si n'a pas été modifié depuis date de la requête
+	// return 304 "not modified"
+	if (request_time && request_time < last_modified)
+		throw 304;
+	// else continue and 200 avec new ressource plus loin
 }
 
 
@@ -651,6 +991,38 @@ std::string	Http_handler::__get_extension()
 
 	return (ext);
 }
+
+bool Http_handler::__is_valid_http_time(const std::string &s)
+{
+	static const char *date_format = "%a, %d %b %Y %H:%M:%S %Z";
+
+	struct tm tm;
+	std::memset(&tm, 0, sizeof(tm));
+
+	if (strptime(s.c_str(), date_format, &tm) == nullptr)
+		return false;
+
+	// Check if the resulting time is valid
+	time_t t = mktime(&tm);
+	if (t == -1)
+		return false;
+
+	return true;
+}
+
+time_t	Http_handler::__string_to_time_t_header(const std::string &s)
+{
+	static const char *date_format = "%a, %d %b %Y %H:%M:%S %Z";
+
+	struct tm tm;
+	std::memset(&tm, 0, sizeof(tm));
+
+//	if (strptime(s.c_str(), date_format, &tm) == NULL)
+//		throw 400;
+	return mktime(&tm);
+}
+
+
 
 //	one line by request
 //	IP			auth	date						request						resp size		referer							user-agent------------------->
