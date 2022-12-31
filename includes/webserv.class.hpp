@@ -30,6 +30,13 @@
 #define WS_SETUNPAUSE (_state = _state & ~(1 << 1))
 #define WS_SETEND (_state = _state & ~(1 << 0))
 
+typedef struct	s_keep_alive
+{
+	int	fd;
+	int	keep_alive;
+	clock_t	t;
+}				t_keep_alive;
+
 class Webserv
 {
 	public :
@@ -47,6 +54,7 @@ class Webserv
 		typedef	std::vector<Server>::const_iterator	server_pointer;
 		typedef int									port_fd;
 
+		std::vector<t_keep_alive>					_timer;
 		std::multimap<port_fd,server_pointer>		_port_host;
 		std::map<int,port_fd>						_track; // link the connexion port with the opened fd
 		std::vector<Server>							_servers; //vector car le nombre de serveur reste le même

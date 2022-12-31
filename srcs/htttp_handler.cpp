@@ -8,6 +8,9 @@ memelord	g_gif;
 // CONSTRUCT
 Http_handler::Http_handler(std::string &request)
 {
+//	std::cout << "---------------------------------------------- REQUEST" << std::endl;
+//	std::cout << request << std::endl;
+//	std::cout << "------------------------------------------------------" << std::endl;
 	// Read the first line from the string stream
 	std::istringstream iss(request);
 	std::string firstLine;
@@ -67,25 +70,38 @@ std::string	Http_handler::exec_request(Server &serv)
 		if ( ((val = this->_req_dict.find("GET")) != this->_req_dict.end() )
 			|| ( (val = this->_req_dict.find("HEAD")) != this->_req_dict.end() ) )
 		{
-			if (val->first == "GET" && !SV_GETISSET(serv))
-//				|| (val->second == "HEAD" && !SV_HEADISSET(serv)))
+			if (!val->first.compare("GET") && !SV_GETISSET(serv))
+//				|| (!val->second.compare("HEAD") && !SV_HEADISSET(serv)))
 				throw 405;
 	
+			__Etag_gen(serv._root + &this->_address[1]);
+
 			std::map<std::string, std::string>::iterator	it;
+
 			it = this->_req_dict.find("ETag");
 			if (it != this->_req_dict.end())
-				__Etag_reader();
-			
+				__Etag_reader(it->second);
+
+			it = this->_req_dict.find("If-Match");
+			if (it != this->_req_dict.end())
+				__Etag_reader(it->second);
+
 			it = this->_req_dict.find("If-Modified-Since");
 			if (it != this->_req_dict.end())
-				__Etag_gen(serv._root + &this->_address[1]);
+				__condition_header(serv._root + &this->_address[1], MODIFIED_SINCE);
 
 			if (serv.cgi_exec(this->_address))
 				this->__CGI_exec(serv._root + &this->_address[1], serv);
 			else
 				this->__GET_response(val->second, serv);
-	
-			if (val->first == "GET")
+			
+			it = this->_req_dict.find("Range");
+			if (it != this->_req_dict.end())
+			{
+				__range_cut(it->second);
+				this->__200_response(206, false, serv);
+			}
+			else if (!val->first.compare("GET"))
 				this->__200_response(200, false, serv);
 			else
 				this->__200_response(200, true, serv);
@@ -118,9 +134,9 @@ std::string	Http_handler::exec_request(Server &serv)
 		}
 	
 		// ANY OTHER TYPE OF METHOD -> 405
-		else if (this->_method == "OPTIONS" || this->_method == "PUT"
-				|| this->_method == "PATCH" || this->_method == "TRACE"
-				|| this->_method == "CONNECT" || this->_method == "PATCH")
+		else if (!this->_method.compare("OPTIONS") || !this->_method.compare("PUT")
+				|| !this->_method.compare("PATCH") || !this->_method.compare("TRACE")
+				|| !this->_method.compare("CONNECT") || !this->_method.compare("PATCH"))
 			throw 405;
 		// BAD REQUEST NO METHOD OR BS METHOD
 		else
@@ -185,16 +201,23 @@ std::string	Http_handler::get_connection() const
 // response generator
 void	Http_handler::__200_response(int ret, bool head, Server &serv)
 {
+	bool	bin = false;
+
 	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
-	this->header_date += this->__get_time() + "\r\n";
+	this->header_date += Http_handler::get_time() + "\r\n";
 	this->header_connect += "close\r\n";
-	if (this->header_content_type == "Content-Type: ")
+	
+	if (!this->header_content_type.compare("Content-Type: "))
 		this->header_content_type += g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()) + "\r\n";
-	if (this->_response.empty())
+	
+	if (this->_response.empty() && !this->header_content_len.compare("Content-Length: "))
 		this->header_content_len += "0\r\n";
-	else
+	else if (!this->header_content_len.compare("Content-Length: "))
 		this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
+	else
+		bin = true;
+
 	this->_header += this->header_http1
 				+ this->header_content_len
 				+ this->header_content_loc
@@ -207,10 +230,20 @@ void	Http_handler::__200_response(int ret, bool head, Server &serv)
 	if (!this->header_ETag.empty())
 		this->_header += this->header_ETag + "\r\n";
 
-	if (!head && !this->_response.empty())
+	if (bin)
+	{
+		if (!head)
+			this->_response = this->_header + "\r\n" + this->_response;
+		else
+			this->_response = this->_header + "\r\n";
+			
+	}
+	else if (!head && !this->_response.empty())
 		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
 	else
 		this->_response = this->_header + "\r\n";
+	
+	std::cout << this->_header << std::endl;
 }
 
 void	Http_handler::__err_header(const int ret)
@@ -221,7 +254,7 @@ void	Http_handler::__err_header(const int ret)
 	this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_content_type += "text/html\r\n";
-	this->header_date += this->__get_time() + "\r\n";
+	this->header_date += Http_handler::get_time() + "\r\n";
 	this->header_connect += "close\r\n";
 	
 	this->_header += this->header_http1
@@ -280,7 +313,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 	// HOME ----------------------------------------------------------------	
 	// Si l'adresse est home -> '/'  look dans config files les index
-	if  (request_loc == "/" && !SV_DIRISACTIVE(serv))
+	if  (!request_loc.compare("/") && !SV_DIRISACTIVE(serv))
 	{
 		// parcours les index
 		for (std::vector<std::string>::iterator it = serv._index.begin();
@@ -316,9 +349,8 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 	std::ifstream	file;
 	struct stat		path_stat;
-	stat(request_loc.c_str(), &path_stat);
 
-	if (request_loc == "/autoindex" || request_loc == "/")
+	if (!request_loc.compare("/autoindex") || !request_loc .compare("/"))
 	{
 		request_loc = serv._root;
 		file.open(request_loc, std::ios::in);
@@ -332,6 +364,38 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		file.open(request_loc, std::ios::binary);
 		if (!file.is_open())
 			throw 404;
+
+		// évalue si c'est un directory
+		stat(request_loc.c_str(), &path_stat);
+
+		if (S_ISDIR(path_stat.st_mode))
+		{
+
+			if (this->_address[this->_address.length() - 1] != '/')
+			{
+				file.close();
+				throw 301;
+			}
+			if (!SV_DIRISACTIVE(serv))
+			{
+				file.close();
+				throw 403;
+			}
+			else
+				__directory_browser(request_loc.c_str(), this->_address);
+			this->header_content_type += "text/html\r\n";
+			file.close();
+			return ;
+		}
+
+		std::stringstream	buffer;
+		buffer << file.rdbuf();
+		file.close();
+		this->_response = buffer.str();
+
+		this->header_content_len += std::to_string(this->_response.length()) + "\r\n";
+
+		return;
 	}
 	else
 	{
@@ -341,27 +405,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 			throw 404;
 	}
 
-	// évalue si c'est un directory
-	stat(request_loc.c_str(), &path_stat);
-
-	if (S_ISDIR(path_stat.st_mode))
-	{
-		if (this->_address[this->_address.length() - 1] != '/')
-		{
-			file.close();
-			throw 301;
-		}
-		if (!SV_DIRISACTIVE(serv))
-		{
-			file.close();
-			throw 403;
-		}
-		else
-			__directory_browser(request_loc.c_str(), this->_address);
-		this->header_content_type += "text/html\r\n";
-		file.close();
-		return ;
-	}
+	
 		
 	// get body response
 	if (file.rdbuf()->in_avail() == 0)
@@ -369,7 +413,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		file.close();
 		return ;
 	}
-	//There are readable characters remaining in the file
+
 	std::stringstream	buffer;
 	buffer << file.rdbuf();
 	file.close();
@@ -558,7 +602,7 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
 {
     std::stringstream   ss;
 
-	if (host == "/autoindex" || host == "/")
+	if (!host.compare("/autoindex") || !host.compare("/"))
     	ss << "<p><a href=/"  << dirEntry + '>' + dirEntry + "</a></p>\n";
 	else
    		ss << "<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
@@ -663,174 +707,8 @@ std::string Http_handler::__base64_decode(const std::string &input)
 	return decoded_string;
 }
 
-/*
-std::string Http_handler::__base64_encode(const std::string &input)
-{
-	// Initialize a base64 alphabet
-	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-										"abcdefghijklmnopqrstuvwxyz"
-										"0123456789+/";
-
-	// Initialize the base64 string to be returned
-	std::string base64_string;
-
-	// Get the length of the input string
-	size_t input_length = input.length();
-
-	// Iterate through the input string in blocks of 3 characters
-	for (size_t i = 0; i < input_length - 1; i += 3)
-	{
-		// Initialize a vector to store the 3 bytes
-		std::vector<unsigned char> triplet(3);
-
-		// Store the first, second and third character in the triplet
-		triplet[0] = (i < input_length) ? input[i] : 0;
-		triplet[1] = (i + 1 < input_length) ? input[i + 1] : 0;
-		triplet[2] = (i + 2 < input_length) ? input[i + 2] : 0;
-
-		// Convert the triplet to a 4-character base64 string
-		base64_string += base64_alphabet[triplet[0] >> 2];
-		base64_string += base64_alphabet[((triplet[0] & 0x03) << 4) | (triplet[1] >> 4)];
-		base64_string += (i + 1 < input_length) ? base64_alphabet[((triplet[1] & 0x0f) << 2) | (triplet[2] >> 6)] : '=';
-		base64_string += (i + 2 < input_length) ? base64_alphabet[triplet[2] & 0x3f] : '=';
-	}
-
-	return base64_string;
-}
-
-std::string Http_handler::__base64_decode(const std::string &input)
-{
-	// Initialize a base64 alphabet
-	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-										"abcdefghijklmnopqrstuvwxyz"
-										"0123456789+/";
-
-	// Initialize the decoded string to be returned
-	std::string decoded_string;
-
-	// Get the length of the input string
-	size_t input_length = input.length();
-
-	// Iterate through the input string in blocks of 4 characters
-	for (size_t i = 0; i < input_length; i += 4)
-	{
-		// Initialize a vector to store the 4 base64 characters
-		std::vector<unsigned char>	quad(4);
-
-		// Store the first, second, third and fourth character in the quad
-		quad[0] = (i < input_length) ? base64_alphabet.find(input[i]) : 0;
-		quad[1] = (i + 1 < input_length) ? base64_alphabet.find(input[i + 1]) : 0;
-		quad[2] = (i + 2 < input_length) ? base64_alphabet.find(input[i + 2]) : 0;
-		quad[3] = (i + 3 < input_length) ? base64_alphabet.find(input[i + 3]) : 0;
-
-		// Convert the quad to a 3-character string
-		decoded_string += static_cast<char>((quad[0] << 2) + (quad[1] >> 4));
-		decoded_string += (i + 1 < input_length && input[i + 1] != '=') ? static_cast<char>(((quad[1] & 0x0f) << 4) + (quad[2] >> 2)) : '\0';
-		decoded_string += (i + 2 < input_length && input[i + 2] != '=') ? static_cast<char>(((quad[2] & 0x03) << 6) + quad[3]) : '\0';
-	}
-
-	return decoded_string;
-}
-
-std::string Http_handler::__base64_encode(const std::string &input)
-{
-    static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    std::string output;
-    output.reserve(((input.size() + 2) / 3) * 4);
-
-    int i = 0;
-    unsigned char char_array_3[3];
-    unsigned char char_array_4[4];
-
-    while (input.size() - i > 2)
-    {
-        char_array_3[0] = input[i++];
-        char_array_3[1] = input[i++];
-        char_array_3[2] = input[i++];
-
-        char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-        char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-        char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-        char_array_4[3] = char_array_3[2] & 0x3f;
-
-        for (int j = 0; j < 4; j++)
-            output += base64_chars[char_array_4[j]];
-    }
-
-	int remaining = input.size() - i;
-	if (remaining > 0)
-	{
-		for (int j = 0; j < remaining; j++)
-			char_array_3[j] = input[i + j];
-
-		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-		char_array_4[3] = char_array_3[2] & 0x3f;
-
-		for (int j = 0; j < remaining; j++)
-			output += base64_chars[char_array_4[j]];
-
-		for (int j = 0; j < (3 - remaining); j++)
-			output += '=';
-	}
-
-	return output;
-}
-*/
-/*
-std::string Http_handler::__base64_decode(const std::string &input)
-{
-    static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    std::string output;
-    output.reserve((input.size() / 4) * 3);
-
-    int i = 0;
-    unsigned char char_array_4[4], char_array_3[3];
-
-    while (input.size() - i > 3)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            char_array_4[j] = static_cast<unsigned char>(std::find(base64_chars, base64_chars + 64, input[i + j]) - base64_chars);
-        }
-
-        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-        for (int j = 0; j < 3; j++)
-            output += char_array_3[j];
-
-        i += 4;
-    }
-
-    int remaining = input.size() - i;
-    if (remaining > 0)
-    {
-        for (int j = 0; j < remaining; j++)
-            char_array_4[j] = static_cast<unsigned char>(std::find(base64_chars, base64_chars + 64, input[i + j]) - base64_chars);
-
-        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-        for (int j = 0; j < remaining - 1; j++)
-            output += char_array_3[j];
-    }
-
-    return output;
-}
-*/
-
 void	Http_handler::__Etag_gen(std::string path)
 {
-	std::map<std::string, std::string>::iterator it = this->_req_dict.find("If-Modified-Since");
-	if (!__is_valid_http_time(it->second))
-		return;
-
 	// check path 404 if not found
 	struct stat file_stat;
 	if (stat(path.c_str(), &file_stat) != 0)
@@ -848,28 +726,23 @@ void	Http_handler::__Etag_gen(std::string path)
 	file_to_encode += static_cast<char>(-1) + path;
 	
 	std::string	etag(__base64_encode(file_to_encode));
-	this->header_ETag = "ETag: " + etag;
-
-	time_t	request_time = __string_to_time_t_header(it->second);
-
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>" << ctime(&last_modified) << "<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>" << ctime(&request_time) << "<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	
-	if (request_time < last_modified)
-		throw 304;
+	this->header_ETag = "ETag: \""  + etag + "\"";
 }
 
-void	Http_handler::__Etag_reader()
+void	Http_handler::__Etag_reader(std::string &etag)
 {
-    std::string etag = __base64_decode(this->_req_dict.find("ETag")->second);
+	if (etag.front() == '"')
+		etag.erase(etag.begin());
+	if (etag.back() == '"')
+		etag.pop_back();
 
+	etag = __base64_decode(etag);
 	// find separator to get path and time.
 	int	sep = etag.find(static_cast<char>(-1));
 	// si ne trouve pas le séparateur alors ce n'est pas un ETag valid (not generated by us)
 	if (sep == std::string::npos)
-		throw 400;
+		throw 412;
 
-	std::string	date = etag.substr(0, sep);
 	std::string	file = etag.substr(sep + 1);
 
 	// si le path dans etag n'existe pas et que le etag est quand même reconnue
@@ -877,25 +750,59 @@ void	Http_handler::__Etag_reader()
 	struct stat file_stat;
 	if (stat(file.c_str(), &file_stat) != 0)
 		throw 412;
+}
 
-	// cas de figure ou etag est utilisé avec If-Modified-Since
-	std::map<std::string, std::string>::iterator it = this->_req_dict.find("If-Modified-Since");
-	if (it == this->_req_dict.end())
-		return;
-	// get both times 
+void	Http_handler::__condition_header(std::string address, Condition condition)
+{
+	struct stat	file_stat;
+	if (stat(address.c_str(), &file_stat) != 0)
+		throw 404;
+
+	std::map<std::string, std::string>::iterator it;
+	if (condition = MODIFIED_SINCE)
+		it = this->_req_dict.find("If-Modified-Since");
 
 	struct tm *gmt_time = gmtime(&file_stat.st_mtime);
 	time_t	last_modified = mktime(gmt_time);
 	time_t	request_time = __string_to_time_t_header(it->second);
-	
-	// si n'a pas été modifié depuis date de la requête
-	// return 304 "not modified"
-	if (request_time && request_time < last_modified)
+
+	if (request_time && request_time >= last_modified)
 		throw 304;
-	// else continue and 200 avec new ressource plus loin
 }
 
+void Http_handler::__range_cut(std::string &range_val)
+{
+    int first = 0;
+    int second = 0;
 
+    // Check if the header starts with "bytes=", which indicates a byte range.
+    if (range_val.find("bytes=") == 0)
+    {
+        // Split the header into the range values.
+        std::string rangeValues = range_val.substr(6);
+        std::stringstream ss(rangeValues);
+        std::string startString, endString;
+        std::getline(ss, startString, '-');
+        std::getline(ss, endString);
+
+        // Convert the start and end values to integers.
+        std::stringstream startStream(startString);
+        std::stringstream endStream(endString);
+
+        startStream >> first;
+        endStream >> second;
+    }
+
+    // Check that the start index is non-negative and the end index is greater than the start index.
+	if (first > this->_response.length() - 1 || first < 0
+		|| second > this->_response.length() - 1 || second < 0
+		|| second < first)
+		throw 416;
+
+	// Extract the substring if the response string is non-empty.
+	if (!this->_response.empty() && first )
+		this->_response = this->_response.substr(first, second - first + 1);
+}
 
 
 
@@ -914,7 +821,7 @@ void	Http_handler::__clean_address()
 		this->_address = this->_address.substr(pos + 3);
 		this->_address = this->_address.substr(this->_address.find('/'));
 	}
-	if (this->_address.compare("/"))
+	if (!this->_address.compare("/"))
 	{
 		int i = this->_address.length() - 1; 
 		while (i > 0 && this->_address[i] == '/' && this->_address[i - 1] == '/')
@@ -947,19 +854,7 @@ void	Http_handler::__clean_address()
 	}
 }
 
-std::string	Http_handler::__get_time()
-{
-	time_t		rawtime;
-	struct tm	*timeinfo;
-	
-	char buffer[80];
 
-	time(&rawtime);
-	timeinfo = gmtime(&rawtime);
-	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeinfo);
-
-	return (std::string(buffer));
-}
 
 void	Http_handler::__close_and_throw(std::fstream &file, int err)
 {
@@ -1017,12 +912,65 @@ time_t	Http_handler::__string_to_time_t_header(const std::string &s)
 	struct tm tm;
 	std::memset(&tm, 0, sizeof(tm));
 
-//	if (strptime(s.c_str(), date_format, &tm) == NULL)
+	strptime(s.c_str(), date_format, &tm);
 //		throw 400;
 	return mktime(&tm);
 }
 
 
+
+
+
+
+
+
+
+
+
+std::string	Http_handler::get_time()
+{
+	time_t		rawtime;
+	struct tm	*timeinfo;
+	
+	char buffer[80];
+
+	time(&rawtime);
+	timeinfo = gmtime(&rawtime);
+	strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S %Z", timeinfo);
+
+	return (std::string(buffer));
+}
+
+std::string	Http_handler::http_408()
+{
+	std::string	response;
+	std::string header;
+
+
+	response += "<!DOCTYPE html>\r\n";
+	response += "<html>\r\n";
+	response += "	<head>\r\n";
+	response += "		<meta charset=\"UTF-8\">\r\n";
+	response += "		<title>webserv</title>\r\n";
+	response += "	</head>\r\n";
+	response += "	<body bgcolor=\"white\">\r\n";
+	response += "		<center><h1>" + std::to_string(408) + " " + g_errs[408] + "</h1></center>\r\n";
+	response += "		<center><hr>Server: FT_Webserv/1.0.0</hr></center>\r\n";
+	response +=			g_gif[1] + "\r\n";
+	response += "		<center><p>Click <a href=\"/\">here</a> to return home.</p></center>\r\n";
+	response += "	</body>\r\n";
+	response += "</html>\r\n";
+
+	header += "HTTP/1.1 " + std::to_string(408) + " " + g_errs[408] + "\r\n";
+	header += "Content-Length: " + std::to_string(response.length() + 2) + "\r\n";
+	header += "Content-Type: text/html\r\n";
+	header += "Date: " + get_time() + "\r\n";
+	header += "Connection: close\r\n";
+
+	response = header + "\r\n" + response + "\r\n";
+
+	return (response);
+}
 
 //	one line by request
 //	IP			auth	date						request						resp size		referer							user-agent------------------->

@@ -101,11 +101,9 @@ void 	Webserv::launch()
 	port_fd				fd;
 	int					select_ret;
 	int					write = -1;
-	struct timeval		tempo;
 
-	tempo.tv_sec = 1;
-	tempo.tv_usec = 0;
 	client_len = sizeof(client);
+
 	/* Listening to STDIN for console manipulations */
 	FD_SET(STDIN_FILENO, &_current_sockets);
 
@@ -120,7 +118,8 @@ void 	Webserv::launch()
 		}
 		else
 			ready_sockets = _current_sockets;
-		select_ret = select(FD_SETSIZE, &ready_sockets, NULL, NULL, &tempo);
+
+		select_ret = select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL);
 		if (select_ret < 0)
 		{
 			perror("fatal error : select");
@@ -129,7 +128,7 @@ void 	Webserv::launch()
 		if (select_ret == 0)
 		{
 			write = (write + 1) % 5;
-/*			std::cout << '\r';
+			std::cout << '\r';
 			for (int i = 0; i < 5; i++)
 			{
 				if (i < write)
@@ -139,7 +138,7 @@ void 	Webserv::launch()
 			}
 			std::cout << '>';
 			std::cout.flush();
-		*/	continue ;
+			continue ;
 		}
 		write = -1;
 		std::cout << std::endl;
@@ -288,6 +287,11 @@ void	Webserv::__http_process(int fd, std::string &request)
 		return;
 	}
 	
+	struct timeval timeout;
+	timeout.tv_sec = 2;
+	timeout.tv_usec = 0;
+	setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(const char*) &timeout, sizeof(timeout));
+
 	std::string	host_port = request_handler.get_host_name();
 	std::vector<Server>::iterator it;
 	for (it = _servers.begin(); it != _servers.end(); it++)
@@ -317,16 +321,21 @@ void	Webserv::__http_process(int fd, std::string &request)
 */
 void	Webserv::send_response(int fd, const std::string& response)
 {
-	std::cout << "---------------- " << "response server : " << std::endl
-	<< response << "----------------" << std::endl << std::endl;
-
+//	std::cout << "---------------- " << "response server : " << std::endl
+//	<< response << "----------------" << std::endl << std::endl;
+	int	ret;
 	std::signal(SIGPIPE, SIG_IGN);
-	if ((send(fd, response.c_str(), response.length(), 0)) < 0)
+	if ((ret = send(fd, response.c_str(), response.length(), 0)) < 0)
 	{
-		if (errno == EPIPE)
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+		{
+			send_response(fd, Http_handler::http_408());
+			return (__close_connexion(fd));
+		}
+		else if (errno == EPIPE)
 		{
 			std::cout << "++connexion with client is lost++" << std::endl;
-			__close_connexion(fd);
+			return (__close_connexion(fd));
 		}
 	}
 	else

@@ -4,6 +4,11 @@
 
 class Server;
 
+enum Condition
+{
+	MODIFIED_SINCE = 1
+};
+
 class Http_handler // : inherit from a execution class ? 
 {
 	private :
@@ -41,6 +46,9 @@ class Http_handler // : inherit from a execution class ?
 		std::string		exec_request(Server &Serv);
 		std::string		bad_request(void);
 
+		static std::string	http_408();
+		static std::string	get_time(void);
+
 	private :
 	//REQUEST RELATED
 		std::string		_header;
@@ -57,9 +65,11 @@ class Http_handler // : inherit from a execution class ?
 		std::string		__filesLst(std::string const &dirEntry, std::string const &dirName, std::string const &host);
 		std::string		__base64_encode(const std::string &input);
 		std::string		__base64_decode(const std::string &input);
-		void			__Etag_reader();
+		void			__Etag_reader(std::string &etag);
 		void			__Etag_gen(std::string path);
 		time_t			__get_date_http_field(const std::string &date_string);
+		void			__condition_header(std::string address, Condition condition);
+		void			__range_cut(std::string &range_val);
 
 		// method exec - response init
 		void			__GET_response(std::string &value, Server &serv);
@@ -76,7 +86,6 @@ class Http_handler // : inherit from a execution class ?
 		void			__body_gen(int ret);
 
 		// utils
-		std::string		__get_time(void);
 		void			__clean_address(void);
 		void			__close_and_throw(std::fstream &file, int err);
 		bool			__not_a_method();
@@ -319,8 +328,9 @@ typedef struct	ExTypes
 
 		std::string	type = this->get_type(path, extension);
 
-		if (extension.find("text"))
+		if (extension.find("text") != std::string::npos)
 			return (NORM);
+	
 		return (BIN);
 	}
 }	t_ext;
