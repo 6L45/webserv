@@ -11,10 +11,12 @@ Http_handler::Http_handler(std::string &request)
 //	std::cout << "---------------------------------------------- REQUEST" << std::endl;
 //	std::cout << request << std::endl;
 //	std::cout << "------------------------------------------------------" << std::endl;
+
 	// Read the first line from the string stream
 	std::istringstream iss(request);
 	std::string firstLine;
 	std::getline(iss, firstLine);
+	this->_valid = 0;
 
 	// Split the first line into its individual components
 	std::istringstream firstLineStream(firstLine);
@@ -41,14 +43,15 @@ Http_handler::Http_handler(std::string &request)
 			this->_req_dict.insert(std::make_pair(field, value));
 		}
 	}
-	if (this->_method.empty() || this->__not_a_method())
-		this->_valid = 400;
-	else if (version != "HTTP/1.1")
-		this->_valid = 505;
-	else if (this->_req_dict.find("Host") == this->_req_dict.end())
-		this->_valid = 400;
-	else
-		this->_valid = 0;
+	if (this->_valid == 0)
+	{
+		if (this->_method.empty() || this->__not_a_method())
+			this->_valid = 400;
+		else if (version != "HTTP/1.1")
+			this->_valid = 505;
+		else if (this->_req_dict.find("Host") == this->_req_dict.end())
+			this->_valid = 400;
+	}
 
 	size_t pos = request.find("\r\n\r\n");
 	if (pos == std::string::npos)

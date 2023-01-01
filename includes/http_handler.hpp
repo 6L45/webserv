@@ -338,3 +338,30 @@ typedef struct	ExTypes
 }	t_ext;
 
 # include "server.class.hpp"
+
+
+/*
+In HTTP, the Transfer-Encoding field is used to indicate that the body
+of a request or response is encoded using a specific encoding mechanism.
+If the Transfer-Encoding field is present in a request or response and
+the value is set to chunked, it indicates that the body of the message
+is divided into chunks and each chunk is encoded separately.
+Whether the server should chunk the response or not depends on how
+the server is implemented and the requirements of the response.
+The chunked encoding can be useful in situations where the size of the data
+is not known upfront, such as when generating dynamic content on the fly
+or when streaming data from a source that does not provide the size of the data in advance.
+In the case of a 404 Not Found error, it is not necessarily required for the server
+to use the chunked encoding. It is up to the server implementation to decide how to encode
+the body of the response. If the size of the data in the body of the response is known
+in advance, the server can include the Content-Length field in the response headers
+to specify the size of the data. If the size of the data is not known in advance,
+the server can use the chunked encoding or use some other encoding mechanism.
+It's worth noting that the Transfer-Encoding field is not allowed to be used in HTTP responses
+if the Content-Length field is also present. If both fields are present in a response,
+the Content-Length field takes precedence and the Transfer-Encoding field is ignored.
+It's not clear from the information you provided why the Transfer-Encoding header is expected
+to be present in the response for the test case you mentioned.
+It might be helpful to review the implementation of the server
+and the requirements of the test case to understand the reasoning behind the assertion.
+*/

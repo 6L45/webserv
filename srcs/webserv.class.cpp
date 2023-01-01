@@ -12,7 +12,6 @@ Webserv::Webserv(Conf config, char** env)
 	deflt.fileno_server = true;
 	deflt.fd = -1;
 	
-	std::cout << FD_SETSIZE << std::endl;
 	this->_timer.reserve(FD_SETSIZE);
 	for (int i = 0; i < FD_SETSIZE; i++)
 		this->_timer.push_back(deflt);
@@ -136,6 +135,7 @@ void 	Webserv::launch()
 		if (select_ret < 0)
 		{
 			perror("fatal error : select");
+			std::cout << errno << std::endl;
 			break ;
 		}
 		if (select_ret == 0)
@@ -146,10 +146,8 @@ void 	Webserv::launch()
 				if (!it->fileno_server && it->fd > 0)
 				{
 					clock_t	now = std::clock();
-					std::cout << (it->t - now) / CLOCKS_PER_SEC << it->keep_alive << std::endl;
 					if (((now - it->t) / CLOCKS_PER_SEC) > it->keep_alive)
 					{
-						std::cout << "BITCH ? " << std::endl;
 						send_response(it->fd, Http_handler::http_408());
 						__close_connexion(it->fd);
 					}
@@ -314,7 +312,6 @@ void	Webserv::__http_process(int fd, std::string &request)
 
 	if (request_handler.invalid_request())
 	{
-		std::cout << "fd -> " << fd << std::endl;
 		std::cout << "bad request 400 no host || 505 != HTTP/1.1" << std::endl;
 		response = request_handler.bad_request();
 		send_response(fd, response);
