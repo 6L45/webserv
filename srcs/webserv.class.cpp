@@ -7,6 +7,15 @@ Webserv::Webserv(Conf config, char** env)
 		_env(env)
 {
 	port_fd					socket; // opened socket
+	t_keep_alive			deflt;
+
+	deflt.fileno_server = true;
+	deflt.fd = -1;
+	
+	std::cout << FD_SETSIZE << std::endl;
+	this->_timer.reserve(FD_SETSIZE);
+	for (int i = 0; i < FD_SETSIZE; i++)
+		this->_timer.push_back(deflt);
 
 	FD_ZERO(&_current_sockets);
 
@@ -101,7 +110,11 @@ void 	Webserv::launch()
 	port_fd				fd;
 	int					select_ret;
 	int					write = -1;
+	struct timeval		tempo;
 
+
+	tempo.tv_sec = 0;
+	tempo.tv_usec = 1;
 	client_len = sizeof(client);
 
 	/* Listening to STDIN for console manipulations */
@@ -119,7 +132,7 @@ void 	Webserv::launch()
 		else
 			ready_sockets = _current_sockets;
 
-		select_ret = select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL);
+		select_ret = select(FD_SETSIZE, &ready_sockets, NULL, NULL, &tempo);
 		if (select_ret < 0)
 		{
 			perror("fatal error : select");
@@ -127,6 +140,22 @@ void 	Webserv::launch()
 		}
 		if (select_ret == 0)
 		{
+			for (std::vector<t_keep_alive>::iterator it = this->_timer.begin();
+					it != this->_timer.end(); it++)
+			{
+				if (!it->fileno_server && it->fd > 0)
+				{
+					clock_t	now = std::clock();
+					std::cout << (it->t - now) / CLOCKS_PER_SEC << it->keep_alive << std::endl;
+					if (((now - it->t) / CLOCKS_PER_SEC) > it->keep_alive)
+					{
+						std::cout << "BITCH ? " << std::endl;
+						send_response(it->fd, Http_handler::http_408());
+						__close_connexion(it->fd);
+					}
+				}
+			}
+
 			write = (write + 1) % 5;
 			std::cout << '\r';
 			for (int i = 0; i < 5; i++)
@@ -164,6 +193,11 @@ void 	Webserv::launch()
 					_clients.push_back(Client(fd,__get_the_port(i),0));
 					FD_SET(fd, &_current_sockets);
 					std::cout << "++ Connexion accepted ++" << std::endl;
+
+					this->_timer[fd].fd = fd;
+					this->_timer[fd].fileno_server = false;
+					this->_timer[fd].t = std::clock();
+					this->_timer[fd].keep_alive = 3;
 				}
 				else if (i == STDIN_FILENO)
 					this->__console();
@@ -189,6 +223,7 @@ void	Webserv::__close_connexion(const int fd)
 		}
 	}
 	FD_CLR(fd, &_current_sockets);
+	this->_timer[fd].fd = -1;
 	std::cout << "++ connexion closed on fd : " << fd << " ++" << std::endl;
 }
 
@@ -310,8 +345,29 @@ void	Webserv::__http_process(int fd, std::string &request)
 		std::cout << "Server name : " << it->_name << std::endl;
 		response = request_handler.exec_request(*it);
 		send_response(fd, response);
-		if (request_handler.get_connection() == "close")
-			__close_connexion(fd);
+		if (request_handler.get_connection().compare("null"))
+		{
+			if ((!request_handler.get_connection().compare("close"))
+					|| !request_handler.get_connection().compare("Close"))
+				__close_connexion(fd);
+			else if ((!request_handler.get_connection().compare("keep-alive"))
+					|| !request_handler.get_connection().compare("Keep-Alive"))
+			{
+				this->_timer[fd].keep_alive = 5; // it->keep_alive
+				this->_timer[fd].t = std::clock();
+			}
+		}
+		if (request_handler.get_keep_alive())
+		{
+			this->_timer[fd].keep_alive = request_handler.keep_alive_value();
+
+/*			clamp on max keep alive server
+			if (this->_timer[fd].keep_alive > it->keep_alive)
+				this->_timer[fd].keep_alive = it->keep_alive;
+*/
+
+			this->_timer[fd].t = std::clock();
+		}
 	}
 }
 
@@ -338,8 +394,8 @@ void	Webserv::send_response(int fd, const std::string& response)
 			return (__close_connexion(fd));
 		}
 	}
-	else
-		std::cout << "Message send to the client on port : " << __get_the_port(fd) << "++" << std::endl;
+	std::cout << "Message send to the client on port : " << __get_the_port(fd) << "++" << std::endl;
+	this->_timer[fd].t = std::clock();
 }
 
 

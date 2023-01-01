@@ -189,6 +189,24 @@ std::string	Http_handler::get_connection() const
 	return (std::string("null"));
 }
 
+bool	Http_handler::get_keep_alive() const {
+	return (this->_req_dict.find("Keep-Alive") != this->_req_dict.end());
+}
+
+int	Http_handler::keep_alive_value() const
+{
+	int result;
+	std::map<std::string, std::string>::const_iterator	it;
+
+	it = this->_req_dict.find("Keep_Alive");
+	std::istringstream(it->second) >> result;
+	if (std::istringstream(it->second).fail())
+		throw 400;;
+
+	return result;
+}
+
+
 
 
 

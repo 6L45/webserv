@@ -32,8 +32,9 @@
 
 typedef struct	s_keep_alive
 {
-	int	fd;
-	int	keep_alive;
+	bool	fileno_server;
+	int		fd;
+	int		keep_alive;
 	clock_t	t;
 }				t_keep_alive;
 

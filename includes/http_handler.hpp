@@ -40,6 +40,8 @@ class Http_handler // : inherit from a execution class ?
 		std::pair<MMAPConstIterator, MMAPConstIterator>
 						get_elems(const std::string key) const;
 		std::string		get_connection(void) const;
+		bool			get_keep_alive() const;
+		int				keep_alive_value(void) const;
 
 	// PUBLIC METHODS
 		int				invalid_request(void) const;
