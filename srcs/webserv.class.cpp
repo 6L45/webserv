@@ -7,14 +7,14 @@ Webserv::Webserv(Conf config, char** env)
 		_env(env)
 {
 	port_fd					socket; // opened socket
-	t_keep_alive			deflt;
-
-	deflt.fileno_server = true;
-	deflt.fd = -1;
 	
-	this->_timer.reserve(FD_SETSIZE);
 	for (int i = 0; i < FD_SETSIZE; i++)
+	{
+		t_keep_alive			deflt;
+		deflt.fileno_server = true;
+		deflt.fd = -1;
 		this->_timer.push_back(deflt);
+	}
 
 	FD_ZERO(&_current_sockets);
 

@@ -1,5 +1,9 @@
 #include "http_handler.hpp" 
 
+TODO virer \r\n\r\n a la fin du body
+et Content-range on cut
+
+
 t_errs		g_errs;
 t_ret		g_ret;
 t_ext		g_ext;
@@ -8,9 +12,9 @@ memelord	g_gif;
 // CONSTRUCT
 Http_handler::Http_handler(std::string &request)
 {
-//	std::cout << "---------------------------------------------- REQUEST" << std::endl;
-//	std::cout << request << std::endl;
-//	std::cout << "------------------------------------------------------" << std::endl;
+	std::cout << "---------------------------------------------- REQUEST" << std::endl;
+	std::cout << request << std::endl;
+	std::cout << "------------------------------------------------------" << std::endl;
 
 	// Read the first line from the string stream
 	std::istringstream iss(request);
@@ -69,6 +73,7 @@ std::string	Http_handler::exec_request(Server &serv)
 
 	try
 	{
+		__this_is_the_way(serv);
 		// GET METHOD
 		if ( ((val = this->_req_dict.find("GET")) != this->_req_dict.end() )
 			|| ( (val = this->_req_dict.find("HEAD")) != this->_req_dict.end() ) )
@@ -230,8 +235,13 @@ void	Http_handler::__200_response(int ret, bool head, Server &serv)
 	this->header_connect += "close\r\n";
 	
 	if (!this->header_content_type.compare("Content-Type: "))
-		this->header_content_type += g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()) + "\r\n";
-	
+	{
+		if (g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()).empty())
+			this->header_content_type += "text/html\r\n";
+		else
+			this->header_content_type += g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()) + "\r\n";
+
+	}
 	if (this->_response.empty() && !this->header_content_len.compare("Content-Length: "))
 		this->header_content_len += "0\r\n";
 	else if (!this->header_content_len.compare("Content-Length: "))
@@ -284,8 +294,15 @@ void	Http_handler::__err_header(const int ret)
 				+ this->header_content_type
 				+ this->header_date
 				+ this->header_connect
-				+ this->header_server + "\r\n"
-				+ this->header_encoding + "\r\n";
+				+ this->header_server + "\r\n";
+
+	if (ret == 300)
+	{
+		this->_header += this->header_alternate + "\r\n";
+		this->_header += this->header_transfer + "\r\n";
+	}
+	else
+		this->_header += this->header_encoding + "\r\n";
 	if (ret == 301)
 	{
 		this->header_location += this->_address + "/\r\n";
@@ -391,7 +408,6 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 
 		if (S_ISDIR(path_stat.st_mode))
 		{
-
 			if (this->_address[this->_address.length() - 1] != '/')
 			{
 				file.close();
@@ -403,7 +419,36 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 				throw 403;
 			}
 			else
-				__directory_browser(request_loc.c_str(), this->_address);
+			{
+				for (std::vector<std::string>::iterator it = serv._index.begin();
+						it != serv._index.end(); it++)
+				{
+					std::ifstream	file;
+					// teste ouverture des index
+					file.open(request_loc + *it, std::ios::in);
+					if (file.is_open())
+					{
+						this->_address = this->_address + *it;
+						//read / get file and close file
+						if (file.rdbuf()->in_avail() == 0)
+						{
+							file.close();
+							return ;
+						}
+
+						std::stringstream	buffer;
+						buffer << file.rdbuf();
+						file.close();
+						
+						// init body response avec \r\n\r\n de fin
+						this->_response = buffer.str() + "\r\n";
+
+						return ;
+					}
+					else if (it + 1 == serv._index.end())
+						__directory_browser(request_loc.c_str(), this->_address);
+				}
+			}
 			this->header_content_type += "text/html\r\n";
 			file.close();
 			return ;
@@ -413,8 +458,10 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		buffer << file.rdbuf();
 		file.close();
 		this->_response = buffer.str();
+		std::cout << 8 << std::endl;
 
 		this->header_content_len += std::to_string(this->_response.length()) + "\r\n";
+		std::cout << 9 << std::endl;
 
 		return;
 	}
@@ -577,18 +624,169 @@ void	Http_handler::__CGI_exec(const std::string path, Server &serv)
 	}
 }
 
+std::string	get_extension(const std::string &path)
+{
+	std::string	extension;
+	size_t		dot_pos = path.find_last_of('.');
 
+	if (dot_pos != std::string::npos)
+		extension = path.substr(dot_pos + 1);
 
+	// Convert the extension to lowercase
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
+	return extension;
+}
 
+void	trim(std::string &str)
+{
+	// Trim leading whitespace
+	str.erase(str.begin(), std::find_if(str.begin(), str.end(),
+			[](int ch) {
+				return !std::isspace(ch);
+			}));
 
+	// Trim trailing whitespace
+	str.erase(std::find_if(str.rbegin(), str.rend(),
+			[](int ch) {
+				return !std::isspace(ch);
+			}).base(), str.end());
+}
 
+std::vector<std::string>	cpp_split(std::string &src, char sep)
+{
+	std::vector<std::string>	substrings;
+	std::string					current;
 
+	for (int i = 0; i < src.length(); i++)
+	{
+		if (src[i] == sep || i == src.length() - 1)
+		{
+			if (!current.empty())
+			{
+				trim(current);
+				substrings.push_back(current);
+			}
+			current.clear();
+		}
+		else
+			current += src[i];
+	}
+	return (substrings);
+}
 
 
 
 // PRIVATE METHODS
-void         Http_handler::__directory_browser(const char *path, std::string const &host)
+void	Http_handler::__this_is_the_way(Server &serv)
+{
+	std::string	path;
+	std::string	directory;
+	struct stat file_stat;
+
+	directory =  (serv._root + &this->_address[1])
+					.substr(0, (serv._root + &this->_address[1]).find_last_of('/'));
+
+	// Si il y'a field accept dans la requete
+	if (this->_req_dict.find("Accept") != this->_req_dict.end()
+		&& get_extension(this->_address).empty())
+	{
+		std::string	vals;
+		vals = this->_req_dict.find("Accept")->second;
+		if (!vals.compare("*/*"))
+			return ;
+
+		// verify directory where file is situated.
+		if (stat(directory.c_str(), &file_stat) != 0)
+			throw 404;
+
+		// Accept Parsing --------
+		// multimap [(float)q=x.y] -> std::string (val)
+		std::vector<std::string>			accept_field_pairs = cpp_split(vals, ',');
+		std::multimap<float, std::string>	accept_vals;
+		
+		for (std::vector<std::string>::iterator it = accept_field_pairs.begin();
+				it != accept_field_pairs.end(); it++)
+		{
+			int	sep_pos = it->find(';');
+			int	q_pos = it->find("q=");
+			
+			accept_vals.insert(std::make_pair(std::stof(it->substr(q_pos + 2)),
+												it->substr(0, sep_pos)));
+		}
+		// ------------------------
+
+		// pour chaques element dans multimap tester les valeurs demandées
+		// reverse iterator pour l'ordre de priorité établie par la valeur q
+		float	q = 0.9;
+		bool	err300 = false;
+		for (std::multimap<float, std::string>::reverse_iterator it = accept_vals.rbegin();
+				it != accept_vals.rend(); it++)
+		{
+			int	slash_pos = it->second.find('/');
+			
+			if (it->second[slash_pos + 1] == '*')
+			{
+    			DIR			*dir = opendir(directory.c_str());
+				std::string	valid_ext;
+				
+				// verifie l'ensemble des fichiers présent dans le répertoire si il sont du type demandé (image / video / application / texte)
+				for (struct dirent *dirEntry = readdir(dir); dirEntry; dirEntry = readdir(dir))
+				{
+					// si match
+					if (g_ext.get_type(get_extension(dirEntry->d_name))
+						.find(it->second.substr(0, slash_pos)) != std::string::npos)
+					{
+						// si valid_ext (valid extension) not empty throw 300 multiple choice
+						if (!valid_ext.empty())
+							err300 = true;
+						// else valid_ext = extension du fichier matched
+						valid_ext = "." + get_extension(dirEntry->d_name);
+						this->header_alternate += g_ext.get_type(&valid_ext[1]) + "; q=" + std::to_string(q) + " , ";
+						if (q > 0.1)
+							q -= 0.1;
+						
+						if (this->header_transfer.empty())
+							this->header_transfer = "Transfer-Encoding: chunked";
+					}
+				}
+				if (err300)
+				{
+					this->header_alternate.erase(this->header_alternate.end() - 3, this->header_alternate.end());
+					throw 300;
+				}
+				// q determine l'ordre de priorité si un fichier a été trouvé
+				// pas besoin de check autre possibilitées
+				if (!valid_ext.empty())
+				{
+					path = this->_address + valid_ext;
+					break;
+				}
+			} // if wildcard
+
+			else
+			{
+				if (!path.empty())
+					break;
+
+				// serv._root + path request + . + extension du accept
+				std::string	new_path = serv._root + &this->_address[1] + "." +
+										it->second.substr(slash_pos + 1);
+
+				if (stat(new_path.c_str(), &file_stat) == 0)
+					path = this->_address + "." + it->second.substr(slash_pos + 1);
+			} // if not a wildcard
+
+		}
+
+		if (path.empty())
+			throw 404;
+		this->_address = path;
+
+	} // if accept field
+}
+
+void	Http_handler::__directory_browser(const char *path, std::string const &host)
 {
     std::string	dirName(path);
     DIR *dir	= opendir(path);
@@ -626,7 +824,7 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
 	if (!host.compare("/autoindex") || !host.compare("/"))
     	ss << "<p><a href=/"  << dirEntry + '>' + dirEntry + "</a></p>\n";
 	else
-   		ss << "<p><a href=" + host + '/' << dirEntry + '>' + dirEntry + "</a></p>\n";
+   		ss << "<p><a href=" + host + "/" << dirEntry + '>' + dirEntry + "</a></p>\n";
 
     return ss.str();
 }
@@ -733,7 +931,10 @@ void	Http_handler::__Etag_gen(std::string path)
 	// check path 404 if not found
 	struct stat file_stat;
 	if (stat(path.c_str(), &file_stat) != 0)
+	{
+		std::cout << path << std::endl;
 		throw 404;
+	}
 
 	// get last time modified
 	// to GMT

@@ -22,8 +22,11 @@ class Http_handler // : inherit from a execution class ?
 		std::string	header_server		= "Server: FT_Webserv/1.0.0";
 		std::string	header_encoding		= "Transfert-Encoding: identity";
 		std::string	header_location		= "Location: ";
+		std::string	header_alternate	= "Alternates: ";
+		std::string	header_transfer;
 		std::string	header_ETag;
 		std::string	cookie;
+		std::string	header_range;
 
 	public :
 	// DICO DECLARATION	
@@ -72,6 +75,7 @@ class Http_handler // : inherit from a execution class ?
 		time_t			__get_date_http_field(const std::string &date_string);
 		void			__condition_header(std::string address, Condition condition);
 		void			__range_cut(std::string &range_val);
+		void			__this_is_the_way(Server &serv);
 
 		// method exec - response init
 		void			__GET_response(std::string &value, Server &serv);
@@ -316,7 +320,20 @@ typedef struct	ExTypes
 		
 		if (it != ext_type.end())
 			return (it->second);
-		return ("text/html");
+
+		return (std::string());
+	}
+
+	std::string	get_type(std::string extension)
+	{
+		if (extension.empty())
+			return (extension);
+		
+		std::map<std::string, std::string>::iterator it = ext_type.find(extension);
+		if (it == ext_type.end())
+			return (extension);
+
+		return (it->second);
 	}
 
 	int get_category(std::string path, std::string extension)
@@ -327,10 +344,9 @@ typedef struct	ExTypes
 		if (S_ISDIR(path_stat.st_mode) ||
 			(extension.empty() && path_stat.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)))
 			return (BIN);
-
 		std::string	type = this->get_type(path, extension);
 
-		if (extension.find("text") != std::string::npos)
+		if (type.find("text") != std::string::npos)
 			return (NORM);
 	
 		return (BIN);
