@@ -20,13 +20,15 @@ class Http_handler // : inherit from a execution class ?
 		std::string	header_last_modif	= "Last-Modified: ";
 		std::string	header_connect		= "Connection: ";
 		std::string	header_server		= "Server: FT_Webserv/1.0.0";
-		std::string	header_encoding		= "Transfert-Encoding: identity";
+		std::string	header_encoding		= "Transfer-Encoding: chunked";
 		std::string	header_location		= "Location: ";
 		std::string	header_alternate	= "Alternates: ";
 		std::string	header_transfer;
 		std::string	header_ETag;
 		std::string	cookie;
 		std::string	header_range;
+		std::string	header_language;
+		std::string	header_charset;
 
 	public :
 	// DICO DECLARATION	

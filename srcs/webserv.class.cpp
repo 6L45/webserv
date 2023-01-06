@@ -195,7 +195,7 @@ void 	Webserv::launch()
 					this->_timer[fd].fd = fd;
 					this->_timer[fd].fileno_server = false;
 					this->_timer[fd].t = std::clock();
-					this->_timer[fd].keep_alive = 3;
+					this->_timer[fd].keep_alive = KEEP_ALIVE;
 				}
 				else if (i == STDIN_FILENO)
 					this->__console();

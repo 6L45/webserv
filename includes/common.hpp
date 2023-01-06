@@ -42,3 +42,4 @@
 # define MAXLINE 4096
 # define PORT 18005
 # define CONF_EXTENTION_S_NAME ".conf"
+# define KEEP_ALIVE 3

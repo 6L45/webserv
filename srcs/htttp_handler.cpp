@@ -1,9 +1,5 @@
 #include "http_handler.hpp" 
 
-TODO virer \r\n\r\n a la fin du body
-et Content-range on cut
-
-
 t_errs		g_errs;
 t_ret		g_ret;
 t_ext		g_ext;
@@ -44,6 +40,8 @@ Http_handler::Http_handler(std::string &request)
 				value.pop_back();
 			if (value[0] == ' ')
 				value = value.substr(1);
+			if (this->_req_dict.find(field) != this->_req_dict.end())
+				this->_valid = 400;
 			this->_req_dict.insert(std::make_pair(field, value));
 		}
 	}
@@ -227,54 +225,65 @@ int	Http_handler::keep_alive_value() const
 // response generator
 void	Http_handler::__200_response(int ret, bool head, Server &serv)
 {
-	bool	bin = false;
+	int	pos;
 
 	this->header_http1 += std::to_string(ret) + " " + g_ret[ret] + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_date += Http_handler::get_time() + "\r\n";
 	this->header_connect += "close\r\n";
+	this->header_content_len += std::to_string(this->_response.length()) + "\r\n";
 	
 	if (!this->header_content_type.compare("Content-Type: "))
 	{
 		if (g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()).empty())
-			this->header_content_type += "text/html\r\n";
+			this->header_content_type += "text/html";
 		else
-			this->header_content_type += g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension()) + "\r\n";
+			this->header_content_type += g_ext.get_type((serv._root + &this->_address[1]), this->__get_extension());
 
+		if ((pos = this->_response.find("encoding=")) != std::string::npos
+			&& header_charset.empty())
+		{
+			std::string	tmp = this->_response.substr(pos + 10);
+			std::string	charset = tmp.substr(0, tmp.find(('"')));
+
+			for (std::string::iterator it = charset.begin(); it != charset.end(); ++it)
+				*it += 32 * (*it >= 65 && *it <= 90);
+
+			this->header_charset = "; charset=" + charset;
+		}
 	}
-	if (this->_response.empty() && !this->header_content_len.compare("Content-Length: "))
-		this->header_content_len += "0\r\n";
-	else if (!this->header_content_len.compare("Content-Length: "))
-		this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
-	else
-		bin = true;
+	if (!this->header_charset.empty())
+		this->header_content_type += this->header_charset;
 
 	this->_header += this->header_http1
 				+ this->header_content_len
 				+ this->header_content_loc
-				+ this->header_content_type
+				+ this->header_content_type + "\r\n"
 				+ this->header_date
 				+ this->header_connect
 				+ this->header_server + "\r\n"
 				+ this->header_encoding + "\r\n";
 
+	if (!this->header_range.empty())
+		this->_header += this->header_range + "\r\n";
+	
+	if ((pos = this->_response.find("lang=")) != std::string::npos
+		&& header_language.empty())
+	{
+		std::string	tmp = this->_response.substr(pos + 6);
+		std::string	lang = tmp.substr(0, tmp.find(('"')));
+		
+		this->header_language = "Content-Language: " + lang + "\r\n";
+	}
+	if (!this->_header.empty())
+		this->_header += this->header_language;
 	if (!this->header_ETag.empty())
 		this->_header += this->header_ETag + "\r\n";
 
-	if (bin)
-	{
-		if (!head)
-			this->_response = this->_header + "\r\n" + this->_response;
-		else
-			this->_response = this->_header + "\r\n";
-			
-	}
-	else if (!head && !this->_response.empty())
-		this->_response = this->_header + "\r\n" + this->_response + "\r\n";
+	if (!head && !this->_response.empty())
+		this->_response = this->_header + "\r\n" + this->_response;
 	else
 		this->_response = this->_header + "\r\n";
-	
-	std::cout << this->_header << std::endl;
 }
 
 void	Http_handler::__err_header(const int ret)
@@ -282,7 +291,7 @@ void	Http_handler::__err_header(const int ret)
 	this->__body_gen(ret);
 
 	this->header_http1 += std::to_string(ret) + " " + g_errs[ret] + "\r\n";
-	this->header_content_len += std::to_string(this->_response.length() + 2) + "\r\n";
+	this->header_content_len += std::to_string(this->_response.length()) + "\r\n";
 	this->header_content_loc += this->_address + "\r\n";
 	this->header_content_type += "text/html\r\n";
 	this->header_date += Http_handler::get_time() + "\r\n";
@@ -294,27 +303,28 @@ void	Http_handler::__err_header(const int ret)
 				+ this->header_content_type
 				+ this->header_date
 				+ this->header_connect
+				+ this->header_encoding + "\r\n"
 				+ this->header_server + "\r\n";
 
+	if (!this->header_language.empty())
+		this->_header += this->header_language;
+
 	if (ret == 300)
-	{
 		this->_header += this->header_alternate + "\r\n";
-		this->_header += this->header_transfer + "\r\n";
-	}
-	else
-		this->_header += this->header_encoding + "\r\n";
-	if (ret == 301)
+	
+	else if (ret == 301)
 	{
 		this->header_location += this->_address + "/\r\n";
-		this->_header += this->header_location;
+		this->_header += this->header_location + "\r\n";
 	}
+
 	if (!this->header_ETag.empty())
 		this->_header += this->header_ETag + "\r\n";
 
-	if (ret == 304)
+	if (ret == 304 || !this->_method.compare("HEAD"))
 		this->_response = this->_header + "\r\n";
 	else
-		this->_response = this->_header + "\r\n"  + this->_response + "\r\n";
+		this->_response = this->_header + "\r\n"  + this->_response;
 }
 
 void	Http_handler::__body_gen(int ret)
@@ -373,7 +383,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 				file.close();
 				
 				// init body response avec \r\n\r\n de fin
-				this->_response = buffer.str() + "\r\n";
+				this->_response = buffer.str();
 
 				return ;
 			}
@@ -441,7 +451,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 						file.close();
 						
 						// init body response avec \r\n\r\n de fin
-						this->_response = buffer.str() + "\r\n";
+						this->_response = buffer.str();
 
 						return ;
 					}
@@ -449,7 +459,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 						__directory_browser(request_loc.c_str(), this->_address);
 				}
 			}
-			this->header_content_type += "text/html\r\n";
+			this->header_content_type += "text/html";
 			file.close();
 			return ;
 		}
@@ -458,13 +468,10 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		buffer << file.rdbuf();
 		file.close();
 		this->_response = buffer.str();
-		std::cout << 8 << std::endl;
-
-		this->header_content_len += std::to_string(this->_response.length()) + "\r\n";
-		std::cout << 9 << std::endl;
 
 		return;
 	}
+
 	else
 	{
 		request_loc = serv._root + &request_loc[1];
@@ -472,8 +479,6 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		if (!file.is_open())
 			throw 404;
 	}
-
-	
 		
 	// get body response
 	if (file.rdbuf()->in_avail() == 0)
@@ -485,7 +490,9 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 	std::stringstream	buffer;
 	buffer << file.rdbuf();
 	file.close();
-	this->_response = buffer.str() + "\r\n";
+
+	this->_response = buffer.str();
+	
 }
 
 int	Http_handler::__POST_response(std::string &value, Server &serv)
@@ -745,9 +752,6 @@ void	Http_handler::__this_is_the_way(Server &serv)
 						this->header_alternate += g_ext.get_type(&valid_ext[1]) + "; q=" + std::to_string(q) + " , ";
 						if (q > 0.1)
 							q -= 0.1;
-						
-						if (this->header_transfer.empty())
-							this->header_transfer = "Transfer-Encoding: chunked";
 					}
 				}
 				if (err300)
@@ -824,106 +828,115 @@ std::string         Http_handler::__filesLst(std::string const &dirEntry, std::s
 	if (!host.compare("/autoindex") || !host.compare("/"))
     	ss << "<p><a href=/"  << dirEntry + '>' + dirEntry + "</a></p>\n";
 	else
-   		ss << "<p><a href=" + host + "/" << dirEntry + '>' + dirEntry + "</a></p>\n";
+   		ss << "<p><a href=" + host << dirEntry + '>' + dirEntry + "</a></p>\n";
 
     return ss.str();
 }
 
-std::string Http_handler::__base64_encode(const std::string &input)
+std::string Http_handler::__base64_encode(const std::string &s)
 {
-	// Initialize a base64 alphabet
-	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-										"abcdefghijklmnopqrstuvwxyz"
-										"0123456789+/";
+	static const std::string base64_chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
 
-	// Initialize the base64 string to be returned
-	std::string base64_string;
+	std::string ret;
+	int i = 0;
+	int j = 0;
+	unsigned char char_array_3[3];
+	unsigned char char_array_4[4];
 
-	// Get the length of the input string
-	size_t input_length = input.length();
-
-	// Iterate through the input string in blocks of 3 characters
-	for (size_t i = 0; i < input_length - 1; i += 3)
+	int len = s.length();
+	while (len--)
 	{
-		// Initialize a vector to store the 3 bytes
-		std::vector<unsigned char> triplet(3);
+		char_array_3[i++] = s[j++];
+		if (i == 3)
+		{
+			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+			char_array_4[3] = char_array_3[2] & 0x3f;
 
-		// Store the first, second and third character in the triplet
-		triplet[0] = (i < input_length) ? input[i] : 0;
-		triplet[1] = (i + 1 < input_length) ? input[i + 1] : 0;
-		triplet[2] = (i + 2 < input_length) ? input[i + 2] : 0;
-
-		// Convert the triplet to a 4-character base64 string
-		base64_string += base64_alphabet[triplet[0] >> 2];
-		base64_string += base64_alphabet[((triplet[0] & 0x03) << 4) | (triplet[1] >> 4)];
-		base64_string += (i + 1 < input_length) ? base64_alphabet[((triplet[1] & 0x0f) << 2) | (triplet[2] >> 6)] : '=';
-		base64_string += (i + 2 < input_length) ? base64_alphabet[triplet[2] & 0x3f] : '=';
+			for (i = 0; (i < 4); i++)
+				ret += base64_chars[char_array_4[i]];
+			i = 0;
+		}
 	}
 
-	// Handle remaining characters
-	if (input_length % 3 == 1)
+	if (i)
 	{
-		base64_string += base64_alphabet[input[input_length - 1] >> 2];
-		base64_string += base64_alphabet[(input[input_length - 1] & 0x03) << 4];
-		base64_string += "==";
-	}
-	else if (input_length % 3 == 2)
-	{
-		base64_string += base64_alphabet[input[input_length - 2] >> 2];
-		base64_string += base64_alphabet[((input[input_length - 2] & 0x03) << 4) | (input[input_length - 1] >> 4)];
-		base64_string += base64_alphabet[(input[input_length - 1] & 0x0f) << 2];
-		base64_string += "=";
+		for (j = i; j < 3; j++)
+			char_array_3[j] = '\0';
+
+		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[3] = char_array_3[2] & 0x3f;
+
+		for (j = 0; (j < i + 1); j++)
+			ret += base64_chars[char_array_4[j]];
+
+		while ((i++ < 3))
+			ret += '=';
 	}
 
-	return base64_string;
+	return ret;
 }
 
-std::string Http_handler::__base64_decode(const std::string &input)
+bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string Http_handler::__base64_decode(const std::string &encoded_string)
 {
-	// Initialize a base64 alphabet
-	const std::string base64_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-										"abcdefghijklmnopqrstuvwxyz"
-										"0123456789+/";
+	static const std::string base64_chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
 
-	// Initialize the decoded string to be returned
-	std::string decoded_string;
-	decoded_string.resize((input.length() / 4) * 3);
+	int in_len = encoded_string.size();
+	int i = 0;
+	int j = 0;
+	int in_ = 0;
+	unsigned char char_array_4[4], char_array_3[3];
+	std::string ret;
 
-	// Get the length of the input string
-	size_t input_length = input.length();
-
-	// Iterate through the input string in blocks of 4 characters
-	for (size_t i = 0, j = 0; i < input_length; i += 4, j += 3)
+	while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_]))
 	{
-		// Initialize a vector to store the 4 base64 characters
-		std::vector<unsigned char> quad(4);
+		char_array_4[i++] = encoded_string[in_];
+		in_++;
+		if (i == 4)
+		{
+			for (i = 0; i < 4; i++)
+				char_array_4[i] = base64_chars.find(char_array_4[i]);
 
-		// Store the first, second, third and fourth character in the quad
-		quad[0] = (i < input_length) ? base64_alphabet.find(input[i]) : 0;
-		quad[1] = (i + 1 < input_length) ? base64_alphabet.find(input[i + 1]) : 0;
-		quad[2] = (i + 2 < input_length) ? base64_alphabet.find(input[i + 2]) : 0;
-		quad[3] = (i + 3 < input_length) ? base64_alphabet.find(input[i + 3]) : 0;
+			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-		// Check for padding characters
-		bool padding_1 = (i + 1 < input_length && input[i + 1] == '=');
-		bool padding_2 = (i + 2 < input_length && input[i + 2] == '=');
-		bool padding_3 = (i + 3 < input_length && input[i + 3] == '=');
-
-		// Convert the quad to a 3-character string
-		decoded_string[j] = static_cast<char>((quad[0] << 2) + (quad[1] >> 4));
-		decoded_string[j + 1] = (padding_1) ? '\0' : static_cast<char>(((quad[1] & 0x0f) << 4) + (quad[2] >> 2));
-		decoded_string[j + 2] = (padding_2) ? '\0' : static_cast<char>(((quad[2] & 0x03) << 6) + quad[3]);
+			for (i = 0; (i < 3); i++)
+				ret += char_array_3[i];
+			i = 0;
+		}
 	}
 
-	// Resize the decoded string to the correct length
-	size_t padding = 0;
-	if (input[input_length - 1] == '=')
-		padding++;
-	if (input[input_length - 2] == '=')
-		padding++;
-	decoded_string.resize(decoded_string.length() - padding);
+	if (i)
+	{
+		for (j = i; j < 4; j++)
+			char_array_4[j] = 0;
 
-	return decoded_string;
+		for (j = 0; j < 4; j++)
+			char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+		char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+		char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+		char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+		for (j = 0; (j < i - 1); j++)
+			ret += char_array_3[j];
+	}
+
+	return ret;
 }
 
 void	Http_handler::__Etag_gen(std::string path)
@@ -967,6 +980,7 @@ void	Http_handler::__Etag_reader(std::string &etag)
 
 	std::string	file = etag.substr(sep + 1);
 
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>" << file <<std::endl;
 	// si le path dans etag n'existe pas et que le etag est quand même reconnue
 	// alors Etag obsolete
 	struct stat file_stat;
@@ -1019,11 +1033,43 @@ void Http_handler::__range_cut(std::string &range_val)
 	if (first > this->_response.length() - 1 || first < 0
 		|| second > this->_response.length() - 1 || second < 0
 		|| second < first)
+	{
+		this->_response.clear();
 		throw 416;
+	}
+	
+	int	pos;
+	if ((pos = this->_response.find("lang=")) != std::string::npos
+		&& header_language.empty())
+	{
+		std::string	tmp = this->_response.substr(pos + 6);
+		std::string	lang = tmp.substr(0, tmp.find(('"')));
+		
+		this->header_language = "Content-Language: " + lang + "\r\n";
+	}
+	if ((pos = this->_response.find("encoding=")) != std::string::npos
+		&& header_charset.empty())
+	{
+		std::string	tmp = this->_response.substr(pos + 10);
+		std::string	charset = tmp.substr(0, tmp.find(('"')));
 
+		for (std::string::iterator it = charset.begin(); it != charset.end(); ++it)
+			*it = *it + 32 * (*it >= 65 && *it <= 90);
+
+		this->header_charset = "; charset =" + charset;
+	}
+
+	int	original_size = this->_response.length();
 	// Extract the substring if the response string is non-empty.
-	if (!this->_response.empty() && first )
+	if (!this->_response.empty())
 		this->_response = this->_response.substr(first, second - first + 1);
+
+	this->header_range = "Content-Range: bytes "
+						+ std::to_string(first)
+						+ "-"
+						+ std::to_string(second)
+						+ "/"
+						+ std::to_string(original_size);
 }
 
 
