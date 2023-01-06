@@ -411,7 +411,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		request_loc = serv._root + &request_loc[1];
 		file.open(request_loc, std::ios::binary);
 		if (!file.is_open())
-			throw 404;
+			throw 424;
 
 		// évalue si c'est un directory
 		stat(request_loc.c_str(), &path_stat);
@@ -477,7 +477,7 @@ void	Http_handler::__GET_response(std::string &value, Server &serv)
 		request_loc = serv._root + &request_loc[1];
 		file.open(request_loc, std::ios::in);
 		if (!file.is_open())
-			throw 404;
+			throw 425;
 	}
 		
 	// get body response
@@ -504,7 +504,7 @@ int	Http_handler::__POST_response(std::string &value, Server &serv)
 
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) < 0)
-		throw 404;
+		throw 426;
 
 	int ret;
 	if (S_ISDIR(path_stat.st_mode))
@@ -556,7 +556,7 @@ void	Http_handler::__DELETE_response(std::string &value, Server &serv)
 	if (result)
 	{
 		if (result == -1)
-			throw 404;
+			throw 428;
 		else
 			throw 500;
 	}
@@ -687,6 +687,7 @@ std::vector<std::string>	cpp_split(std::string &src, char sep)
 // PRIVATE METHODS
 void	Http_handler::__this_is_the_way(Server &serv)
 {
+	return;
 	std::string	path;
 	std::string	directory;
 	struct stat file_stat;
@@ -696,7 +697,7 @@ void	Http_handler::__this_is_the_way(Server &serv)
 
 	// Si il y'a field accept dans la requete
 	if (this->_req_dict.find("Accept") != this->_req_dict.end()
-		&& get_extension(this->_address).empty())
+		&& !get_extension(this->_address).empty())
 	{
 		std::string	vals;
 		vals = this->_req_dict.find("Accept")->second;
@@ -705,7 +706,7 @@ void	Http_handler::__this_is_the_way(Server &serv)
 
 		// verify directory where file is situated.
 		if (stat(directory.c_str(), &file_stat) != 0)
-			throw 404;
+			throw 429;
 
 		// Accept Parsing --------
 		// multimap [(float)q=x.y] -> std::string (val)
@@ -716,10 +717,13 @@ void	Http_handler::__this_is_the_way(Server &serv)
 				it != accept_field_pairs.end(); it++)
 		{
 			int	sep_pos = it->find(';');
-			int	q_pos = it->find("q=");
-			
-			accept_vals.insert(std::make_pair(std::stof(it->substr(q_pos + 2)),
-												it->substr(0, sep_pos)));
+			int	q_pos;			
+
+			if ( (q_pos = it->find("q=")) == std::string::npos)
+				accept_vals.insert(std::make_pair(1.0, it->substr(0, sep_pos)));
+			else
+				accept_vals.insert(std::make_pair(std::stof(it->substr(q_pos + 2)),
+													it->substr(0, sep_pos)));
 		}
 		// ------------------------
 
@@ -784,7 +788,7 @@ void	Http_handler::__this_is_the_way(Server &serv)
 		}
 
 		if (path.empty())
-			throw 404;
+			throw 431;
 		this->_address = path;
 
 	} // if accept field
@@ -945,8 +949,7 @@ void	Http_handler::__Etag_gen(std::string path)
 	struct stat file_stat;
 	if (stat(path.c_str(), &file_stat) != 0)
 	{
-		std::cout << path << std::endl;
-		throw 404;
+		throw 449;
 	}
 
 	// get last time modified
@@ -980,7 +983,6 @@ void	Http_handler::__Etag_reader(std::string &etag)
 
 	std::string	file = etag.substr(sep + 1);
 
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>" << file <<std::endl;
 	// si le path dans etag n'existe pas et que le etag est quand même reconnue
 	// alors Etag obsolete
 	struct stat file_stat;
@@ -992,7 +994,7 @@ void	Http_handler::__condition_header(std::string address, Condition condition)
 {
 	struct stat	file_stat;
 	if (stat(address.c_str(), &file_stat) != 0)
-		throw 404;
+		throw 450;
 
 	std::map<std::string, std::string>::iterator it;
 	if (condition = MODIFIED_SINCE)

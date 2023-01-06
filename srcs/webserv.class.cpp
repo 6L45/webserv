@@ -319,11 +319,6 @@ void	Webserv::__http_process(int fd, std::string &request)
 		return;
 	}
 	
-	struct timeval timeout;
-	timeout.tv_sec = 2;
-	timeout.tv_usec = 0;
-	setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(const char*) &timeout, sizeof(timeout));
-
 	std::string	host_port = request_handler.get_host_name();
 	std::vector<Server>::iterator it;
 	for (it = _servers.begin(); it != _servers.end(); it++)
@@ -374,18 +369,13 @@ void	Webserv::__http_process(int fd, std::string &request)
 */
 void	Webserv::send_response(int fd, const std::string& response)
 {
-//	std::cout << "---------------- " << "response server : " << std::endl
-//	<< response << "----------------" << std::endl << std::endl;
+	std::cout << "---------------- " << "response server : " << std::endl
+	<< response << "----------------" << std::endl << std::endl;
 	int	ret;
 	std::signal(SIGPIPE, SIG_IGN);
 	if ((ret = send(fd, response.c_str(), response.length(), 0)) < 0)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-		{
-			send_response(fd, Http_handler::http_408());
-			return (__close_connexion(fd));
-		}
-		else if (errno == EPIPE)
+		if (errno == EPIPE)
 		{
 			std::cout << "++connexion with client is lost++" << std::endl;
 			return (__close_connexion(fd));
