@@ -78,6 +78,10 @@ class Http_handler // : inherit from a execution class ?
 		void			__condition_header(std::string address, Condition condition);
 		void			__range_cut(std::string &range_val);
 		void			__this_is_the_way(Server &serv);
+		bool			__path_handler(std::string &request_loc, Server &serv);
+		bool			__empty_file(std::ifstream &file);
+		void			__response_init(std::ifstream &file);
+		void			__get_file_content(std::ifstream &file, std::string request_loc);
 
 		// method exec - response init
 		void			__GET_response(std::string &value, Server &serv);
@@ -96,10 +100,13 @@ class Http_handler // : inherit from a execution class ?
 		// utils
 		void			__clean_address(void);
 		void			__close_and_throw(std::fstream &file, int err);
+		void			__close_and_throw(std::ifstream &file, int err);
 		bool			__not_a_method();
 		std::string		__get_extension();
 		bool			__is_valid_http_time(const std::string &s);
 		time_t			__string_to_time_t_header(const std::string &s);
+		bool			__is_base64(unsigned char c);
+		void			__browse_and_close(std::ifstream &file, std::string &request_loc);
 };
 
 typedef struct links

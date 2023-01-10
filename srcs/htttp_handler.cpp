@@ -44,6 +44,17 @@ Http_handler::Http_handler(std::string &request)
 				this->_valid = 400;
 			this->_req_dict.insert(std::make_pair(field, value));
 		}
+		else
+		{
+			for (int i = 0; i < line.length(); i++)
+			{
+				if (line[i] != '\r' && line[i] != '\n')
+				{
+					this->_valid = 400;
+					break;
+				}
+			}
+		}
 	}
 	if (this->_valid == 0)
 	{
@@ -352,147 +363,119 @@ void	Http_handler::__body_gen(int ret)
 
 
 
+bool	Http_handler::__empty_file(std::ifstream &file)
+{
+	if (file.rdbuf()->in_avail() == 0)
+	{
+		file.close();
+		return true;
+	}
+	return false;
+}
 
+bool	Http_handler::__path_handler(std::string &request_loc, Server &serv)
+{
+	for (std::vector<std::string>::iterator it = serv._index.begin();
+				it != serv._index.end(); it++)
+	{
+		std::ifstream	file;
+		// teste ouverture des index
+		file.open(request_loc + *it, std::ios::in);
+		if (file.is_open())
+		{
+			//read / get file and close file
+			if (__empty_file(file))
+				return true;
+
+			std::stringstream	buffer;
+			buffer << file.rdbuf();
+			file.close();
+			this->_response = buffer.str();
+
+			return (true);
+		}
+	}
+	return (false);
+}
+
+void	Http_handler::__response_init(std::ifstream &file)
+{
+	std::stringstream	buffer;
+	buffer << file.rdbuf();
+	file.close();
+	this->_response = buffer.str();
+}
+
+void	Http_handler::__get_file_content(std::ifstream &file, std::string request_loc)
+{
+	file.open(request_loc, std::ios::in);
+	if (!file.is_open())
+		throw 404;
+
+	if (__empty_file(file))
+		return;
+
+	__response_init(file);
+}
+
+void	Http_handler::__browse_and_close(std::ifstream &file, std::string &request_loc)
+{
+	__directory_browser(request_loc.c_str(), this->_address);
+	file.close();
+}
 
 // RESPONSES
 void	Http_handler::__GET_response(std::string &value, Server &serv)
 {
-	std::string	request_loc(this->_address);
-
 	// HOME ----------------------------------------------------------------	
 	// Si l'adresse est home -> '/'  look dans config files les index
-	if  (!request_loc.compare("/") && !SV_DIRISACTIVE(serv))
+	if  (!this->_address.compare("/") && !SV_DIRISACTIVE(serv))
 	{
-		// parcours les index
-		for (std::vector<std::string>::iterator it = serv._index.begin();
-				it != serv._index.end(); it++)
-		{
-			std::ifstream	file;
-			// teste ouverture des index
-			file.open(serv._root + *it, std::ios::in);
-			if (file.is_open())
-			{
-				//read / get file and close file
-				if (file.rdbuf()->in_avail() == 0)
-				{
-					file.close();
-					return ;
-				}
-				std::stringstream	buffer;
-				buffer << file.rdbuf();
-				file.close();
-				
-				// init body response avec \r\n\r\n de fin
-				this->_response = buffer.str();
-
-				return ;
-			}
-			// si file not open && next == end vector Aucun index valable
-			else if (it + 1 == serv._index.end())
-				throw 500; // Internal server error
-		}
+		if (__path_handler(serv._root ,serv))
+			return;
+		throw 500;
 	}
 
 	// QUELQUE PART DANS LE SITE --------------------------------------------------
-
 	std::ifstream	file;
 	struct stat		path_stat;
+	std::string		request_loc;
 
-	if (!request_loc.compare("/autoindex") || !request_loc .compare("/"))
+	if (!this->_address.compare("/autoindex") || !this->_address.compare("/"))
 	{
 		request_loc = serv._root;
 		file.open(request_loc, std::ios::in);
 		if (!file.is_open())
 			throw 500;
+		this->header_content_type += "text/html";
+		return __browse_and_close(file, request_loc);
 	}
-	else if (g_ext.get_category((serv._root + &request_loc[1]), this->__get_extension())
-				== BIN)
+	else if (g_ext.get_category((serv._root + &this->_address[1]), this->__get_extension()) == BIN)
 	{
-		request_loc = serv._root + &request_loc[1];
-		file.open(request_loc, std::ios::binary);
+		request_loc = serv._root + &this->_address[1];
+		file.open(request_loc);
 		if (!file.is_open())
-			throw 424;
+			throw 404;
 
 		// évalue si c'est un directory
 		stat(request_loc.c_str(), &path_stat);
-
 		if (S_ISDIR(path_stat.st_mode))
 		{
 			if (this->_address[this->_address.length() - 1] != '/')
-			{
-				file.close();
-				throw 301;
-			}
+				__close_and_throw(file, 301);
 			if (!SV_DIRISACTIVE(serv))
-			{
-				file.close();
-				throw 403;
-			}
-			else
-			{
-				for (std::vector<std::string>::iterator it = serv._index.begin();
-						it != serv._index.end(); it++)
-				{
-					std::ifstream	file;
-					// teste ouverture des index
-					file.open(request_loc + *it, std::ios::in);
-					if (file.is_open())
-					{
-						this->_address = this->_address + *it;
-						//read / get file and close file
-						if (file.rdbuf()->in_avail() == 0)
-						{
-							file.close();
-							return ;
-						}
+				__close_and_throw(file, 403);
 
-						std::stringstream	buffer;
-						buffer << file.rdbuf();
-						file.close();
-						
-						// init body response avec \r\n\r\n de fin
-						this->_response = buffer.str();
-
-						return ;
-					}
-					else if (it + 1 == serv._index.end())
-						__directory_browser(request_loc.c_str(), this->_address);
-				}
-			}
 			this->header_content_type += "text/html";
-			file.close();
-			return ;
+			if (__path_handler(request_loc, serv))
+				return; 
+
+			return __browse_and_close(file, request_loc);
 		}
 
-		std::stringstream	buffer;
-		buffer << file.rdbuf();
-		file.close();
-		this->_response = buffer.str();
-
-		return;
+		return __response_init(file);
 	}
-
-	else
-	{
-		request_loc = serv._root + &request_loc[1];
-		file.open(request_loc, std::ios::in);
-		if (!file.is_open())
-			throw 425;
-	}
-		
-	// get body response
-	if (file.rdbuf()->in_avail() == 0)
-	{
-		file.close();
-		return ;
-	}
-
-	std::stringstream	buffer;
-	buffer << file.rdbuf();
-	file.close();
-
-	this->_response = buffer.str();
-	
+	__get_file_content(file, serv._root + &this->_address[1]);
 }
 
 int	Http_handler::__POST_response(std::string &value, Server &serv)
@@ -504,7 +487,7 @@ int	Http_handler::__POST_response(std::string &value, Server &serv)
 
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) < 0)
-		throw 426;
+		throw 404;
 
 	int ret;
 	if (S_ISDIR(path_stat.st_mode))
@@ -556,7 +539,7 @@ void	Http_handler::__DELETE_response(std::string &value, Server &serv)
 	if (result)
 	{
 		if (result == -1)
-			throw 428;
+			throw 404;
 		else
 			throw 500;
 	}
@@ -687,17 +670,20 @@ std::vector<std::string>	cpp_split(std::string &src, char sep)
 // PRIVATE METHODS
 void	Http_handler::__this_is_the_way(Server &serv)
 {
-	return;
 	std::string	path;
 	std::string	directory;
 	struct stat file_stat;
+	
+	path = serv._root + &this->_address[1];
+	if ( stat(path.c_str(), &file_stat) == 0 )
+		return ;
 
+	path.clear();
 	directory =  (serv._root + &this->_address[1])
 					.substr(0, (serv._root + &this->_address[1]).find_last_of('/'));
 
 	// Si il y'a field accept dans la requete
-	if (this->_req_dict.find("Accept") != this->_req_dict.end()
-		&& !get_extension(this->_address).empty())
+	if (this->_req_dict.find("Accept") != this->_req_dict.end())
 	{
 		std::string	vals;
 		vals = this->_req_dict.find("Accept")->second;
@@ -706,7 +692,7 @@ void	Http_handler::__this_is_the_way(Server &serv)
 
 		// verify directory where file is situated.
 		if (stat(directory.c_str(), &file_stat) != 0)
-			throw 429;
+			throw 404;
 
 		// Accept Parsing --------
 		// multimap [(float)q=x.y] -> std::string (val)
@@ -788,10 +774,12 @@ void	Http_handler::__this_is_the_way(Server &serv)
 		}
 
 		if (path.empty())
-			throw 431;
+			throw 404;
 		this->_address = path;
 
 	} // if accept field
+	else
+		throw 404;
 }
 
 void	Http_handler::__directory_browser(const char *path, std::string const &host)
@@ -887,9 +875,6 @@ std::string Http_handler::__base64_encode(const std::string &s)
 	return ret;
 }
 
-bool is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
-}
 
 std::string Http_handler::__base64_decode(const std::string &encoded_string)
 {
@@ -905,7 +890,7 @@ std::string Http_handler::__base64_decode(const std::string &encoded_string)
 	unsigned char char_array_4[4], char_array_3[3];
 	std::string ret;
 
-	while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_]))
+	while (in_len-- && (encoded_string[in_] != '=') && __is_base64(encoded_string[in_]))
 	{
 		char_array_4[i++] = encoded_string[in_];
 		in_++;
@@ -948,9 +933,7 @@ void	Http_handler::__Etag_gen(std::string path)
 	// check path 404 if not found
 	struct stat file_stat;
 	if (stat(path.c_str(), &file_stat) != 0)
-	{
-		throw 449;
-	}
+		throw 404;
 
 	// get last time modified
 	// to GMT
@@ -994,7 +977,7 @@ void	Http_handler::__condition_header(std::string address, Condition condition)
 {
 	struct stat	file_stat;
 	if (stat(address.c_str(), &file_stat) != 0)
-		throw 450;
+		throw 404;
 
 	std::map<std::string, std::string>::iterator it;
 	if (condition = MODIFIED_SINCE)
@@ -1124,9 +1107,17 @@ void	Http_handler::__clean_address()
 	}
 }
 
-
+bool	Http_handler::__is_base64(unsigned char c) {
+  return (std::isalnum(c) || (c == '+') || (c == '/'));
+}
 
 void	Http_handler::__close_and_throw(std::fstream &file, int err)
+{
+	file.close();
+	throw err;
+}
+
+void	Http_handler::__close_and_throw(std::ifstream &file, int err)
 {
 	file.close();
 	throw err;
