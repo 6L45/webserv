@@ -312,7 +312,15 @@ void	Webserv::__http_process(int fd, std::string &request)
 
 	if (request_handler.invalid_request())
 	{
-		std::cout << "bad request 400 no host || 505 != HTTP/1.1" << std::endl;
+/*		if (invalid_request == 1 && !this->_timer[fd].body.empty())
+		{
+			if (== 0)
+				request = this->_timer[fd].body;
+				continue
+			concat;
+			return;
+		}
+*/		std::cout << "bad request 400 no host || 505 != HTTP/1.1" << std::endl;
 		response = request_handler.bad_request();
 		send_response(fd, response);
 		__close_connexion(fd);
@@ -335,7 +343,16 @@ void	Webserv::__http_process(int fd, std::string &request)
 	{
 		std::cout << "Host:Port target -> " << host_port << std::endl;
 		std::cout << "Server name : " << it->_name << std::endl;
-		response = request_handler.exec_request(*it);
+/*		if (request_handler.chunked())
+		{
+			std::string chunk = htpp_handler.chunkedhandler();
+			this->_timer[fd].body += chunk; 
+			if (chunked != 0)
+				return;
+			response = this->_timer[fd].body;
+		}
+		else
+*/			response = request_handler.exec_request(*it);
 		send_response(fd, response);
 		if (request_handler.get_connection().compare("null"))
 		{
@@ -352,12 +369,9 @@ void	Webserv::__http_process(int fd, std::string &request)
 		if (request_handler.get_keep_alive())
 		{
 			this->_timer[fd].keep_alive = request_handler.keep_alive_value();
-
-/*			clamp on max keep alive server
-			if (this->_timer[fd].keep_alive > it->keep_alive)
-				this->_timer[fd].keep_alive = it->keep_alive;
+/*
+			this->_timer[fd].keep_alive = std::min(this->_timer[fd], DEFAULT_KEEP_ALIVE)
 */
-
 			this->_timer[fd].t = std::clock();
 		}
 	}
