@@ -23,21 +23,30 @@
 #define _SC_PORTACTIVATE(_sc) (_sc.methods = _sc.methods | (1 << 1))
 #define _SC_DELETEACTIVATE(_sc) (_sc.methods = _sc.methods | (1 << 2))
 
+class __location
+{
+public:
+	std::string loc;
+	std::vector<std::string> index;
+	std::string root;
+	char options;
+	char methods;
+	int body_limits;
+	int body_min_size;
+	std::vector<std::pair<std::string, std::string> > cgi;
+	std::string post_dir;
+};
+
 class __server_conf
 {
 public:
 	std::string server_name;
 	int port;
-	// std::vector<int>			port;
-	std::string root;
 	std::vector<std::string> host;
+	std::string root;
 	std::vector<std::string> index;
-	std::vector<std::pair<std::string, std::string>> cgi;
-	char options;
-	char methods;
-	int body_limits;
-	int body_min_size;
-	int unactive_max_delay;
+	std::vector<__location> location;
+	int	unactive_max_delay;
 };
 
 class Conf
@@ -57,7 +66,8 @@ private:
 
 	void __parse_config_file(std::ifstream &fs);
 	void __parse_server(std::ifstream &fs, std::string &line);
-	void __parse_html(std::ifstream &fs, std::string &line, __server_conf &x);
+	void __parse_location(std::ifstream &fs, std::string &line, __server_conf& sc);
+	void __parse_html(std::ifstream &fs, std::string& line, __location& srv);
 	template <class T>
 	void __add_to(T &to, std::string &s);
 	void __get_info(int &c, std::string &raw);

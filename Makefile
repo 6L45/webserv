@@ -63,9 +63,10 @@ fclean: clean
 re: fclean ${NAME_EXECUTABLE}
 
 run: ${NAME_EXECUTABLE}
-	./${NAME_EXECUTABLE} config/ws.conf
+	./${NAME_EXECUTABLE} config/ws2.conf
 
-debug: 
+testeur: ${NAME_EXECUTABLE}
+	./${NAME_EXECUTABLE} config/testeur.conf
 	
 
 .PHONY: all, clean, fclean, re, bonus

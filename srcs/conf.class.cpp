@@ -55,11 +55,6 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 {
 	__server_conf new_serv;
 
-	new_serv.methods = 0;
-	new_serv.options = 0;
-	new_serv.body_limits = 30000;
-	new_serv.body_min_size = 0;
-
 	__erase_tab_space(line);
 	if (line.empty() && !fs.eof())
 		__get_line(fs, line);
@@ -93,28 +88,20 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 			__add_to<std::string>(new_serv.root, line.erase(0, line.find(':') + 1));
 		else if (!line.compare(0, 19, "unactive-max-delay:"))
 			__add_to<int>(new_serv.unactive_max_delay, line.erase(0, line.find(':') + 1));
-		else if (!line.compare(0, 18, "directory-browser:"))
+		else if (!line.compare(0, 8, "location"))
+			__parse_location(fs, line.erase(0,8), new_serv);
+		else if (!line.compare(0, 6, "index:"))
 		{
-			//check the argument if == activate
-			_SC_DIRACTIVATE(new_serv);
-		}
-		else if (!line.compare(0, 4, "cgi:"))
-		{
-			std::string frst;
-			std::string scnd;
-			
 			line.erase(0, line.find(':') + 1);
 			__erase_tab_space(line);
-			__get_info(frst, line);
-			__erase_tab_space(line);
-			__get_info(scnd, line);
-			__erase_tab_space(line);
-			new_serv.cgi.push_back(make_pair(frst,scnd));
-			if (!line.empty())
-				__error_file_notif(_line_read, "lastest arguments are ignored");
+			while (!line.empty())
+			{
+				std::string temp;
+				__get_info(temp, line);
+				new_serv.index.push_back(temp);
+				__erase_tab_space(line);
+			}
 		}
-		else if (!line.compare(0, 4, "html"))
-			__parse_html(fs, line.erase(0,4), new_serv);
 		else if (!line.compare(0, 1, "}"))
 			break ;
 		else
@@ -128,7 +115,84 @@ void	Conf::__parse_server(std::ifstream &fs, std::string& line)
 	_sc.push_back(new_serv);
 }
 
-void	Conf::__parse_html(std::ifstream &fs, std::string& line, __server_conf& srv)
+void Conf::__parse_location(std::ifstream &fs, std::string &line, __server_conf& sc)
+{
+	__location new_location;
+
+	new_location.methods = 0;
+	new_location.options = 0;
+	new_location.body_limits = 30000;
+	new_location.body_min_size = 0;
+
+	__erase_tab_space(line);
+	__get_info(new_location.loc, line);
+	__erase_tab_space(line);
+	if (line.empty() && !fs.eof())
+		__get_line(fs, line);
+	__erase_tab_space(line);
+	if (line.empty() || line.front() != '{')
+		return (__error_file_notif(_line_read, "missing '{'"));
+	while (!fs.eof())
+	{
+		__get_line(fs, line);
+		__erase_comment(line);
+		__erase_tab_space(line);
+		if (!line.compare(0, 5, "root:"))
+			__add_to<std::string>(new_location.root, line.erase(0, line.find(':') + 1));
+		else if (!line.compare(0, 18, "directory-browser:"))
+		{
+			//check the argument if == on/off
+			_SC_DIRACTIVATE(new_location);
+		}
+		else if (!line.compare(0, 18, "post-directory:"))
+		{
+			line.erase(0, line.find(':') + 1);
+			__erase_tab_space(line);
+			__get_info(new_location.post_dir, line);
+		}
+		else if (!line.compare(0, 4, "html"))
+			__parse_html(fs, line.erase(0,4), new_location);
+		else if (!line.compare(0, 4, "cgi:"))
+		{
+			std::string frst;
+			std::string scnd;
+			
+			line.erase(0, line.find(':') + 1);
+			__erase_tab_space(line);
+			__get_info(frst, line);
+			__erase_tab_space(line);
+			__get_info(scnd, line);
+			__erase_tab_space(line);
+			new_location.cgi.push_back(make_pair(frst,scnd));
+			if (!line.empty())
+				__error_file_notif(_line_read, "lastest arguments are ignored");
+		}
+		else if (!line.compare(0, 6, "index:"))
+		{
+			line.erase(0, line.find(':') + 1);
+			__erase_tab_space(line);
+			while (!line.empty())
+			{
+				std::string temp;
+				__get_info(temp, line);
+				new_location.index.push_back(temp);
+				__erase_tab_space(line);
+			}
+		}
+		else if (!line.compare(0, 1, "}"))
+			break ;
+		else
+			__error_file_notif(_line_read, "unknown parameter");
+	}
+	if (fs.eof() && line.compare(0, 1, "}"))
+		return (__error_file_notif(_line_read, "missing '}' for server"));
+	line.erase(0,1);
+	if (!line.empty())
+		__error_file_notif(_line_read, "line ignored after '}'");
+	sc.location.push_back(new_location);
+}
+
+void	Conf::__parse_html(std::ifstream &fs, std::string& line, __location& loc)
 {
 	__erase_tab_space(line);
 	if (line.empty() && !fs.eof())
@@ -150,33 +214,21 @@ void	Conf::__parse_html(std::ifstream &fs, std::string& line, __server_conf& srv
 			while (!line.empty())
 			{
 				if (!line.compare(0, 3, "GET"))
-					srv.methods = (srv.methods | (1 << 0));
+					loc.methods = (loc.methods | (1 << 0));
 				else if (!line.compare(0, 4, "POST"))
-					srv.methods = (srv.methods | (1 << 1));
+					loc.methods = (loc.methods | (1 << 1));
 				else if (!line.compare(0, 6, "DELETE"))
-					srv.methods = (srv.methods | (1 << 2));
+					loc.methods = (loc.methods | (1 << 2));
 				else
 					__error_file_notif(_line_read, "unknown method");
 				__erase_word(line);
 				__erase_tab_space(line);
 			}
 		}
-		else if (!line.compare(0, 6, "index:"))
-		{
-			line.erase(0, line.find(':') + 1);
-			__erase_tab_space(line);
-			while (!line.empty())
-			{
-				std::string temp;
-				__get_info(temp, line);
-				srv.index.push_back(temp);
-				__erase_tab_space(line);
-			}
-		}
 		else if (!line.compare(0, 16, "body-size-limit:"))
-			__add_to<int>(srv.body_limits, line.erase(0, line.find(':') + 1));
+			__add_to<int>(loc.body_limits, line.erase(0, line.find(':') + 1));
 		else if (!line.compare(0, 14, "body-min-size:"))
-			__add_to<int>(srv.body_min_size, line.erase(0, line.find(':') + 1));
+			__add_to<int>(loc.body_min_size, line.erase(0, line.find(':') + 1));
 		else if (!line.compare(0, 1, "}"))
 			break ;
 		else
@@ -318,31 +370,42 @@ void	Conf::__print_everything() const
 		for (std::vector<std::string>::const_iterator c_it = it->host.begin(); c_it != it->host.end(); c_it++)
 			std::cout << *c_it << " ";
 		std::cout << std::endl;
+		std::cout << "	Root - " << it->root << std::endl;
 		std::cout << "	Index - ";
 		for (std::vector<std::string>::const_iterator c_it = it->index.begin(); c_it != it->index.end(); c_it++)
-			std::cout << *c_it << " ";
+				std::cout << *c_it << " ";
 		std::cout << std::endl;
- 		std::cout << "	Root - " << it->root << std::endl;
-		std::cout << "	Body limit size (min:max) - " << it->body_min_size << ":" << it->body_limits << std::endl;
-		if (!SC_DIRISACTIVE((*it)))
-			std::cout << "	The Directory browsing is desactivated" << std::endl;
-		std::cout << "	available methods : ";
-		if (it->methods & (1 << 0))
-			std::cout << "GET ";
-		if (it->methods & (1 << 1))
-			std::cout << "POST ";
-		if (it->methods & (1 << 2))
-			std::cout << "DELETE ";
-		if (!it->methods)
-			std::cout << "none";
-		std::cout << std::endl;
-		std::cout << "	CGI : ";
-		if (it->cgi.empty())
-			std::cout << "Unactive";
-		else
+		std::cout << "Locations : " << std::endl;
+		for (std::vector<__location>::const_iterator c_it = it->location.begin(); c_it != it->location.end(); c_it++)
 		{
-			for (std::vector<std::pair<std::string,std::string> >::const_iterator c_it = it->cgi.begin(); c_it != it->cgi.end(); c_it++)
-				std::cout << "(" << c_it->first << "," << c_it->second<< ") ";
+			std::cout << "	'" << c_it->loc << "'" << std::endl;
+			std::cout << "	Index - ";
+			for (std::vector<std::string>::const_iterator cc_it = c_it->index.begin(); cc_it != c_it->index.end(); cc_it++)
+				std::cout << *cc_it << " ";
+			std::cout << std::endl;
+			std::cout << "	Root - " << c_it->root << std::endl;
+			std::cout << "	Body limit size (min:max) - " << c_it->body_min_size << ":" << c_it->body_limits << std::endl;
+			if (!SC_DIRISACTIVE((*c_it)))
+				std::cout << "	The Directory browsing is desactivated" << std::endl;
+			std::cout << "	available methods : ";
+			if (c_it->methods & (1 << 0))
+				std::cout << "GET ";
+			if (c_it->methods & (1 << 1))
+				std::cout << "POST ";
+			if (c_it->methods & (1 << 2))
+				std::cout << "DELETE ";
+			if (!c_it->methods)
+				std::cout << "none";
+			std::cout << std::endl;
+			std::cout << "	CGI : ";
+			if (c_it->cgi.empty())
+				std::cout << "Unactive";
+			else
+			{
+				for (std::vector<std::pair<std::string,std::string> >::const_iterator cc_it = c_it->cgi.begin(); cc_it != c_it->cgi.end(); cc_it++)
+					std::cout << "(" << cc_it->first << "," << cc_it->second<< ") ";
+			}
+			std::cout << std::endl << std::endl;
 		}
 		std::cout << std::endl << std::endl;
 	}

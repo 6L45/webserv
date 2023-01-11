@@ -11,11 +11,11 @@
 		SV_BODYISLIMITED return true if body required a max size, false otherwise
 		SV_GETISSET, SV_PORTISSET , SV_DELETEISSET return true if the method is authorisez, false otherwise
 */
-#define SV_DIRISACTIVE(server) (server._options & (1 << 0))
-#define SV_BODYISLIMITED(server) (server._options & (1 << 1))
-#define SV_GETISSET(server) (server._methods & (1 << 0))
-#define SV_POSTISSET(server) (server._methods & (1 << 1))
-#define SV_DELETEISSET(server) (server._methods & (1 << 2))
+#define SV_DIRISACTIVE(location) (location._options & (1 << 0))
+#define SV_BODYISLIMITED(location) (location._options & (1 << 1))
+#define SV_GETISSET(location) (location._methods & (1 << 0))
+#define SV_POSTISSET(location) (location._methods & (1 << 1))
+#define SV_DELETEISSET(location) (location._methods & (1 << 2))
 
 class Server
 {
@@ -24,35 +24,18 @@ class Server
 		~Server() {};
 
 		bool		belong_to(const std::string& host_port) const;
-		bool		cgi_exec(const std::string& file_name) const;
-		std::string		get_cgi_path(const std::string& file_name) const;
-		// void		request_handler(int &fd);
-		// void		send_response(int fd, fd_set &current_sockets, std::string &response);
+		// bool		cgi_exec(const std::string& file_name) const;
+		// std::string		get_cgi_path(const std::string& file_name) const;
 
 	private :
+		typedef __location			location;
 		int							_port;
 		std::vector<std::string>	_host;
 		std::vector<std::string>	_index;
 		std::string					_root;
 		std::string					_name;
-		std::vector<std::pair<std::string, std::string> >	_cgi;
-		char						_options;
-		char						_methods;
-		int							_body_max_size;
-		int							_body_min_size;
 		char						**_env;
-
-
-
-		// struct	sockaddr_in		_address;
-		// int						_sock;
-		// int						_domain;
-		// int						_service;
-		// int						_protocol;
-		// u_long					_interface;
-
-		// char					_buff[MAXLINE + 1];
-		// char					*_recvline;
+		std::vector<location>		_location;
 
 	friend class Webserv;
 	friend class Http_handler;
